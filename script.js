@@ -24,17 +24,21 @@
     {name:"Emiliano Martínez",rating:91,role:"PENALTY SPECIALIST",special:"Penalty mind games",glow:"rgba(255,170,80,.2)"},
     {name:"Jan Oblak",rating:92,role:"GOALKEEPER",special:"Positioning expert",glow:"rgba(160,120,255,.2)"},
     {name:"David Raya",rating:89,role:"GOALKEEPER",special:"Quick distribution",glow:"rgba(100,220,130,.2)"},
-    {name:"Mike Maignan",rating:90,role:"GOALKEEPER",special:"Explosive reactions",glow:"rgba(90,210,240,.2)"}
+    {name:"Mike Maignan",rating:90,role:"GOALKEEPER",special:"Explosive reactions",glow:"rgba(90,210,240,.2)"},
+    {name:"Lev Yashin",rating:98,role:"THE BLACK SPIDER",special:"Legendary reflexes & reach",glow:"rgba(30,30,38,.28)"},
+    {name:"Muhammad Arham",rating:93,role:"GOALKEEPER",special:"Brave close-range saves",glow:"rgba(255,99,99,.2)"}
   ];
-  const modeNames = {penalty:"PENALTY",freekick:"FREE KICK",longshot:"LONG SHOT",goalkeeping:"GOALKEEPER"};
+  const modeNames = {penalty:"PENALTY",freekick:"FREE KICK",longshot:"LONG SHOT",goalkeeping:"GOALKEEPER",headtohead:"HEAD-TO-HEAD",vsattack:"VS ATTACK"};
   const modeText = {
     penalty:["Pick your corner.","Drag on the goal to aim, then shoot."],
     freekick:["Bend it around the wall.","Aim around the wall and choose your power."],
     longshot:["Go for the spectacular.","Pick a target in the goal from distance."],
-    goalkeeping:["Read the shot.","Choose a dive direction before the shot arrives."]
+    goalkeeping:["Read the shot.","Choose a dive direction before the shot arrives."],
+    headtohead:["Play the full match.","Take attacks across 90 minutes. Score more goals than your rival."],
+    vsattack:["VS Attack.","You have 5 attacks. Make every chance count."]
   };
   let selectedPlayer = "Zayd Quadri", selectedGoalkeeper = "Hassan Ali", difficulty = "Pro", mode = "penalty";
-  let score = 0, attempt = 1, aim = {x:.5,y:.27}, power = 78, shotTaken = false, keeperDive = "center", keeperMotion = null, ballAnim = null, animationFrame = 0;
+  let score = 0, opponentScore = 0, matchMinute = 0, matchAttacks = 0, attempt = 1, aim = {x:.5,y:.27}, power = 78, shotTaken = false, keeperDive = "center", keeperMotion = null, ballAnim = null, animationFrame = 0;
   const canvas = $("pitch"), ctx = canvas.getContext("2d");
   let cw = 900, ch = 620, lastResult = "", shotTimer = null, soundOn = false;
 
@@ -144,7 +148,8 @@
     }
   }
   function startMode(nextMode){
-    mode=nextMode;shotTaken=false;ballAnim=null;
+    mode=nextMode;shotTaken=false;ballAnim=null;keeperMotion=null;
+    if(mode==="headtohead"||mode==="vsattack"){score=0;opponentScore=0;matchMinute=0;matchAttacks=0;attempt=1;}
     $("homeScreen").classList.add("hidden");$("gameScreen").classList.remove("hidden");
     $("gameTitle").innerHTML=modeNames[mode]+" <em>MODE</em>";$("controlHeading").textContent=modeText[mode][0];$("controlText").textContent=modeText[mode][1];
     $("keeperPad").classList.toggle("hidden",mode!=="goalkeeping");
@@ -154,9 +159,18 @@
     resizeCanvas();window.scrollTo({top:0,behavior:"smooth"});
   }
   function finishAttempt(success,message){
-    shotTaken=true;if(success)score+=mode==="goalkeeping"?150:100;
-    $("scoreValue").textContent=score;$("feedback").textContent=message;$("shootBtn").classList.add("hidden");$("nextBtn").classList.remove("hidden");
-    $("roundLabel").textContent="ATTEMPT "+String(attempt).padStart(2,"0")+" · COMPLETE";
+    shotTaken=true;
+    if(success)score+=mode==="goalkeeping"?150:100;
+    if(mode==="headtohead"||mode==="vsattack"){
+      matchAttacks++;
+      if(mode==="headtohead"){matchMinute=Math.min(90,matchAttacks*10);if(Math.random()<.34)opponentScore++;}
+      else if(Math.random()<.30)opponentScore++;
+      message += "  |  "+(mode==="headtohead"?matchMinute+"'":"ATTACK "+matchAttacks+"/5")+" · YOU "+Math.floor(score/100)+" - "+opponentScore+" RIVAL";
+    }
+    $("scoreValue").textContent=mode==="headtohead"||mode==="vsattack"?Math.floor(score/100)+"-"+opponentScore:score;
+    $("feedback").textContent=message;$("shootBtn").classList.add("hidden");$("nextBtn").classList.remove("hidden");
+    $("nextBtn").textContent=(mode==="headtohead"&&matchMinute>=90)||(mode==="vsattack"&&matchAttacks>=5)?"FINISH MATCH":"NEXT ATTACK →";
+    $("roundLabel").textContent=mode==="headtohead"?matchMinute+"' · "+(matchMinute>=90?"FULL TIME":"MATCH LIVE"):mode==="vsattack"?"ATTACK "+matchAttacks+" / 5":"ATTEMPT "+String(attempt).padStart(2,"0")+" · COMPLETE";
   }
   function shoot(){
     if(shotTaken)return;
@@ -176,7 +190,18 @@
     ballAnim={fromX:cw*.5,fromY:ch*.28,toX:aim.x*cw,toY:aim.y*ch,start:performance.now(),duration:430};keeperMotion={side:keeperDive==="left"?-1:keeperDive==="right"?1:0,start:performance.now(),duration:430};drawPitch();
     setTimeout(()=>{finishAttempt(save,save?"INCREDIBLE SAVE! You read the shot.":"GOAL CONCEDED. Read the direction next time.");drawPitch()},450);
   }
-  function nextAttempt(){attempt++;shotTaken=false;ballAnim=null;aim={x:.5,y:.27};$("shootBtn").classList.toggle("hidden",mode==="goalkeeping");$("nextBtn").classList.add("hidden");$("feedback").textContent="New attempt. Make it count.";$("roundLabel").textContent="ATTEMPT "+String(attempt).padStart(2,"0");drawPitch()}
+  function nextAttempt(){
+    if((mode==="headtohead"&&matchMinute>=90)||(mode==="vsattack"&&matchAttacks>=5)){
+      $("feedback").textContent="FULL TIME! Final score: "+Math.floor(score/100)+" - "+opponentScore+". "+(Math.floor(score/100)>opponentScore?"YOU WIN!":Math.floor(score/100)===opponentScore?"DRAW!":"RIVAL WINS!");
+      $("nextBtn").classList.add("hidden");$("shootBtn").classList.remove("hidden");$("shootBtn").textContent="PLAY AGAIN ↻";
+      $("shootBtn").onclick=()=>startMode(mode);return;
+    }
+    attempt++;shotTaken=false;ballAnim=null;keeperMotion=null;aim={x:.5,y:.27};
+    $("shootBtn").classList.remove("hidden");$("shootBtn").textContent=mode==="goalkeeping"?"DIVE / SAVE ↗":"SHOOT ↗";
+    $("nextBtn").classList.add("hidden");$("feedback").textContent="Next attack. Make it count.";
+    $("roundLabel").textContent=mode==="headtohead"?(matchMinute+10)+"' · MATCH LIVE":mode==="vsattack"?"ATTACK "+(matchAttacks+1)+" / 5":"ATTEMPT "+String(attempt).padStart(2,"0");
+    $("shootBtn").onclick=null;drawPitch();
+  }
   function setAimFromEvent(e){
     if(shotTaken||mode==="goalkeeping")return;
     const rect=canvas.getBoundingClientRect();const x=(e.clientX-rect.left)/rect.width;const y=(e.clientY-rect.top)/rect.height;
