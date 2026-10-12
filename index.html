@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#07110f">
   <title>ECLIPSE ARENA | Football</title>
-  <link rel="stylesheet" href="style.css?v=match-modes-1">
-  <script src="script.js?v=match-modes-1" defer></script>
+  <link rel="stylesheet" href="style.css?v=matchplay-4">
+  <script src="script.js?v=matchplay-4" defer></script>
 </head>
 <body>
   <div class="app-shell">
@@ -63,6 +63,9 @@
             <div class="pitch-topline"><span id="roundLabel">ATTEMPT 01</span><span id="difficultyLabel">PRO LEVEL</span></div>
             <canvas id="pitch" aria-label="Interactive football pitch. Tap or drag to aim."></canvas>
             <div class="aim-tip" id="aimTip">TAP THE GOAL TO AIM · PRESS SHOOT</div>
+            <div id="matchHud" class="match-hud hidden"><div class="match-scoreline"><span>YOU</span><strong id="matchScore">0 - 0</strong><span>RIVAL</span></div><strong id="matchClock">00:00</strong><span id="matchRank">ROOKIE III · 0 PTS</span></div>
+            <div id="matchControls" class="match-controls hidden"><div class="match-move-pad" aria-label="Player movement"><button type="button" data-move="up" aria-label="Move up">▲</button><div><button type="button" data-move="left" aria-label="Move left">◀</button><button type="button" data-move="down" aria-label="Move down">▼</button><button type="button" data-move="right" aria-label="Move right">▶</button></div></div><div class="match-action-pad"><button type="button" data-action="sprint">SPRINT</button><button type="button" data-action="pass">PASS</button><button type="button" data-action="tackle">TACKLE</button><button type="button" data-action="shoot">SHOOT</button></div></div>
+            <div id="matchResult" class="match-result hidden"></div>
           </div>
           <aside class="controls-panel">
             <p class="eyebrow">MATCH CONTROLS</p><h3 id="controlHeading">Pick your corner.</h3>
