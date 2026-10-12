@@ -110,8 +110,11 @@
                 </optgroup>
               </select>
               <div class="music-actions"><button id="musicPlayBtn" type="button" class="music-play-btn">▶ PLAY BEAT</button><button id="musicStopBtn" type="button" class="music-stop-btn">■ STOP</button></div>
-              <button id="musicOfficialBtn" type="button" class="music-official-btn hidden">OPEN OFFICIAL SONG ↗</button>
-              <p id="musicStatus" class="music-status" aria-live="polite">Choose a style, then play. Original beats are generated in-game.</p>
+              <button id="musicOfficialBtn" type="button" class="music-official-btn hidden">▶ PLAY SONG IN GAME</button>
+              <div id="musicPlayerWrap" class="music-player-wrap hidden">
+                <iframe id="musicPlayer" title="In-game song player" src="about:blank" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+              </div>
+              <p id="musicStatus" class="music-status" aria-live="polite">Choose a style, then play. Official tracks play in the embedded player.</p>
             </section>
             <div id="keeperPad" class="keeper-pad hidden"><span>GOALKEEPER DIVE</span><div><button data-dive="left">↙ LEFT</button><button data-dive="center">↑ CENTRE</button><button data-dive="right">RIGHT ↘</button></div></div>
             <div class="touch-note"><span class="touch-dot"></span> MADE FOR TOUCH · IPAD READY</div>
