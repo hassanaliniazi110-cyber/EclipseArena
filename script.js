@@ -12,6 +12,12 @@
     {name:"Jude Bellingham", rating:97, role:"MIDFIELDER", special:"Penalty specialist", glow:"rgba(189,123,255,.2)"},
     {name:"Lamine Yamal", rating:96, role:"WINGER", special:"Free-kick magic", glow:"rgba(199,255,74,.2)"}
   ];
+  const goalkeepers = [
+    {name:"Hassan Ali",rating:300,role:"ELITE KEEPER",special:"Best reflexes & diving",glow:"rgba(199,255,74,.22)"},
+    {name:"Ehan Ali",rating:94,role:"GOALKEEPER",special:"Quick reactions",glow:"rgba(189,123,255,.2)"},
+    {name:"Alisson",rating:95,role:"GOALKEEPER",special:"Fast one-on-ones",glow:"rgba(75,191,255,.2)"},
+    {name:"Thibaut Courtois",rating:95,role:"GOALKEEPER",special:"Huge reach",glow:"rgba(255,140,66,.2)"}
+  ];
   const modeNames = {penalty:"PENALTY",freekick:"FREE KICK",longshot:"LONG SHOT",goalkeeping:"GOALKEEPER"};
   const modeText = {
     penalty:["Pick your corner.","Drag on the goal to aim, then shoot."],
@@ -19,21 +25,46 @@
     longshot:["Go for the spectacular.","Pick a target in the goal from distance."],
     goalkeeping:["Read the shot.","Choose a dive direction before the shot arrives."]
   };
-  let selectedPlayer = "Hassan Ali", difficulty = "Pro", mode = "penalty";
-  let score = 0, attempt = 1, aim = {x:.5,y:.27}, power = 78, shotTaken = false, keeperDive = "center", ballAnim = null, animationFrame = 0;
+  let selectedPlayer = "Zayd Quadri", selectedGoalkeeper = "Hassan Ali", difficulty = "Pro", mode = "penalty";
+  let score = 0, attempt = 1, aim = {x:.5,y:.27}, power = 78, shotTaken = false, keeperDive = "center", keeperMotion = null, ballAnim = null, animationFrame = 0;
   const canvas = $("pitch"), ctx = canvas.getContext("2d");
   let cw = 900, ch = 620, lastResult = "", shotTimer = null, soundOn = false;
 
+  function playerCard(p, selected, attr){
+    return '<button class="player-card '+(p.name===selected?'selected':'')+'" '+attr+'="'+p.name.replace(/"/g,"&quot;")+'" style="--player-glow:'+p.glow+'"><div class="player-rating">'+p.rating+'</div><div class="player-role">'+p.role+'</div><div class="player-name">'+p.name+'</div><div class="player-special">'+p.special+'</div></button>';
+  }
   function renderPlayers(){
-    $("playerGrid").innerHTML = players.map(p => '<button class="player-card '+(p.name===selectedPlayer?'selected':'')+'" data-player="'+p.name.replace(/"/g,"&quot;")+'" style="--player-glow:'+p.glow+'"><div class="player-rating">'+p.rating+'</div><div class="player-role">'+p.role+'</div><div class="player-name">'+p.name+'</div><div class="player-special">'+p.special+'</div></button>').join("");
+    $("playerGrid").innerHTML = players.map(p=>playerCard(p,selectedPlayer,"data-player")).join("");
     $("playerGrid").querySelectorAll("[data-player]").forEach(btn=>btn.addEventListener("click",()=>{
-      selectedPlayer=btn.dataset.player;renderPlayers();toast(selectedPlayer+" selected");
+      selectedPlayer=btn.dataset.player;renderPlayers();toast(selectedPlayer+" selected as shooter");
+    }));
+    $("goalkeeperGrid").innerHTML = goalkeepers.map(p=>playerCard(p,selectedGoalkeeper,"data-goalkeeper")).join("");
+    $("goalkeeperGrid").querySelectorAll("[data-goalkeeper]").forEach(btn=>btn.addEventListener("click",()=>{
+      selectedGoalkeeper=btn.dataset.goalkeeper;renderPlayers();toast(selectedGoalkeeper+" selected as goalkeeper");
     }));
   }
   function toast(message){const el=$("toast");el.textContent=message;el.classList.add("show");clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove("show"),1800)}
   function resizeCanvas(){
     const rect=canvas.getBoundingClientRect();if(!rect.width)return;
     const dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.width/1.36*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);cw=rect.width;ch=rect.width/1.36;drawPitch();
+  }
+  function drawFootballer(cx,cy,size,rotation,jersey,isKeeper){
+    ctx.save();ctx.translate(cx,cy);ctx.rotate(rotation);ctx.scale(size,size);ctx.lineCap="round";ctx.lineJoin="round";
+    // Arms reaching out; keeper gloves are bright lime, shooter sleeves match the shirt.
+    ctx.strokeStyle=jersey;ctx.lineWidth=.13;
+    ctx.beginPath();ctx.moveTo(-.16,-.38);ctx.lineTo(-.43,-.53);ctx.lineTo(-.59,-.42);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(.16,-.38);ctx.lineTo(.43,-.53);ctx.lineTo(.59,-.42);ctx.stroke();
+    if(isKeeper){ctx.fillStyle="#c7ff4a";}else{ctx.fillStyle="#f2f4ec";}
+    ctx.beginPath();ctx.arc(-.61,-.41,.105,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(.61,-.41,.105,0,Math.PI*2);ctx.fill();
+    // Head and neck
+    ctx.fillStyle="#d5a57d";ctx.beginPath();ctx.arc(0,-.56,.15,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=jersey;ctx.fillRect(-.22,-.43,.44,.42);
+    // Shorts, legs and boots
+    ctx.fillStyle="#17231c";ctx.fillRect(-.22,-.02,.44,.18);
+    ctx.strokeStyle="#d5a57d";ctx.lineWidth=.105;
+    ctx.beginPath();ctx.moveTo(-.12,.13);ctx.lineTo(-.20,.39);ctx.moveTo(.12,.13);ctx.lineTo(.22,.37);ctx.stroke();
+    ctx.fillStyle="#f2f4f2";ctx.fillRect(-.30,.37,.20,.09);ctx.fillRect(.14,.35,.20,.09);
+    ctx.restore();
   }
   function drawPitch(){
     if(!ctx||!cw||!ch)return;
@@ -53,32 +84,26 @@
     ctx.strokeStyle="rgba(224,255,226,.55)";ctx.lineWidth=2;
     if(mode==="freekick"){for(let i=0;i<5;i++){ctx.fillStyle="#e9e8d8";ctx.fillRect(w*(.39+i*.045),h*.34,w*.03,h*.025)}}
     if(mode==="longshot"){ctx.setLineDash([6,6]);ctx.strokeStyle="rgba(199,255,74,.7)";ctx.beginPath();ctx.arc(w*.5,h*.27,w*.16,0,Math.PI*2);ctx.stroke();ctx.setLineDash([])}
-    // A goalkeeper silhouette: gloves, outstretched arms, jersey, shorts and legs
-    const gx=w*.5, gy=h*.135;
-    ctx.lineCap="round";ctx.lineJoin="round";
-    // arms and gloves
-    ctx.strokeStyle="#101b16";ctx.lineWidth=Math.max(7,w*.022);
-    ctx.beginPath();ctx.moveTo(gx-w*.012,gy+h*.035);ctx.lineTo(gx-w*.065,gy+h*.005);ctx.lineTo(gx-w*.092,gy+h*.018);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(gx+w*.012,gy+h*.035);ctx.lineTo(gx+w*.065,gy+h*.005);ctx.lineTo(gx+w*.092,gy+h*.018);ctx.stroke();
-    ctx.fillStyle="#c7ff4a";ctx.beginPath();ctx.arc(gx-w*.094,gy+h*.018,w*.014,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.arc(gx+w*.094,gy+h*.018,w*.014,0,Math.PI*2);ctx.fill();
-    // head
-    ctx.fillStyle="#d5a57d";ctx.beginPath();ctx.arc(gx,gy+h*.004,w*.018,0,Math.PI*2);ctx.fill();
-    // goalkeeper jersey
-    ctx.fillStyle="#c7ff4a";ctx.beginPath();ctx.moveTo(gx-w*.025,gy+h*.02);ctx.lineTo(gx+w*.025,gy+h*.02);ctx.lineTo(gx+w*.034,gy+h*.085);ctx.lineTo(gx-w*.034,gy+h*.085);ctx.closePath();ctx.fill();
-    // shorts and legs
-    ctx.fillStyle="#17231c";ctx.fillRect(gx-w*.03,gy+h*.085,w*.06,h*.027);
-    ctx.strokeStyle="#d5a57d";ctx.lineWidth=Math.max(5,w*.012);
-    ctx.beginPath();ctx.moveTo(gx-w*.016,gy+h*.11);ctx.lineTo(gx-w*.022,gy+h*.14);ctx.moveTo(gx+w*.016,gy+h*.11);ctx.lineTo(gx+w*.022,gy+h*.14);ctx.stroke();
-    ctx.fillStyle="#eef7ed";ctx.fillRect(gx-w*.034,gy+h*.137,w*.026,h*.012);ctx.fillRect(gx+w*.008,gy+h*.137,w*.026,h*.012);
+    // Draw a single proper goalkeeper at the goal. He dives toward shots.
+    const keeperT = keeperMotion ? Math.min(1,(performance.now()-keeperMotion.start)/keeperMotion.duration) : 1;
+    const diving = keeperMotion && keeperT < 1;
+    const side = keeperMotion ? keeperMotion.side : 0;
+    const kx = w*.5 + (diving ? side*w*.105*(1-Math.pow(1-keeperT,2)) : 0);
+    const ky = h*.135 + (diving ? Math.sin(keeperT*Math.PI)*h*.035 : 0);
+    const rotation = diving ? side*(0.95*Math.sin(keeperT*Math.PI/2)) : 0;
+    drawFootballer(kx,ky,Math.max(12,w*.105),rotation,"#c7ff4a",true);
+    if(keeperMotion && keeperT>=1) keeperMotion=null;
+
     if(mode==="goalkeeping"){
-      ctx.fillStyle="#e2e9dd";ctx.beginPath();ctx.arc(w*.5,h*.78,w*.025,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#101b16";ctx.fillRect(w*.46,h*.81,w*.08,h*.07);
-      ctx.strokeStyle="#c7ff4a";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(w*.5,h*.83);ctx.lineTo(w*.5+((aim.x-.5)*w*.4),h*.55);ctx.stroke();
+      // In goalkeeper mode the selected keeper is the controlled player in the foreground.
+      drawFootballer(w*.5,h*.77,Math.max(14,w*.13),keeperMotion ? rotation : 0,"#c7ff4a",true);
+      ctx.strokeStyle="#c7ff4a";ctx.lineWidth=3;ctx.setLineDash([5,5]);
+      ctx.beginPath();ctx.moveTo(w*.5,h*.72);ctx.lineTo(w*.5+((aim.x-.5)*w*.4),h*.48);ctx.stroke();ctx.setLineDash([]);
     }else{
-      ctx.fillStyle="#f2f4ec";ctx.beginPath();ctx.arc(w*.5,h*.77,w*.023,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle="#111";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(w*.5-w*.01,h*.77);ctx.lineTo(w*.5+w*.01,h*.77);ctx.stroke();
-      // selected target
+      // Shooter silhouette at the spot, facing the goal, with the ball at their feet.
+      drawFootballer(w*.5,h*.755,Math.max(13,w*.105),-.08,"#f2f4ec",false);
+      ctx.fillStyle="#f5f6ed";ctx.beginPath();ctx.arc(w*.5+w*.022,h*.735,Math.max(4,w*.009),0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="#17251c";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(w*.5+w*.018,h*.733);ctx.lineTo(w*.5+w*.026,h*.737);ctx.stroke();
       ctx.strokeStyle="#c7ff4a";ctx.lineWidth=3;ctx.beginPath();ctx.arc(aim.x*w,aim.y*h,Math.max(8,w*.015),0,Math.PI*2);ctx.stroke();
       ctx.beginPath();ctx.moveTo(aim.x*w-7,aim.y*h);ctx.lineTo(aim.x*w+7,aim.y*h);ctx.moveTo(aim.x*w,aim.y*h-7);ctx.lineTo(aim.x*w,aim.y*h+7);ctx.stroke();
     }
@@ -99,7 +124,7 @@
     $("keeperPad").classList.toggle("hidden",mode!=="goalkeeping");
     $("shootBtn").classList.toggle("hidden",mode==="goalkeeping");
     $("nextBtn").classList.add("hidden");$("aimTip").textContent=mode==="goalkeeping"?"CHOOSE A DIVE · THEN SAVE THE SHOT":"TAP OR DRAG ON THE PITCH TO AIM";
-    aim={x:.5,y:.27};keeperDive="center";$("feedback").textContent="Ready when you are.";$("scoreValue").textContent=score;$("roundLabel").textContent="ATTEMPT "+String(attempt).padStart(2,"0");$("difficultyLabel").textContent=difficulty.toUpperCase()+" LEVEL";
+    aim={x:.5,y:.27};keeperDive="center";keeperMotion=null;$("feedback").textContent="Ready when you are.";$("scoreValue").textContent=score;$("roundLabel").textContent="ATTEMPT "+String(attempt).padStart(2,"0");$("difficultyLabel").textContent=difficulty.toUpperCase()+" LEVEL";
     resizeCanvas();window.scrollTo({top:0,behavior:"smooth"});
   }
   function finishAttempt(success,message){
@@ -110,7 +135,7 @@
   function shoot(){
     if(shotTaken)return;
     const fromX=cw*.5,fromY=ch*.77,toX=aim.x*cw,toY=aim.y*ch;
-    ballAnim={fromX,fromY,toX,toY,start:performance.now(),duration:500};drawPitch();
+    ballAnim={fromX,fromY,toX,toY,start:performance.now(),duration:500};keeperMotion={side:aim.x<.5?-1:1,start:performance.now(),duration:500};drawPitch();
     const centerBias=Math.abs(aim.x-.5);
     const difficultyPenalty=difficulty==="Legend"?.10:difficulty==="Pro"?.035:0;
     const hitChance=Math.max(.62,Math.min(.98,.98-centerBias*.22-difficultyPenalty-(power>96?.03:0)));
@@ -122,7 +147,7 @@
     if(shotTaken)return;
     const targetSide=aim.x<.38?"left":aim.x>.62?"right":"center";
     const save=targetSide===keeperDive;
-    ballAnim={fromX:cw*.5,fromY:ch*.28,toX:aim.x*cw,toY:aim.y*ch,start:performance.now(),duration:430};drawPitch();
+    ballAnim={fromX:cw*.5,fromY:ch*.28,toX:aim.x*cw,toY:aim.y*ch,start:performance.now(),duration:430};keeperMotion={side:keeperDive==="left"?-1:keeperDive==="right"?1:0,start:performance.now(),duration:430};drawPitch();
     setTimeout(()=>{finishAttempt(save,save?"INCREDIBLE SAVE! You read the shot.":"GOAL CONCEDED. Read the direction next time.");drawPitch()},450);
   }
   function nextAttempt(){attempt++;shotTaken=false;ballAnim=null;aim={x:.5,y:.27};$("shootBtn").classList.toggle("hidden",mode==="goalkeeping");$("nextBtn").classList.add("hidden");$("feedback").textContent="New attempt. Make it count.";$("roundLabel").textContent="ATTEMPT "+String(attempt).padStart(2,"0");drawPitch()}
