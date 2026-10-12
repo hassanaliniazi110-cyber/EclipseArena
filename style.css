@@ -52,3 +52,12 @@
 .match-action-pad{display:grid;grid-template-columns:repeat(2,minmax(66px,1fr));gap:6px}.match-action-pad button{padding:8px;font-size:9px;letter-spacing:.6px}.match-action-pad button[data-action="tackle"]{border-color:#ff8c42}.match-action-pad button[data-action="shoot"]{background:var(--lime);color:#10180c}
 .match-result{margin-top:8px;padding:14px;background:#c7ff4a12;border:1px solid var(--lime);color:var(--lime);font-weight:900;font-size:12px;line-height:1.6}
 @media(max-width:600px){.match-controls{padding:8px;gap:8px}.match-move-pad button{min-width:36px;min-height:36px}.match-action-pad{grid-template-columns:repeat(2,minmax(58px,1fr))}.match-action-pad button{font-size:8px;padding:7px 3px}}
+
+/* Compact soundtrack picker in the existing control panel; no page redesign. */
+.music-panel{margin-top:14px;padding:12px;border:1px solid var(--line);background:rgba(8,18,12,.48);display:flex;flex-direction:column;gap:9px}
+.music-panel-heading{display:flex;align-items:center;gap:9px}.music-note{display:grid;place-items:center;width:32px;height:32px;border:1px solid var(--line);color:var(--lime);font-size:19px}.music-panel-heading .eyebrow{margin:0 0 3px}.music-panel-heading strong{font-size:13px;letter-spacing:.2px}
+.music-label{font-size:9px;font-weight:800;letter-spacing:1px;color:var(--muted)}
+.music-select{width:100%;min-height:42px;padding:9px;background:#101c14;color:var(--white);border:1px solid var(--line);border-radius:4px;font:inherit;font-size:11px}
+.music-actions{display:grid;grid-template-columns:1fr 72px;gap:7px}.music-play-btn,.music-stop-btn,.music-official-btn{min-height:38px;padding:8px;border:1px solid var(--line);font-size:9px;font-weight:900;letter-spacing:.5px;touch-action:manipulation}
+.music-play-btn{background:var(--lime);color:#10180c;border-color:var(--lime)}.music-stop-btn{background:#152319;color:var(--white)}.music-official-btn{background:#152319;color:var(--white);width:100%;text-align:center}
+.music-status{margin:0;color:var(--muted);font-size:10px;line-height:1.5}
