@@ -132,7 +132,7 @@
     $("homeScreen").classList.add("hidden");$("gameScreen").classList.remove("hidden");
     $("gameTitle").innerHTML=modeNames[mode]+" <em>MODE</em>";$("controlHeading").textContent=modeText[mode][0];$("controlText").textContent=modeText[mode][1];
     $("keeperPad").classList.toggle("hidden",mode!=="goalkeeping");
-    $("shootBtn").classList.toggle("hidden",mode==="goalkeeping");
+    $("shootBtn").classList.remove("hidden");$("shootBtn").innerHTML=mode==="goalkeeping"?"DIVE / SAVE <span>↗</span>":"SHOOT <span>↗</span>";
     $("nextBtn").classList.add("hidden");$("aimTip").textContent=mode==="goalkeeping"?"CHOOSE A DIVE · THEN SAVE THE SHOT":"TAP OR DRAG ON THE PITCH TO AIM";
     aim={x:.5,y:.27};keeperDive="center";keeperMotion=null;$("feedback").textContent="Ready when you are.";$("scoreValue").textContent=score;$("roundLabel").textContent="ATTEMPT "+String(attempt).padStart(2,"0");$("difficultyLabel").textContent=difficulty.toUpperCase()+" LEVEL";
     resizeCanvas();window.scrollTo({top:0,behavior:"smooth"});
@@ -172,13 +172,11 @@
   document.querySelectorAll("[data-difficulty]").forEach(b=>b.addEventListener("click",()=>{difficulty=b.dataset.difficulty;document.querySelectorAll("[data-difficulty]").forEach(x=>x.classList.toggle("selected",x===b));}));
   $("playNowBtn").addEventListener("click",()=>{document.querySelector(".mode-section").scrollIntoView({behavior:"smooth",block:"start"});toast("Choose a challenge to begin")});
   $("backBtn").addEventListener("click",()=>{$("gameScreen").classList.add("hidden");$("homeScreen").classList.remove("hidden");ballAnim=null;cancelAnimationFrame(animationFrame);window.scrollTo({top:0,behavior:"smooth"})});
-  $("shootBtn").addEventListener("click",shoot);$("nextBtn").addEventListener("click",nextAttempt);
+  $("shootBtn").addEventListener("click",()=>{if(mode==="goalkeeping")dive();else shoot()});$("nextBtn").addEventListener("click",nextAttempt);
   $("powerSlider").addEventListener("input",e=>{power=Number(e.target.value);$("powerReadout").textContent=power+"%"});
   document.querySelectorAll("[data-dive]").forEach(b=>b.addEventListener("click",()=>{keeperDive=b.dataset.dive;document.querySelectorAll("[data-dive]").forEach(x=>x.style.borderColor=x===b?"#c7ff4a":"");$("feedback").textContent="Dive selected: "+keeperDive.toUpperCase()+". Press save when ready."}));
   $("keeperPad").addEventListener("dblclick",dive);
   $("keeperPad").addEventListener("click",e=>{if(e.target.closest("[data-dive]"))return;});
-  // In goalkeeper mode, the main action becomes the save button.
-  $("shootBtn").addEventListener("click",()=>{if(mode==="goalkeeping")dive()});
   $("soundBtn").addEventListener("click",()=>{soundOn=!soundOn;$("soundBtn").textContent=soundOn?"♫":"♪";toast(soundOn?"Sound cues enabled visually":"Sound cues muted")});
   $("resetBtn").addEventListener("click",()=>{score=0;attempt=1;shotTaken=false;ballAnim=null;$("scoreValue").textContent="0";toast("Score reset")});
   // A touch-friendly joystick appears only in goalkeeper mode as an extra dive input.
