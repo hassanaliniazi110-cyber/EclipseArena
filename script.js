@@ -7,7 +7,7 @@
     {name:"Ehan Ali", rating:94, role:"ALL-ROUNDER", special:"Quick reactions", glow:"rgba(189,123,255,.2)"},
     {name:"Umar Shoaib", rating:92, role:"PLAYMAKER", special:"Smart passing", glow:"rgba(255,140,66,.2)"},
     {name:"Muhammad Arham", rating:91, role:"STRIKER", special:"Finishing touch", glow:"rgba(255,99,99,.2)"},
-    {name:"Cristiano Ronaldo", rating:100, role:"LEGEND", special:"MAX POWER & PRECISION", stats:{shooting:1000000000000000000,power:999999999999999,accuracy:999999999999,speed:10000000000000000}, glow:"rgba(255,140,66,.2)"},
+    {name:"Cristiano Ronaldo", rating:999, role:"LEGEND", special:"MAX POWER & PRECISION", stats:{shooting:1000000000000000000,power:999999999999999,accuracy:999999999999,speed:10000000000000000}, glow:"rgba(255,140,66,.2)"},
     {name:"Erling Haaland", rating:98, role:"STRIKER", special:"Long-shot power", glow:"rgba(75,191,255,.2)"},
     {name:"Jude Bellingham", rating:97, role:"MIDFIELDER", special:"Penalty specialist", glow:"rgba(189,123,255,.2)"},
     {name:"Lamine Yamal", rating:96, role:"WINGER", special:"Free-kick magic", glow:"rgba(199,255,74,.2)"},
@@ -379,7 +379,7 @@
     craftee:"UUKGNVB2moP-zeAWPmw8HvAA",
     preston:"UU70Dib4MvFfT1tU6MqeyHpQ",
     prestonplayz:"UUJZam2u1G0syq3kyqrCXrNw",
-    xnestorio:"search"
+    xnestorio:"UUEuN0IauvXNTn6KhP9AVJVw"
   };
   function loadCreatorVideos(){
     const select=$("videoCreatorSelect"),player=$("creatorVideoPlayer"),status=$("creatorVideoStatus");
@@ -387,11 +387,6 @@
     const playlist=creatorUploadPlaylists[select.value];
     if(!playlist){
       status.textContent="This channel playlist is not configured yet.";
-      return;
-    }
-    if(playlist==="search"){
-      player.src="https://www.youtube-nocookie.com/embed?listType=search&list="+encodeURIComponent("xNestorio")+"&rel=0";
-      status.textContent="Loading xNestorio videos in the in-game player. YouTube may restrict search embeds in some previews.";
       return;
     }
     player.src="https://www.youtube-nocookie.com/embed/videoseries?list="+encodeURIComponent(playlist)+"&rel=0";
