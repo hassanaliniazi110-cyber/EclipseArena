@@ -41,3 +41,14 @@
 /* Additional match modes, using the existing card style and theme. */
 .mode-card.head-to-head .mode-icon { color: #bd7bff; }
 .mode-card.vs-attack .mode-icon { color: #c7ff4a; }
+
+/* Full-match controls — preserve existing background and page layout. */
+.match-hud{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:8px;padding:10px 12px;background:#0b1710;border:1px solid var(--line);font-size:10px;letter-spacing:1px}
+.match-scoreline{display:flex;align-items:center;gap:9px}.match-scoreline strong{font-size:22px;font-weight:900;color:var(--lime)}.match-scoreline span,.match-hud>span{font-size:9px;font-weight:800;color:var(--muted)}
+.match-controls{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px;margin-top:8px;background:#0c1711;border:1px solid var(--line)}
+.match-move-pad{display:flex;flex-direction:column;align-items:center;gap:5px}.match-move-pad>div{display:flex;gap:5px}
+.match-move-pad button,.match-action-pad button{min-width:42px;min-height:42px;border:1px solid var(--line);background:#1a3023;color:var(--white);font-weight:900;touch-action:none;user-select:none;-webkit-user-select:none}
+.match-move-pad button:active,.match-action-pad button:active{background:var(--lime);color:#10180c}
+.match-action-pad{display:grid;grid-template-columns:repeat(2,minmax(66px,1fr));gap:6px}.match-action-pad button{padding:8px;font-size:9px;letter-spacing:.6px}.match-action-pad button[data-action="tackle"]{border-color:#ff8c42}.match-action-pad button[data-action="shoot"]{background:var(--lime);color:#10180c}
+.match-result{margin-top:8px;padding:14px;background:#c7ff4a12;border:1px solid var(--lime);color:var(--lime);font-weight:900;font-size:12px;line-height:1.6}
+@media(max-width:600px){.match-controls{padding:8px;gap:8px}.match-move-pad button{min-width:36px;min-height:36px}.match-action-pad{grid-template-columns:repeat(2,minmax(58px,1fr))}.match-action-pad button{font-size:8px;padding:7px 3px}}
