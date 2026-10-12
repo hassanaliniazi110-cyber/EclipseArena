@@ -283,18 +283,18 @@
     nights:"XmIgg9De9hY",
     believer:"7wtfhZwyrcc",
     seven:"0J2QdDbelmY",
-    sunflower:null,
+    sunflower:"Lk0sZwXTwnc",
     dynamite:"gdZLi9oWNZg",
-    desire:null,
-    montagemtomada:null,
-    montagemcoral:null,
-    montagemmysterious:null,
-    montagemxonada:null,
+    desire:"SneOq6ww8W8",
+    montagemtomada:"D96pPLjYkjs",
+    montagemcoral:"_GeFRxt4a1E",
+    montagemmysterious:"q7BsRRogwDg",
+    montagemxonada:"lnUiopggh60",
     takefive:"vmDDOFXSgAs",
     flymoon:"JYuyWrkwpok",
     autumnleaves:"JTt_2-ykGCQ",
     sowhat:"zqNTltOGh5c",
-    entertainer:null
+    entertainer:"BNBXDC77FVA"
   };
   function openOfficialSong(value){
     const videoId=officialSongs[value];
