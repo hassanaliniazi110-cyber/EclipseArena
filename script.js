@@ -42,16 +42,35 @@
     const stripes=10;for(let i=0;i<stripes;i++){ctx.fillStyle=i%2?"rgba(0,0,0,.055)":"rgba(205,255,203,.045)";ctx.fillRect(i*w/stripes,0,w/stripes,h)}
     ctx.strokeStyle="rgba(224,255,226,.55)";ctx.lineWidth=2;
     ctx.strokeRect(w*.07,h*.07,w*.86,h*.86);ctx.beginPath();ctx.moveTo(w*.07,h*.5);ctx.lineTo(w*.93,h*.5);ctx.stroke();ctx.beginPath();ctx.ellipse(w*.5,h*.5,w*.12,h*.14,0,0,Math.PI*2);ctx.stroke();
-    ctx.strokeRect(w*.29,h*.07,w*.42,h*.2);ctx.strokeRect(w*.39,h*.07,w*.22,h*.09);
-    ctx.strokeRect(w*.39,h*.015,w*.22,h*.055);ctx.fillStyle="#dbe8dc";ctx.fillRect(w*.39,h*.012,w*.22,h*.012);
-    ctx.strokeRect(w*.41,h*.07,w*.18,h*.035);
+    ctx.strokeRect(w*.24,h*.07,w*.52,h*.2);ctx.strokeRect(w*.34,h*.07,w*.32,h*.10);
+    // Larger goal frame with visible netting
+    ctx.fillStyle="rgba(220,245,229,.10)";ctx.fillRect(w*.30,h*.018,w*.40,h*.064);
+    ctx.strokeStyle="#eef7ed";ctx.lineWidth=Math.max(2,w*.004);
+    ctx.strokeRect(w*.30,h*.012,w*.40,h*.075);
+    ctx.strokeStyle="rgba(235,255,239,.62)";ctx.lineWidth=1;
+    for(let i=1;i<10;i++){ctx.beginPath();ctx.moveTo(w*(.30+i*.04),h*.015);ctx.lineTo(w*(.30+i*.04),h*.084);ctx.stroke()}
+    for(let j=1;j<4;j++){ctx.beginPath();ctx.moveTo(w*.302,h*(.015+j*.017));ctx.lineTo(w*.698,h*(.015+j*.017));ctx.stroke()}
+    ctx.strokeStyle="rgba(224,255,226,.55)";ctx.lineWidth=2;
     if(mode==="freekick"){for(let i=0;i<5;i++){ctx.fillStyle="#e9e8d8";ctx.fillRect(w*(.39+i*.045),h*.34,w*.03,h*.025)}}
     if(mode==="longshot"){ctx.setLineDash([6,6]);ctx.strokeStyle="rgba(199,255,74,.7)";ctx.beginPath();ctx.arc(w*.5,h*.27,w*.16,0,Math.PI*2);ctx.stroke();ctx.setLineDash([])}
-    // Goalkeeper, ball and aim marker
-    const gx=w*.5, gy=h*.115;
-    ctx.fillStyle="#101b16";ctx.fillRect(gx-w*.055,gy+h*.045,w*.11,h*.085);
-    ctx.fillStyle="#d7e7da";ctx.fillRect(gx-w*.04,gy+h*.035,w*.08,h*.018);
-    ctx.fillStyle="#c7ff4a";ctx.fillRect(gx-w*.032,gy+h*.055,w*.064,h*.012);
+    // A goalkeeper silhouette: gloves, outstretched arms, jersey, shorts and legs
+    const gx=w*.5, gy=h*.135;
+    ctx.lineCap="round";ctx.lineJoin="round";
+    // arms and gloves
+    ctx.strokeStyle="#101b16";ctx.lineWidth=Math.max(7,w*.022);
+    ctx.beginPath();ctx.moveTo(gx-w*.012,gy+h*.035);ctx.lineTo(gx-w*.065,gy+h*.005);ctx.lineTo(gx-w*.092,gy+h*.018);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(gx+w*.012,gy+h*.035);ctx.lineTo(gx+w*.065,gy+h*.005);ctx.lineTo(gx+w*.092,gy+h*.018);ctx.stroke();
+    ctx.fillStyle="#c7ff4a";ctx.beginPath();ctx.arc(gx-w*.094,gy+h*.018,w*.014,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(gx+w*.094,gy+h*.018,w*.014,0,Math.PI*2);ctx.fill();
+    // head
+    ctx.fillStyle="#d5a57d";ctx.beginPath();ctx.arc(gx,gy+h*.004,w*.018,0,Math.PI*2);ctx.fill();
+    // goalkeeper jersey
+    ctx.fillStyle="#c7ff4a";ctx.beginPath();ctx.moveTo(gx-w*.025,gy+h*.02);ctx.lineTo(gx+w*.025,gy+h*.02);ctx.lineTo(gx+w*.034,gy+h*.085);ctx.lineTo(gx-w*.034,gy+h*.085);ctx.closePath();ctx.fill();
+    // shorts and legs
+    ctx.fillStyle="#17231c";ctx.fillRect(gx-w*.03,gy+h*.085,w*.06,h*.027);
+    ctx.strokeStyle="#d5a57d";ctx.lineWidth=Math.max(5,w*.012);
+    ctx.beginPath();ctx.moveTo(gx-w*.016,gy+h*.11);ctx.lineTo(gx-w*.022,gy+h*.14);ctx.moveTo(gx+w*.016,gy+h*.11);ctx.lineTo(gx+w*.022,gy+h*.14);ctx.stroke();
+    ctx.fillStyle="#eef7ed";ctx.fillRect(gx-w*.034,gy+h*.137,w*.026,h*.012);ctx.fillRect(gx+w*.008,gy+h*.137,w*.026,h*.012);
     if(mode==="goalkeeping"){
       ctx.fillStyle="#e2e9dd";ctx.beginPath();ctx.arc(w*.5,h*.78,w*.025,0,Math.PI*2);ctx.fill();
       ctx.fillStyle="#101b16";ctx.fillRect(w*.46,h*.81,w*.08,h*.07);
@@ -93,15 +112,15 @@
     const fromX=cw*.5,fromY=ch*.77,toX=aim.x*cw,toY=aim.y*ch;
     ballAnim={fromX,fromY,toX,toY,start:performance.now(),duration:500};drawPitch();
     const centerBias=Math.abs(aim.x-.5);
-    const difficultyPenalty=difficulty==="Legend"?.18:difficulty==="Pro"?.09:0;
-    const hitChance=Math.max(.25,Math.min(.94,.92-centerBias*.4-difficultyPenalty-(power>92?.08:0)));
-    const goal=aim.y<.28&&aim.x>.32&&aim.x<.68;
+    const difficultyPenalty=difficulty==="Legend"?.10:difficulty==="Pro"?.035:0;
+    const hitChance=Math.max(.62,Math.min(.98,.98-centerBias*.22-difficultyPenalty-(power>96?.03:0)));
+    const goal=aim.y<.32&&aim.x>.20&&aim.x<.80;
     const scored=goal&&Math.random()<hitChance;
-    setTimeout(()=>{if(mode==="freekick"&&aim.x>.39&&aim.x<.61&&aim.y<.32){finishAttempt(false,"The wall blocks it! Aim wider around the wall.");}else if(scored){finishAttempt(true, power>90?"WHAT A STRIKE! Top corner!":"GOAL! Perfect placement.");}else{finishAttempt(false,goal?"Saved by the keeper! Try a different corner.":"Wide! Aim inside the goal frame.");}drawPitch();},510);
+    setTimeout(()=>{if(mode==="freekick"&&aim.x>.465&&aim.x<.535&&aim.y<.30){finishAttempt(false,"The wall blocks it! Aim wider around the wall.");}else if(scored){finishAttempt(true, power>90?"WHAT A STRIKE! Top corner!":"GOAL! Perfect placement.");}else{finishAttempt(false,goal?"Saved by the keeper! Try a different corner.":"Wide! Aim inside the goal frame.");}drawPitch();},510);
   }
   function dive(){
     if(shotTaken)return;
-    const targetSide=aim.x<.42?"left":aim.x>.58?"right":"center";
+    const targetSide=aim.x<.38?"left":aim.x>.62?"right":"center";
     const save=targetSide===keeperDive;
     ballAnim={fromX:cw*.5,fromY:ch*.28,toX:aim.x*cw,toY:aim.y*ch,start:performance.now(),duration:430};drawPitch();
     setTimeout(()=>{finishAttempt(save,save?"INCREDIBLE SAVE! You read the shot.":"GOAL CONCEDED. Read the direction next time.");drawPitch()},450);
