@@ -365,6 +365,33 @@
   $("musicStopBtn").addEventListener("click",stopArenaMusic);
   $("musicOfficialBtn").addEventListener("click",()=>openOfficialSong($("musicSelect").value));
 
+
+  // Creator video hub: load public uploads playlists inside this page.
+  const creatorUploadPlaylists={
+    mrbeast:"UUX6OQ3DkcsbYNE6H8uQQuVA",
+    rkreddy:"UUurtk6gwUZPnccBndhFPNMQ",
+    brawlstars:"UUooVYzDxdwTtGYAkcPmOgOw",
+    lex:"UU4yh9rj_cPT77it63N14HQg",
+    oj:"UU3S6nIDGJ5OtpC-mbvFA8Ew",
+    rey:"UUUZks0tPvD_ZbNwtBzyR_JQ",
+    ash:"UU874WmmCVtIwTG4gQbWHKUQ",
+    staywild:"UUlQ3NafOy_42dJ0toK3QUKw"
+  };
+  function loadCreatorVideos(){
+    const select=$("videoCreatorSelect"),player=$("creatorVideoPlayer"),status=$("creatorVideoStatus");
+    if(!select||!player||!status)return;
+    const playlist=creatorUploadPlaylists[select.value];
+    if(!playlist){
+      status.textContent="This channel playlist is not configured yet.";
+      return;
+    }
+    player.src="https://www.youtube-nocookie.com/embed/videoseries?list="+encodeURIComponent(playlist)+"&rel=0";
+    status.textContent="Loading this creator's uploads inside the game. If unavailable, YouTube may not allow the playlist to be embedded.";
+  }
+  const creatorSelect=$("videoCreatorSelect"),creatorLoadBtn=$("creatorVideoLoadBtn");
+  if(creatorSelect)creatorSelect.addEventListener("change",loadCreatorVideos);
+  if(creatorLoadBtn)creatorLoadBtn.addEventListener("click",loadCreatorVideos);
+
   $("soundBtn").addEventListener("click",()=>{soundOn=!soundOn;$("soundBtn").textContent=soundOn?"♫":"♪";toast(soundOn?"Music controls are below":"Sound cues muted")});
   $("resetBtn").addEventListener("click",()=>{match.active=false;match.finished=false;cancelAnimationFrame(animationFrame);score=0;attempt=1;shotTaken=false;ballAnim=null;$("scoreValue").textContent="0";toast("Score reset")});
   // A touch-friendly joystick appears only in goalkeeper mode as an extra dive input.
