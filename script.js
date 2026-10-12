@@ -339,7 +339,7 @@
   }
   async function startArenaMusic(){
     const value=$("musicSelect").value;
-    if(officialSongs[value]){stopArenaMusic();openOfficialSong(value);return;}
+    if(Object.prototype.hasOwnProperty.call(officialSongs,value)){stopArenaMusic();openOfficialSong(value);return;}
     if(value==="silence"){stopArenaMusic();$("musicStatus").textContent="Music is off.";return;}
     const ac=getMusicContext();if(!ac){$("musicStatus").textContent="This browser does not support generated audio.";return;}
     try{await ac.resume();}catch(e){}
@@ -351,7 +351,7 @@
     $("musicStatus").textContent="Music stopped.";
   }
   $("musicSelect").addEventListener("change",()=>{
-    const value=$("musicSelect").value,official=!!officialSongs[value];
+    const value=$("musicSelect").value,official=Object.prototype.hasOwnProperty.call(officialSongs,value);
     $("musicOfficialBtn").classList.toggle("hidden",!official);
     $("musicPlayBtn").textContent=official?"▶ OPEN SONG VIDEO ↗":value==="silence"?"MUSIC OFF":"▶ PLAY BEAT";
     $("musicStatus").textContent=official?"Opens YouTube for the real song; tap play on the video to hear it.":value==="silence"?"Music is off.":"Original "+value.toUpperCase()+" beat ready.";
