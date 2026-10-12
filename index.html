@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07110f">
+  <title>ECLIPSE ARENA | Football</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Eclipse Arena home"><span class="brand-mark">E</span><span>ECLIPSE <b>ARENA</b><small>FOOTBALL LAB</small></span></a>
+      <div class="top-actions"><span class="live-dot"></span><span class="online-label">ARENA LIVE</span><button id="soundBtn" class="icon-btn" aria-label="Toggle sound">♪</button></div>
+    </header>
+
+    <main>
+      <section id="homeScreen" class="screen home-screen">
+        <div class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow"><span></span> YOUR PITCH. YOUR MOMENT.</p>
+            <h1>OWN THE<br><em>GAME.</em></h1>
+            <p class="hero-text">Step into the lights. Pick your challenge. Make every touch count.</p>
+            <button id="playNowBtn" class="primary-btn">ENTER THE ARENA <span>↗</span></button>
+          </div>
+          <div class="hero-art" aria-hidden="true">
+            <div class="sun-glow"></div><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+            <div class="hero-ball"><div class="ball-pattern"></div></div>
+            <div class="hero-stadium"></div>
+            <div class="hero-stat"><strong>90'</strong><span>YOUR TIME TO SHINE</span></div>
+          </div>
+          <div class="hero-index">01 <span>/ 04</span></div>
+        </div>
+
+        <section class="mode-section">
+          <div class="section-heading"><div><p class="eyebrow">CHOOSE YOUR CHALLENGE</p><h2>Pick your <em>mode.</em></h2></div><span class="section-count">04 MODES</span></div>
+          <div class="mode-grid">
+            <button class="mode-card penalty" data-mode="penalty"><span class="mode-number">01</span><span class="mode-icon">◎</span><span class="mode-title">PENALTY</span><span class="mode-desc">Stay cool. Find the corner.</span><span class="mode-arrow">↗</span></button>
+            <button class="mode-card freekick" data-mode="freekick"><span class="mode-number">02</span><span class="mode-icon">⌁</span><span class="mode-title">FREE KICK</span><span class="mode-desc">Bend it around the wall.</span><span class="mode-arrow">↗</span></button>
+            <button class="mode-card longshot" data-mode="longshot"><span class="mode-number">03</span><span class="mode-icon">↗</span><span class="mode-title">LONG SHOT</span><span class="mode-desc">Power from outside the box.</span><span class="mode-arrow">↗</span></button>
+            <button class="mode-card goalie" data-mode="goalkeeping"><span class="mode-number">04</span><span class="mode-icon">✦</span><span class="mode-title">GOALKEEPER</span><span class="mode-desc">Read it. React. Make the save.</span><span class="mode-arrow">↗</span></button>
+          </div>
+        </section>
+
+        <section class="roster-section">
+          <div class="section-heading"><div><p class="eyebrow">BUILD YOUR SQUAD</p><h2>Choose your <em>player.</em></h2></div><span class="section-count">SELECT ONE</span></div>
+          <div id="playerGrid" class="player-grid"></div>
+          <div class="setup-row"><label for="difficulty">DIFFICULTY</label><div id="difficultyGroup" class="difficulty-group"><button data-difficulty="Rookie">ROOKIE</button><button class="selected" data-difficulty="Pro">PRO</button><button data-difficulty="Legend">LEGEND</button></div></div>
+        </section>
+      </section>
+
+      <section id="gameScreen" class="screen game-screen hidden">
+        <div class="game-header"><button id="backBtn" class="back-btn">← HOME</button><div><p class="eyebrow">ECLIPSE ARENA</p><h2 id="gameTitle">PENALTY <em>MODE</em></h2></div><div class="score-box"><span>SCORE</span><strong id="scoreValue">0</strong></div></div>
+        <div class="game-layout">
+          <div class="pitch-wrap">
+            <div class="pitch-topline"><span id="roundLabel">ATTEMPT 01</span><span id="difficultyLabel">PRO LEVEL</span></div>
+            <canvas id="pitch" aria-label="Interactive football pitch. Tap or drag to aim."></canvas>
+            <div class="aim-tip" id="aimTip">TAP THE GOAL TO AIM · PRESS SHOOT</div>
+          </div>
+          <aside class="controls-panel">
+            <p class="eyebrow">MATCH CONTROLS</p><h3 id="controlHeading">Pick your corner.</h3>
+            <p id="controlText" class="control-text">Drag on the goal to aim, then shoot.</p>
+            <div class="power-label"><span>SHOT POWER</span><strong id="powerReadout">78%</strong></div>
+            <input id="powerSlider" type="range" min="25" max="100" value="78" aria-label="Shot power">
+            <div class="control-actions"><button id="shootBtn" class="primary-btn shoot-btn">SHOOT <span>↗</span></button><button id="nextBtn" class="secondary-btn hidden">NEXT ATTEMPT →</button></div>
+            <div class="game-feedback" id="feedback" aria-live="polite">Ready when you are.</div>
+            <div id="keeperPad" class="keeper-pad hidden"><span>GOALKEEPER DIVE</span><div><button data-dive="left">↙ LEFT</button><button data-dive="center">↑ CENTRE</button><button data-dive="right">RIGHT ↘</button></div></div>
+            <div class="touch-note"><span class="touch-dot"></span> MADE FOR TOUCH · IPAD READY</div>
+          </aside>
+        </div>
+      </section>
+    </main>
+    <footer><span>© ECLIPSE ARENA</span><span>PLAY FAIR. PLAY BOLD.</span><button id="resetBtn">RESET GAME ↻</button></footer>
+  </div>
+  <div id="toast" class="toast" role="status"></div>
+</body>
+</html>
