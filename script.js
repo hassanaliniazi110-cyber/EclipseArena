@@ -16,7 +16,15 @@
     {name:"Hassan Ali",rating:300,role:"ELITE KEEPER",special:"Best reflexes & diving",glow:"rgba(199,255,74,.22)"},
     {name:"Ehan Ali",rating:94,role:"GOALKEEPER",special:"Quick reactions",glow:"rgba(189,123,255,.2)"},
     {name:"Alisson",rating:95,role:"GOALKEEPER",special:"Fast one-on-ones",glow:"rgba(75,191,255,.2)"},
-    {name:"Thibaut Courtois",rating:95,role:"GOALKEEPER",special:"Huge reach",glow:"rgba(255,140,66,.2)"}
+    {name:"Thibaut Courtois",rating:95,role:"GOALKEEPER",special:"Huge reach",glow:"rgba(255,140,66,.2)"},
+    {name:"Manuel Neuer",rating:94,role:"SWEEPER KEEPER",special:"Rushes off the line",glow:"rgba(255,210,90,.2)"},
+    {name:"Ederson",rating:91,role:"PLAYMAKING KEEPER",special:"Accurate distribution",glow:"rgba(80,220,190,.2)"},
+    {name:"Marc-André ter Stegen",rating:90,role:"GOALKEEPER",special:"Sharp reflexes",glow:"rgba(90,160,255,.2)"},
+    {name:"Gianluigi Donnarumma",rating:94,role:"GOALKEEPER",special:"Big saves under pressure",glow:"rgba(255,110,130,.2)"},
+    {name:"Emiliano Martínez",rating:91,role:"PENALTY SPECIALIST",special:"Penalty mind games",glow:"rgba(255,170,80,.2)"},
+    {name:"Jan Oblak",rating:92,role:"GOALKEEPER",special:"Positioning expert",glow:"rgba(160,120,255,.2)"},
+    {name:"David Raya",rating:89,role:"GOALKEEPER",special:"Quick distribution",glow:"rgba(100,220,130,.2)"},
+    {name:"Mike Maignan",rating:90,role:"GOALKEEPER",special:"Explosive reactions",glow:"rgba(90,210,240,.2)"}
   ];
   const modeNames = {penalty:"PENALTY",freekick:"FREE KICK",longshot:"LONG SHOT",goalkeeping:"GOALKEEPER"};
   const modeText = {
