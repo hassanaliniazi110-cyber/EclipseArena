@@ -112,7 +112,7 @@
               <div class="music-actions"><button id="musicPlayBtn" type="button" class="music-play-btn">▶ PLAY BEAT</button><button id="musicStopBtn" type="button" class="music-stop-btn">■ STOP</button></div>
               <button id="musicOfficialBtn" type="button" class="music-official-btn hidden">▶ PLAY SONG IN GAME</button>
               <div id="musicPlayerWrap" class="music-player-wrap hidden">
-                <iframe id="musicPlayer" title="In-game song player" src="about:blank" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                <iframe id="musicPlayer" title="In-game song player" src="about:blank" loading="lazy" sandbox="allow-scripts allow-same-origin allow-presentation" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
               </div>
               <p id="musicStatus" class="music-status" aria-live="polite">Choose a style, then play. Official tracks play in the embedded player.</p>
             </section>
