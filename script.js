@@ -44,12 +44,12 @@
     ctx.strokeRect(w*.07,h*.07,w*.86,h*.86);ctx.beginPath();ctx.moveTo(w*.07,h*.5);ctx.lineTo(w*.93,h*.5);ctx.stroke();ctx.beginPath();ctx.ellipse(w*.5,h*.5,w*.12,h*.14,0,0,Math.PI*2);ctx.stroke();
     ctx.strokeRect(w*.24,h*.07,w*.52,h*.2);ctx.strokeRect(w*.34,h*.07,w*.32,h*.10);
     // Larger goal frame with visible netting
-    ctx.fillStyle="rgba(220,245,229,.10)";ctx.fillRect(w*.30,h*.018,w*.40,h*.064);
+    ctx.fillStyle="rgba(220,245,229,.10)";ctx.fillRect(w*.25,h*.018,w*.50,h*.064);
     ctx.strokeStyle="#eef7ed";ctx.lineWidth=Math.max(2,w*.004);
-    ctx.strokeRect(w*.30,h*.012,w*.40,h*.075);
+    ctx.strokeRect(w*.25,h*.012,w*.50,h*.075);
     ctx.strokeStyle="rgba(235,255,239,.62)";ctx.lineWidth=1;
-    for(let i=1;i<10;i++){ctx.beginPath();ctx.moveTo(w*(.30+i*.04),h*.015);ctx.lineTo(w*(.30+i*.04),h*.084);ctx.stroke()}
-    for(let j=1;j<4;j++){ctx.beginPath();ctx.moveTo(w*.302,h*(.015+j*.017));ctx.lineTo(w*.698,h*(.015+j*.017));ctx.stroke()}
+    for(let i=1;i<10;i++){ctx.beginPath();ctx.moveTo(w*(.25+i*.05),h*.015);ctx.lineTo(w*(.25+i*.05),h*.084);ctx.stroke()}
+    for(let j=1;j<4;j++){ctx.beginPath();ctx.moveTo(w*.252,h*(.015+j*.017));ctx.lineTo(w*.748,h*(.015+j*.017));ctx.stroke()}
     ctx.strokeStyle="rgba(224,255,226,.55)";ctx.lineWidth=2;
     if(mode==="freekick"){for(let i=0;i<5;i++){ctx.fillStyle="#e9e8d8";ctx.fillRect(w*(.39+i*.045),h*.34,w*.03,h*.025)}}
     if(mode==="longshot"){ctx.setLineDash([6,6]);ctx.strokeStyle="rgba(199,255,74,.7)";ctx.beginPath();ctx.arc(w*.5,h*.27,w*.16,0,Math.PI*2);ctx.stroke();ctx.setLineDash([])}
@@ -114,7 +114,7 @@
     const centerBias=Math.abs(aim.x-.5);
     const difficultyPenalty=difficulty==="Legend"?.10:difficulty==="Pro"?.035:0;
     const hitChance=Math.max(.62,Math.min(.98,.98-centerBias*.22-difficultyPenalty-(power>96?.03:0)));
-    const goal=aim.y<.32&&aim.x>.20&&aim.x<.80;
+    const goal=aim.y<.32&&aim.x>.22&&aim.x<.78;
     const scored=goal&&Math.random()<hitChance;
     setTimeout(()=>{if(mode==="freekick"&&aim.x>.465&&aim.x<.535&&aim.y<.30){finishAttempt(false,"The wall blocks it! Aim wider around the wall.");}else if(scored){finishAttempt(true, power>90?"WHAT A STRIKE! Top corner!":"GOAL! Perfect placement.");}else{finishAttempt(false,goal?"Saved by the keeper! Try a different corner.":"Wide! Aim inside the goal frame.");}drawPitch();},510);
   }
