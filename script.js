@@ -50,12 +50,20 @@
   }
   function drawFootballer(cx,cy,size,rotation,jersey,isKeeper){
     ctx.save();ctx.translate(cx,cy);ctx.rotate(rotation);ctx.scale(size,size);ctx.lineCap="round";ctx.lineJoin="round";
-    // Arms reaching out; keeper gloves are bright lime, shooter sleeves match the shirt.
     ctx.strokeStyle=jersey;ctx.lineWidth=.13;
-    ctx.beginPath();ctx.moveTo(-.16,-.38);ctx.lineTo(-.43,-.53);ctx.lineTo(-.59,-.42);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(.16,-.38);ctx.lineTo(.43,-.53);ctx.lineTo(.59,-.42);ctx.stroke();
-    if(isKeeper){ctx.fillStyle="#c7ff4a";}else{ctx.fillStyle="#f2f4ec";}
-    ctx.beginPath();ctx.arc(-.61,-.41,.105,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(.61,-.41,.105,0,Math.PI*2);ctx.fill();
+    if(isKeeper){
+      // Keeper: wide ready stance with extended arms and unmistakable lime gloves.
+      ctx.beginPath();ctx.moveTo(-.16,-.38);ctx.lineTo(-.43,-.53);ctx.lineTo(-.59,-.42);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(.16,-.38);ctx.lineTo(.43,-.53);ctx.lineTo(.59,-.42);ctx.stroke();
+      ctx.fillStyle="#c7ff4a";
+      ctx.beginPath();ctx.arc(-.61,-.41,.13,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(.61,-.41,.13,0,Math.PI*2);ctx.fill();
+    }else{
+      // Shooter: arms tucked for a run-up, not a goalkeeper's spread-arm pose.
+      ctx.beginPath();ctx.moveTo(-.16,-.37);ctx.lineTo(-.32,-.20);ctx.lineTo(-.20,-.06);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(.16,-.37);ctx.lineTo(.31,-.25);ctx.lineTo(.24,-.10);ctx.stroke();
+      ctx.fillStyle="#d5a57d";
+      ctx.beginPath();ctx.arc(-.20,-.05,.065,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(.24,-.09,.065,0,Math.PI*2);ctx.fill();
+    }
     // Head and neck
     ctx.fillStyle="#d5a57d";ctx.beginPath();ctx.arc(0,-.56,.15,0,Math.PI*2);ctx.fill();
     ctx.fillStyle=jersey;ctx.fillRect(-.22,-.43,.44,.42);
@@ -145,7 +153,7 @@
   function shoot(){
     if(shotTaken)return;
     const fromX=cw*.5,fromY=ch*.77,toX=aim.x*cw,toY=aim.y*ch;
-    ballAnim={fromX,fromY,toX,toY,start:performance.now(),duration:500};keeperMotion={side:aim.x<.5?-1:1,start:performance.now(),duration:500};drawPitch();
+    ballAnim={fromX,fromY,toX,toY,start:performance.now(),duration:500};keeperMotion={side:aim.x<.43?-1:aim.x>.57?1:(Math.random()<.5?-1:1),start:performance.now(),duration:500};drawPitch();
     const centerBias=Math.abs(aim.x-.5);
     const difficultyPenalty=difficulty==="Legend"?.10:difficulty==="Pro"?.035:0;
     const hitChance=Math.max(.62,Math.min(.98,.98-centerBias*.22-difficultyPenalty-(power>96?.03:0)));
