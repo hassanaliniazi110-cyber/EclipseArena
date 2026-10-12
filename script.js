@@ -230,7 +230,7 @@
     ballAnim={fromX,fromY,toX,toY,start:performance.now(),duration:500};keeperMotion={side:aim.x<.43?-1:aim.x>.57?1:(Math.random()<.5?-1:1),start:performance.now(),duration:500};drawPitch();
     const centerBias=Math.abs(aim.x-.5);
     const difficultyPenalty=difficulty==="Legend"?.10:difficulty==="Pro"?.035:0;
-    const ronaldoBonus=selectedPlayer==="Cristiano Ronaldo"?.015:0;const hitChance=Math.max(.62,Math.min(.995,.98-centerBias*.22-difficultyPenalty-(power>96?.03:0)+ronaldoBonus));
+    const ronaldoBonus=selectedPlayer==="Cristiano Ronaldo" ? 0.015 : 0;const hitChance=Math.max(.62,Math.min(.995,.98-centerBias*.22-difficultyPenalty-(power>96?.03:0)+ronaldoBonus));
     const goal=aim.y<.32&&aim.x>.22&&aim.x<.78;
     const scored=goal&&Math.random()<hitChance;
     setTimeout(()=>{if(mode==="freekick"&&aim.x>.465&&aim.x<.535&&aim.y<.30){finishAttempt(false,"The wall blocks it! Aim wider around the wall.");}else if(scored){finishAttempt(true, power>90?"WHAT A STRIKE! Top corner!":"GOAL! Perfect placement.");}else{finishAttempt(false,goal?"Saved by the keeper! Try a different corner.":"Wide! Aim inside the goal frame.");}drawPitch();},510);
