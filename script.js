@@ -171,6 +171,8 @@
     }
   }
   function startMode(nextMode){
+    const isRandomRush=nextMode==="random";
+    if(isRandomRush){const choices=["penalty","freekick","longshot","goalkeeping","vsattack"];nextMode=choices[Math.floor(Math.random()*choices.length)];}
     mode=nextMode;shotTaken=false;ballAnim=null;keeperMotion=null;
     match.active=mode==="headtohead";match.finished=false;match.clock=0;match.playerGoals=0;match.rivalGoals=0;match.rankPoints=0;match.rank="ROOKIE III";match.player={x:.5,y:.72};match.rival={x:.5,y:.28};match.ball={x:.5,y:.72};match.move="";match.sprint=false;match.hasBall=true;match.lastRivalShot=0;
     $("matchHud").classList.toggle("hidden",!match.active);$("matchControls").classList.toggle("hidden",!match.active);$("matchResult").classList.add("hidden");$("matchResult").textContent="";
@@ -178,6 +180,7 @@
     if(mode==="headtohead"||mode==="vsattack"){score=0;opponentScore=0;matchMinute=0;matchAttacks=0;attempt=1;}
     $("homeScreen").classList.add("hidden");$("gameScreen").classList.remove("hidden");
     $("gameTitle").innerHTML=modeNames[mode]+" <em>MODE</em>";$("controlHeading").textContent=modeText[mode][0];$("controlText").textContent=modeText[mode][1];
+    if(isRandomRush){$("gameTitle").innerHTML="RANDOM <em>RUSH</em>";$("controlHeading").textContent="Surprise challenge: "+modeNames[mode];$("controlText").textContent="Random Rush picked "+modeNames[mode]+". Finish the challenge, then try again for a different surprise.";}
     $("keeperPad").classList.toggle("hidden",mode!=="goalkeeping");
     $("shootBtn").classList.remove("hidden");$("shootBtn").innerHTML=mode==="goalkeeping"?"DIVE / SAVE <span>↗</span>":"SHOOT <span>↗</span>";
     $("nextBtn").classList.add("hidden");$("aimTip").textContent=mode==="goalkeeping"?"CHOOSE A DIVE · THEN SAVE THE SHOT":"TAP OR DRAG ON THE PITCH TO AIM";
@@ -269,7 +272,76 @@
   document.querySelectorAll("[data-dive]").forEach(b=>b.addEventListener("click",()=>{keeperDive=b.dataset.dive;document.querySelectorAll("[data-dive]").forEach(x=>x.style.borderColor=x===b?"#c7ff4a":"");$("feedback").textContent="Dive selected: "+keeperDive.toUpperCase()+". Press save when ready."}));
   $("keeperPad").addEventListener("dblclick",dive);
   $("keeperPad").addEventListener("click",e=>{if(e.target.closest("[data-dive]"))return;});
-  $("soundBtn").addEventListener("click",()=>{soundOn=!soundOn;$("soundBtn").textContent=soundOn?"♫":"♪";toast(soundOn?"Sound cues enabled visually":"Sound cues muted")});
+
+  // Original, synthesized soundtrack loops. Licensed songs open their official video separately.
+  let musicContext=null,musicTimer=null,musicStep=0,musicStyle="hiphop",musicPlaying=false;
+  const officialSongs={
+    speed:"https://www.youtube.com/watch?v=SRdlEULSk6c",
+    dreamers:"https://www.youtube.com/results?search_query=Jung+Kook+Dreamers+official",
+    waka:"https://www.youtube.com/results?search_query=Shakira+Waka+Waka+official+video",
+    nights:"https://www.youtube.com/results?search_query=Avicii+The+Nights+official+video",
+    believer:"https://www.youtube.com/results?search_query=Imagine+Dragons+Believer+official+video",
+    seven:"https://www.youtube.com/results?search_query=The+White+Stripes+Seven+Nation+Army+official+video",
+    sunflower:"https://www.youtube.com/results?search_query=Post+Malone+Swae+Lee+Sunflower+official+video",
+    dynamite:"https://www.youtube.com/results?search_query=BTS+Dynamite+official+MV",
+    desire:"https://www.youtube.com/results?search_query=Robbie+Williams+Nicole+Scherzinger+Desire+official"
+  };
+  function getMusicContext(){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;if(!musicContext)musicContext=new AC();return musicContext;}
+  function tone(freq,duration,type,volume,when){
+    if(!musicContext||!freq)return;
+    const osc=musicContext.createOscillator(),gain=musicContext.createGain(),start=when||musicContext.currentTime;
+    osc.type=type||"sine";osc.frequency.setValueAtTime(freq,start);gain.gain.setValueAtTime(Math.max(.0001,volume||.035),start);gain.gain.exponentialRampToValueAtTime(.0001,start+duration);
+    osc.connect(gain);gain.connect(musicContext.destination);osc.start(start);osc.stop(start+duration+.02);
+  }
+  function beatKick(t){tone(125,.18,"sine",.12,t);tone(48,.15,"sine",.1,t);}
+  function beatSnare(t){tone(180,.08,"triangle",.045,t);tone(95,.07,"square",.018,t+.015);}
+  function playMusicStep(){
+    if(!musicPlaying||!musicContext)return;
+    const t=musicContext.currentTime+.02,step=musicStep%16;
+    const patterns={
+      hiphop:{bpm:92,root:55,notes:[220,0,261.6,0,196,0,246.9,0]},
+      phonk:{bpm:138,root:41.2,notes:[164.8,0,196,0,146.8,0,220,0]},
+      jazz:{bpm:104,root:65.4,notes:[261.6,329.6,392,329.6,293.7,349.2,440,349.2]},
+      stadium:{bpm:124,root:55,notes:[261.6,329.6,392,523.3,392,329.6,293.7,392]},
+      lofi:{bpm:78,root:49,notes:[220,261.6,329.6,261.6,196,246.9,293.7,246.9]},
+      edm:{bpm:128,root:49,notes:[261.6,0,329.6,392,0,329.6,440,392]},
+      funk:{bpm:132,root:46.2,notes:[185,0,220,246.9,0,185,277.2,246.9]}
+    };
+    const p=patterns[musicStyle]||patterns.hiphop;
+    if(step%4===0)beatKick(t);
+    if((musicStyle==="hiphop"||musicStyle==="lofi")&&(step===4||step===12))beatSnare(t);
+    if(musicStyle==="phonk"&&(step===4||step===12))beatSnare(t);
+    if(musicStyle==="jazz"&&(step===4||step===12)){tone(p.root*2,.23,"triangle",.025,t);tone(p.root*2.5,.23,"triangle",.02,t);}
+    if(musicStyle==="stadium"&&(step===0||step===8)){tone(p.root,.4,"sawtooth",.035,t);tone(p.root*1.5,.4,"triangle",.025,t);}
+    if(musicStyle==="edm"&&step%4===2)tone(180,.07,"square",.025,t);
+    if(step%2===0){const n=p.notes[(step/2)%p.notes.length];if(n)tone(n,.16,musicStyle==="phonk"?"sawtooth":"triangle",musicStyle==="phonk"?.035:.025,t);}
+    if(step%2===1&&musicStyle!=="jazz")tone(750,.025,"square",.008,t);
+    musicStep++;const interval=60000/p.bpm/4;clearInterval(musicTimer);musicTimer=setTimeout(playMusicStep,interval);
+  }
+  async function startArenaMusic(){
+    const value=$("musicSelect").value;
+    if(officialSongs[value]){stopArenaMusic();$("musicStatus").textContent="Opening the selected official song video in YouTube.";GenUI.openUrl(officialSongs[value]);return;}
+    if(value==="silence"){stopArenaMusic();$("musicStatus").textContent="Music is off.";return;}
+    const ac=getMusicContext();if(!ac){$("musicStatus").textContent="This browser does not support generated audio.";return;}
+    try{await ac.resume();}catch(e){}
+    clearTimeout(musicTimer);musicStyle=value;musicStep=0;musicPlaying=true;soundOn=true;$("soundBtn").textContent="♫";$("musicStatus").textContent="Playing original "+value.toUpperCase()+" instrumental.";playMusicStep();
+  }
+  function stopArenaMusic(){
+    musicPlaying=false;clearTimeout(musicTimer);clearInterval(musicTimer);musicTimer=null;
+    if(musicContext){try{musicContext.suspend();}catch(e){}}
+    $("musicStatus").textContent="Music stopped.";
+  }
+  $("musicSelect").addEventListener("change",()=>{
+    const value=$("musicSelect").value,official=!!officialSongs[value];
+    $("musicOfficialBtn").classList.toggle("hidden",!official);
+    $("musicPlayBtn").textContent=official?"▶ OPEN SONG VIDEO ↗":value==="silence"?"MUSIC OFF":"▶ PLAY BEAT";
+    $("musicStatus").textContent=official?"Opens the selected song's official video/search in YouTube.":value==="silence"?"Music is off.":"Original "+value.toUpperCase()+" beat ready.";
+  });
+  $("musicPlayBtn").addEventListener("click",startArenaMusic);
+  $("musicStopBtn").addEventListener("click",stopArenaMusic);
+  $("musicOfficialBtn").addEventListener("click",()=>{const url=officialSongs[$("musicSelect").value];if(url)GenUI.openUrl(url);});
+
+  $("soundBtn").addEventListener("click",()=>{soundOn=!soundOn;$("soundBtn").textContent=soundOn?"♫":"♪";toast(soundOn?"Music controls are below":"Sound cues muted")});
   $("resetBtn").addEventListener("click",()=>{match.active=false;match.finished=false;cancelAnimationFrame(animationFrame);score=0;attempt=1;shotTaken=false;ballAnim=null;$("scoreValue").textContent="0";toast("Score reset")});
   // A touch-friendly joystick appears only in goalkeeper mode as an extra dive input.
   window.addEventListener("resize",()=>{if(!$("gameScreen").classList.contains("hidden"))resizeCanvas()});
