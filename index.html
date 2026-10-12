@@ -34,13 +34,13 @@
         </div>
 
         <section class="mode-section">
-          <div class="section-heading"><div><p class="eyebrow">CHOOSE YOUR CHALLENGE</p><h2>Pick your <em>mode.</em></h2></div><span class="section-count">04 MODES</span></div>
+          <div class="section-heading"><div><p class="eyebrow">CHOOSE YOUR CHALLENGE</p><h2>Pick your <em>mode.</em></h2></div><span class="section-count">06 MODES</span></div>
           <div class="mode-grid">
             <button class="mode-card penalty" data-mode="penalty"><span class="mode-number">01</span><span class="mode-icon">◎</span><span class="mode-title">PENALTY</span><span class="mode-desc">Stay cool. Find the corner.</span><span class="mode-arrow">↗</span></button>
             <button class="mode-card freekick" data-mode="freekick"><span class="mode-number">02</span><span class="mode-icon">⌁</span><span class="mode-title">FREE KICK</span><span class="mode-desc">Bend it around the wall.</span><span class="mode-arrow">↗</span></button>
             <button class="mode-card longshot" data-mode="longshot"><span class="mode-number">03</span><span class="mode-icon">↗</span><span class="mode-title">LONG SHOT</span><span class="mode-desc">Power from outside the box.</span><span class="mode-arrow">↗</span></button>
             <button class="mode-card goalie" data-mode="goalkeeping"><span class="mode-number">04</span><span class="mode-icon">✦</span><span class="mode-title">GOALKEEPER</span><span class="mode-desc">Read it. React. Make the save.</span><span class="mode-arrow">↗</span></button>
-            <button class="mode-card head-to-head" data-mode="headtohead"><span class="mode-number">05</span><span class="mode-icon">⚔</span><span class="mode-title">HEAD-TO-HEAD</span><span class="mode-desc">Play a full 90-minute match.</span><span class="mode-arrow">↗</span></button>
+            <button class="mode-card random-rush" data-mode="random"><span class="mode-number">05</span><span class="mode-icon">🎲</span><span class="mode-title">RANDOM RUSH</span><span class="mode-desc">Get a surprise challenge every time.</span><span class="mode-arrow">↗</span></button>
             <button class="mode-card vs-attack" data-mode="vsattack"><span class="mode-number">06</span><span class="mode-icon">⚡</span><span class="mode-title">VS ATTACK</span><span class="mode-desc">Five attacks. Beat your rival.</span><span class="mode-arrow">↗</span></button>
           </div>
         </section>
@@ -74,6 +74,36 @@
             <input id="powerSlider" type="range" min="25" max="100" value="78" aria-label="Shot power">
             <div class="control-actions"><button id="shootBtn" class="primary-btn shoot-btn">SHOOT <span>↗</span></button><button id="nextBtn" class="secondary-btn hidden">NEXT ATTEMPT →</button></div>
             <div class="game-feedback" id="feedback" aria-live="polite">Ready when you are.</div>
+            <section class="music-panel" aria-label="Game soundtrack">
+              <div class="music-panel-heading"><span class="music-note">♫</span><div><p class="eyebrow">SOUNDTRACK</p><strong>Pick your vibe</strong></div></div>
+              <label class="music-label" for="musicSelect">MUSIC STYLE OR SONG</label>
+              <select id="musicSelect" class="music-select">
+                <optgroup label="ORIGINAL GAME BEATS">
+                  <option value="hiphop">Hip-hop bounce · Original</option>
+                  <option value="phonk">Phonk drive · Original</option>
+                  <option value="jazz">Jazz lounge · Original</option>
+                  <option value="stadium">Stadium anthem · Original</option>
+                  <option value="lofi">Lo-fi chill · Original</option>
+                  <option value="edm">EDM energy · Original</option>
+                  <option value="funk">Brazilian funk vibe · Original</option>
+                  <option value="silence">No music</option>
+                </optgroup>
+                <optgroup label="OPEN OFFICIAL SONG VIDEO">
+                  <option value="speed">iShowSpeed — World Cup (Champions)</option>
+                  <option value="dreamers">Jung Kook — Dreamers</option>
+                  <option value="waka">Shakira — Waka Waka</option>
+                  <option value="nights">Avicii — The Nights</option>
+                  <option value="believer">Imagine Dragons — Believer</option>
+                  <option value="seven">The White Stripes — Seven Nation Army</option>
+                  <option value="sunflower">Post Malone &amp; Swae Lee — Sunflower</option>
+                  <option value="dynamite">BTS — Dynamite</option>
+                  <option value="desire">Robbie Williams &amp; Nicole Scherzinger — Desire</option>
+                </optgroup>
+              </select>
+              <div class="music-actions"><button id="musicPlayBtn" type="button" class="music-play-btn">▶ PLAY BEAT</button><button id="musicStopBtn" type="button" class="music-stop-btn">■ STOP</button></div>
+              <button id="musicOfficialBtn" type="button" class="music-official-btn hidden">OPEN OFFICIAL SONG ↗</button>
+              <p id="musicStatus" class="music-status" aria-live="polite">Choose a style, then play. Original beats are generated in-game.</p>
+            </section>
             <div id="keeperPad" class="keeper-pad hidden"><span>GOALKEEPER DIVE</span><div><button data-dive="left">↙ LEFT</button><button data-dive="center">↑ CENTRE</button><button data-dive="right">RIGHT ↘</button></div></div>
             <div class="touch-note"><span class="touch-dot"></span> MADE FOR TOUCH · IPAD READY</div>
           </aside>
