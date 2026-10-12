@@ -84,24 +84,34 @@
     ctx.strokeStyle="rgba(224,255,226,.55)";ctx.lineWidth=2;
     if(mode==="freekick"){for(let i=0;i<5;i++){ctx.fillStyle="#e9e8d8";ctx.fillRect(w*(.39+i*.045),h*.34,w*.03,h*.025)}}
     if(mode==="longshot"){ctx.setLineDash([6,6]);ctx.strokeStyle="rgba(199,255,74,.7)";ctx.beginPath();ctx.arc(w*.5,h*.27,w*.16,0,Math.PI*2);ctx.stroke();ctx.setLineDash([])}
-    // Draw a single proper goalkeeper at the goal. He dives toward shots.
-    const keeperT = keeperMotion ? Math.min(1,(performance.now()-keeperMotion.start)/keeperMotion.duration) : 1;
-    const diving = keeperMotion && keeperT < 1;
+    // Draw exactly ONE goalkeeper at the goal line. Keep the dive pose after the ball arrives.
+    const keeperT = keeperMotion ? Math.min(1,(performance.now()-keeperMotion.start)/keeperMotion.duration) : 0;
+    const diving = Boolean(keeperMotion);
     const side = keeperMotion ? keeperMotion.side : 0;
-    const kx = w*.5 + (diving ? side*w*.105*(1-Math.pow(1-keeperT,2)) : 0);
-    const ky = h*.135 + (diving ? Math.sin(keeperT*Math.PI)*h*.035 : 0);
-    const rotation = diving ? side*(0.95*Math.sin(keeperT*Math.PI/2)) : 0;
-    drawFootballer(kx,ky,Math.max(12,w*.105),rotation,"#c7ff4a",true);
-    if(keeperMotion && keeperT>=1) keeperMotion=null;
+    const diveProgress = diving ? (1-Math.pow(1-keeperT,2)) : 0;
+    const kx = w*.5 + (diving ? side*w*.115*diveProgress : 0);
+    const ky = h*.135 + (diving ? h*.025*Math.sin(keeperT*Math.PI/2) : 0);
+    const rotation = diving ? side*1.05*diveProgress : 0;
+    const keeperJersey = selectedGoalkeeper==="Hassan Ali" ? "#c7ff4a" : selectedGoalkeeper==="Ehan Ali" ? "#bd7bff" : selectedGoalkeeper==="Alisson" ? "#4bbfff" : "#ff8c42";
+    drawFootballer(kx,ky,Math.max(12,w*.105),rotation,keeperJersey,true);
+    ctx.fillStyle="rgba(5,15,10,.82)";ctx.fillRect(w*.5-w*.095,h*.205,w*.19,h*.026);
+    ctx.fillStyle="#f2f7f2";ctx.font="800 "+Math.max(8,w*.013)+"px sans-serif";ctx.textAlign="center";
+    ctx.fillText(selectedGoalkeeper.toUpperCase(),w*.5,h*.224);
 
     if(mode==="goalkeeping"){
-      // In goalkeeper mode the selected keeper is the controlled player in the foreground.
-      drawFootballer(w*.5,h*.77,Math.max(14,w*.13),keeperMotion ? rotation : 0,"#c7ff4a",true);
+      // Keeper mode uses the same single keeper at the goal; the dive controls move that player.
       ctx.strokeStyle="#c7ff4a";ctx.lineWidth=3;ctx.setLineDash([5,5]);
       ctx.beginPath();ctx.moveTo(w*.5,h*.72);ctx.lineTo(w*.5+((aim.x-.5)*w*.4),h*.48);ctx.stroke();ctx.setLineDash([]);
     }else{
-      // Shooter silhouette at the spot, facing the goal, with the ball at their feet.
-      drawFootballer(w*.5,h*.755,Math.max(13,w*.105),-.08,"#f2f4ec",false);
+      // Shooter at the spot, with a distinct kit and ball at their feet.
+      const shooterJersey = selectedPlayer==="Cristiano Ronaldo" ? "#f2f4ec" : selectedPlayer==="Erling Haaland" ? "#65baff" : selectedPlayer==="Jude Bellingham" ? "#bd7bff" : selectedPlayer==="Lamine Yamal" ? "#ff8c42" : "#f2f4ec";
+      drawFootballer(w*.5,h*.755,Math.max(13,w*.105),-.08,shooterJersey,false);
+      // Kick leg swings when the shot is taken.
+      if(ballAnim){
+        const kickT=Math.min(1,(performance.now()-ballAnim.start)/ballAnim.duration);
+        ctx.strokeStyle="#d5a57d";ctx.lineWidth=Math.max(4,w*.012);ctx.lineCap="round";
+        ctx.beginPath();ctx.moveTo(w*.5+w*.014,h*.78);ctx.lineTo(w*.5+w*(.05+.035*Math.sin(kickT*Math.PI)),h*.77);ctx.stroke();
+      }
       ctx.fillStyle="#f5f6ed";ctx.beginPath();ctx.arc(w*.5+w*.022,h*.735,Math.max(4,w*.009),0,Math.PI*2);ctx.fill();
       ctx.strokeStyle="#17251c";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(w*.5+w*.018,h*.733);ctx.lineTo(w*.5+w*.026,h*.737);ctx.stroke();
       ctx.strokeStyle="#c7ff4a";ctx.lineWidth=3;ctx.beginPath();ctx.arc(aim.x*w,aim.y*h,Math.max(8,w*.015),0,Math.PI*2);ctx.stroke();
