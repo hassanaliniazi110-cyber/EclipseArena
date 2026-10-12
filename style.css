@@ -6,71 +6,33 @@
 @media(orientation:landscape) and (max-height:600px){.topbar{height:58px}.game-screen{padding-top:16px}.game-header{margin-bottom:12px}.game-layout{grid-template-columns:minmax(0,1.5fr) minmax(220px,.7fr)}#pitch{aspect-ratio:1.55}.controls-panel{padding:14px}.control-text{margin-bottom:12px}.touch-note{padding-top:10px}.hero{min-height:350px}}
 
 
-/* FOOTBALLGAME3 ONLY — CSS goal/goalkeeper overlay.
-   Keep the existing page background, layout, and controls unchanged.
-   These visual overlays sit above the pitch canvas without blocking touch aiming. */
-.pitch-wrap {
-  position: relative;
-}
 
-.pitch-wrap::before {
-  content: "";
-  position: absolute;
-  z-index: 2;
-  pointer-events: none;
-  left: 25%;
-  top: 48px;
-  width: 50%;
-  height: clamp(38px, 7vw, 66px);
-  border: 3px solid #f2f7f2;
-  border-top-width: 4px;
-  box-sizing: border-box;
-  background:
-    repeating-linear-gradient(90deg, transparent 0 9.5%, rgba(235,255,239,.6) 9.7% 10%, transparent 10.2% 19.5%),
-    repeating-linear-gradient(0deg, transparent 0 24%, rgba(235,255,239,.55) 24.5% 26%, transparent 26.5% 49%),
-    linear-gradient(180deg, rgba(230,255,235,.15), rgba(230,255,235,.02));
-  box-shadow: 0 0 0 1px rgba(8,24,14,.45), 0 0 18px rgba(199,255,74,.12);
+/* Goalkeeper picker styling — keeps the existing Eclipse Arena layout intact. */
+.goalkeeper-pick {
+  margin-top: 34px;
+  padding-top: 26px;
+  border-top: 1px solid var(--line);
 }
-
-.pitch-wrap::after {
-  content: "";
-  position: absolute;
-  z-index: 3;
-  pointer-events: none;
-  left: 50%;
-  top: 52px;
-  width: clamp(62px, 9vw, 92px);
-  height: clamp(62px, 9vw, 92px);
-  transform: translateX(-50%);
-  background:
-    /* gloves */
-    radial-gradient(ellipse at 4% 27%, #c7ff4a 0 7%, transparent 8%),
-    radial-gradient(ellipse at 96% 27%, #c7ff4a 0 7%, transparent 8%),
-    /* head */
-    radial-gradient(ellipse at 50% 9%, #d5a57d 0 10%, #17231c 10.5% 13%, transparent 13.5%),
-    /* arms stretched to the sides */
-    linear-gradient(155deg, transparent 0 27%, #c7ff4a 28% 36%, transparent 37%) left 8% top 17% / 50% 37% no-repeat,
-    linear-gradient(205deg, transparent 0 27%, #c7ff4a 28% 36%, transparent 37%) right 8% top 17% / 50% 37% no-repeat,
-    /* jersey torso */
-    linear-gradient(90deg, transparent 0 22%, #c7ff4a 23% 77%, transparent 78%) center 25% / 70% 43% no-repeat,
-    /* shorts */
-    linear-gradient(90deg, transparent 0 20%, #17231c 21% 79%, transparent 80%) center 62% / 72% 20% no-repeat,
-    /* legs and boots */
-    linear-gradient(100deg, transparent 0 35%, #d5a57d 36% 46%, transparent 47%) 35% 72% / 45% 27% no-repeat,
-    linear-gradient(80deg, transparent 0 35%, #d5a57d 36% 46%, transparent 47%) 65% 72% / 45% 27% no-repeat,
-    linear-gradient(#f2f7f2,#f2f7f2) 27% 97% / 28% 5% no-repeat,
-    linear-gradient(#f2f7f2,#f2f7f2) 73% 97% / 28% 5% no-repeat;
-  filter: drop-shadow(0 2px 2px rgba(0,0,0,.55));
+.keeper-heading {
+  margin-bottom: 16px;
 }
-
-@media (max-width: 600px) {
-  .pitch-wrap::before {
-    top: 42px;
-    height: clamp(34px, 10vw, 48px);
+.goalie-selection-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.goalie-selection-grid .player-card {
+  min-height: 112px;
+}
+@media (max-width: 900px) {
+  .goalie-selection-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .pitch-wrap::after {
-    top: 45px;
-    width: clamp(54px, 14vw, 70px);
-    height: clamp(54px, 14vw, 70px);
+}
+@media (max-width: 600px) {
+  .goalkeeper-pick {
+    margin-top: 26px;
+    padding-top: 22px;
+  }
+  .goalie-selection-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
