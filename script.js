@@ -275,34 +275,37 @@
 
   // Original, synthesized soundtrack loops. Licensed songs open their official video separately.
   let musicContext=null,musicTimer=null,musicStep=0,musicStyle="hiphop",musicPlaying=false;
+  // Official recordings load inside the soundtrack panel; no navigation away from the game.
   const officialSongs={
-    speed:"https://www.youtube.com/results?search_query=iShowSpeed+World+Cup+Champions+official+music+video",
-    dreamers:"https://www.youtube.com/results?search_query=Jung+Kook+Dreamers+official",
-    waka:"https://www.youtube.com/results?search_query=Shakira+Waka+Waka+official+video",
-    nights:"https://www.youtube.com/results?search_query=Avicii+The+Nights+official+video",
-    believer:"https://www.youtube.com/results?search_query=Imagine+Dragons+Believer+official+video",
-    seven:"https://www.youtube.com/results?search_query=The+White+Stripes+Seven+Nation+Army+official+video",
-    sunflower:"https://www.youtube.com/results?search_query=Post+Malone+Swae+Lee+Sunflower+official+video",
-    dynamite:"https://www.youtube.com/results?search_query=BTS+Dynamite+official+MV",
-    desire:"https://www.youtube.com/results?search_query=Robbie+Williams+Nicole+Scherzinger+Desire+official",
-    montagemtomada:"https://www.youtube.com/results?search_query=Montagem+Tomada+official",
-    montagemcoral:"https://www.youtube.com/results?search_query=Montagem+Coral+official",
-    montagemmysterious:"https://www.youtube.com/results?search_query=Montagem+Mysterious+Game+official",
-    montagemxonada:"https://www.youtube.com/results?search_query=Montagem+Xonada+official",
-    takefive:"https://www.youtube.com/results?search_query=Dave+Brubeck+Take+Five+official",
-    flymoon:"https://www.youtube.com/results?search_query=Fly+Me+to+the+Moon+Frank+Sinatra+official",
-    autumnleaves:"https://www.youtube.com/results?search_query=Autumn+Leaves+jazz+official+recording",
-    sowhat:"https://www.youtube.com/results?search_query=Miles+Davis+So+What+official",
-    entertainer:"https://www.youtube.com/results?search_query=Scott+Joplin+The+Entertainer+official+recording"
+    speed:"vrY1THC_NQE",
+    dreamers:"IwzkfMmNMpM",
+    waka:"pRpeEdMmmQ0",
+    nights:"XmIgg9De9hY",
+    believer:"7wtfhZwyrcc",
+    seven:"0J2QdDbelmY",
+    sunflower:null,
+    dynamite:"gdZLi9oWNZg",
+    desire:null,
+    montagemtomada:null,
+    montagemcoral:null,
+    montagemmysterious:null,
+    montagemxonada:null,
+    takefive:"vmDDOFXSgAs",
+    flymoon:"JYuyWrkwpok",
+    autumnleaves:"JTt_2-ykGCQ",
+    sowhat:"zqNTltOGh5c",
+    entertainer:null
   };
   function openOfficialSong(value){
-    const url=officialSongs[value];
-    if(!url)return false;
-    // Try a new tab without the noopener feature string (Safari may return null for it).
-    // If the browser blocks pop-ups, navigate this tab to YouTube as a reliable fallback.
-    $("musicStatus").textContent="Opening YouTube…";
-    const opened=window.open(url,"_blank");
-    if(!opened)window.location.assign(url);
+    const videoId=officialSongs[value];
+    if(!videoId){
+      $("musicStatus").textContent="This song hasn't been connected to the in-game player yet. Choose a supported track for now.";
+      return false;
+    }
+    stopArenaMusic();
+    $("musicPlayer").src="https://www.youtube-nocookie.com/embed/"+videoId+"?playsinline=1&rel=0&controls=1";
+    $("musicPlayerWrap").classList.remove("hidden");
+    $("musicStatus").textContent="Song loaded inside the game. Tap ▶ in the player to start; Safari blocks automatic audio playback.";
     return true;
   }
   function getMusicContext(){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;if(!musicContext)musicContext=new AC();return musicContext;}
@@ -353,8 +356,10 @@
   $("musicSelect").addEventListener("change",()=>{
     const value=$("musicSelect").value,official=Object.prototype.hasOwnProperty.call(officialSongs,value);
     $("musicOfficialBtn").classList.toggle("hidden",!official);
-    $("musicPlayBtn").textContent=official?"▶ OPEN SONG VIDEO ↗":value==="silence"?"MUSIC OFF":"▶ PLAY BEAT";
-    $("musicStatus").textContent=official?"Opens YouTube for the real song; tap play on the video to hear it.":value==="silence"?"Music is off.":"Original "+value.toUpperCase()+" beat ready.";
+    $("musicPlayBtn").classList.toggle("hidden",official);
+    $("musicPlayBtn").textContent=value==="silence"?"MUSIC OFF":"▶ PLAY BEAT";
+    if(!official){$("musicPlayerWrap").classList.add("hidden");$("musicPlayer").src="about:blank";}
+    $("musicStatus").textContent=official?"Tap PLAY SONG IN GAME to load the recording here.":value==="silence"?"Music is off.":"Original "+value.toUpperCase()+" beat ready.";
   });
   $("musicPlayBtn").addEventListener("click",startArenaMusic);
   $("musicStopBtn").addEventListener("click",stopArenaMusic);
