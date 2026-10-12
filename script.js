@@ -298,9 +298,11 @@
   function openOfficialSong(value){
     const url=officialSongs[value];
     if(!url)return false;
-    const opened=window.open(url,"_blank","noopener,noreferrer");
-    if(!opened)window.location.href=url;
-    $("musicStatus").textContent="YouTube opened for this song. Tap play on the video; the full track does not play inside the game.";
+    // Try a new tab without the noopener feature string (Safari may return null for it).
+    // If the browser blocks pop-ups, navigate this tab to YouTube as a reliable fallback.
+    $("musicStatus").textContent="Opening YouTube…";
+    const opened=window.open(url,"_blank");
+    if(!opened)window.location.assign(url);
     return true;
   }
   function getMusicContext(){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;if(!musicContext)musicContext=new AC();return musicContext;}
