@@ -276,7 +276,7 @@
   // Original, synthesized soundtrack loops. Licensed songs open their official video separately.
   let musicContext=null,musicTimer=null,musicStep=0,musicStyle="hiphop",musicPlaying=false;
   const officialSongs={
-    speed:"https://www.youtube.com/watch?v=SRdlEULSk6c",
+    speed:"https://www.youtube.com/results?search_query=iShowSpeed+World+Cup+Champions+official+music+video",
     dreamers:"https://www.youtube.com/results?search_query=Jung+Kook+Dreamers+official",
     waka:"https://www.youtube.com/results?search_query=Shakira+Waka+Waka+official+video",
     nights:"https://www.youtube.com/results?search_query=Avicii+The+Nights+official+video",
@@ -284,8 +284,25 @@
     seven:"https://www.youtube.com/results?search_query=The+White+Stripes+Seven+Nation+Army+official+video",
     sunflower:"https://www.youtube.com/results?search_query=Post+Malone+Swae+Lee+Sunflower+official+video",
     dynamite:"https://www.youtube.com/results?search_query=BTS+Dynamite+official+MV",
-    desire:"https://www.youtube.com/results?search_query=Robbie+Williams+Nicole+Scherzinger+Desire+official"
+    desire:"https://www.youtube.com/results?search_query=Robbie+Williams+Nicole+Scherzinger+Desire+official",
+    montagemtomada:"https://www.youtube.com/results?search_query=Montagem+Tomada+official",
+    montagemcoral:"https://www.youtube.com/results?search_query=Montagem+Coral+official",
+    montagemmysterious:"https://www.youtube.com/results?search_query=Montagem+Mysterious+Game+official",
+    montagemxonada:"https://www.youtube.com/results?search_query=Montagem+Xonada+official",
+    takefive:"https://www.youtube.com/results?search_query=Dave+Brubeck+Take+Five+official",
+    flymoon:"https://www.youtube.com/results?search_query=Fly+Me+to+the+Moon+Frank+Sinatra+official",
+    autumnleaves:"https://www.youtube.com/results?search_query=Autumn+Leaves+jazz+official+recording",
+    sowhat:"https://www.youtube.com/results?search_query=Miles+Davis+So+What+official",
+    entertainer:"https://www.youtube.com/results?search_query=Scott+Joplin+The+Entertainer+official+recording"
   };
+  function openOfficialSong(value){
+    const url=officialSongs[value];
+    if(!url)return false;
+    const opened=window.open(url,"_blank","noopener,noreferrer");
+    if(!opened)window.location.href=url;
+    $("musicStatus").textContent="YouTube opened for this song. Tap play on the video; the full track does not play inside the game.";
+    return true;
+  }
   function getMusicContext(){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;if(!musicContext)musicContext=new AC();return musicContext;}
   function tone(freq,duration,type,volume,when){
     if(!musicContext||!freq)return;
@@ -320,7 +337,7 @@
   }
   async function startArenaMusic(){
     const value=$("musicSelect").value;
-    if(officialSongs[value]){stopArenaMusic();$("musicStatus").textContent="Opening the selected official song video in YouTube.";GenUI.openUrl(officialSongs[value]);return;}
+    if(officialSongs[value]){stopArenaMusic();openOfficialSong(value);return;}
     if(value==="silence"){stopArenaMusic();$("musicStatus").textContent="Music is off.";return;}
     const ac=getMusicContext();if(!ac){$("musicStatus").textContent="This browser does not support generated audio.";return;}
     try{await ac.resume();}catch(e){}
@@ -335,11 +352,11 @@
     const value=$("musicSelect").value,official=!!officialSongs[value];
     $("musicOfficialBtn").classList.toggle("hidden",!official);
     $("musicPlayBtn").textContent=official?"▶ OPEN SONG VIDEO ↗":value==="silence"?"MUSIC OFF":"▶ PLAY BEAT";
-    $("musicStatus").textContent=official?"Opens the selected song's official video/search in YouTube.":value==="silence"?"Music is off.":"Original "+value.toUpperCase()+" beat ready.";
+    $("musicStatus").textContent=official?"Opens YouTube for the real song; tap play on the video to hear it.":value==="silence"?"Music is off.":"Original "+value.toUpperCase()+" beat ready.";
   });
   $("musicPlayBtn").addEventListener("click",startArenaMusic);
   $("musicStopBtn").addEventListener("click",stopArenaMusic);
-  $("musicOfficialBtn").addEventListener("click",()=>{const url=officialSongs[$("musicSelect").value];if(url)GenUI.openUrl(url);});
+  $("musicOfficialBtn").addEventListener("click",()=>openOfficialSong($("musicSelect").value));
 
   $("soundBtn").addEventListener("click",()=>{soundOn=!soundOn;$("soundBtn").textContent=soundOn?"♫":"♪";toast(soundOn?"Music controls are below":"Sound cues muted")});
   $("resetBtn").addEventListener("click",()=>{match.active=false;match.finished=false;cancelAnimationFrame(animationFrame);score=0;attempt=1;shotTaken=false;ballAnim=null;$("scoreValue").textContent="0";toast("Score reset")});
