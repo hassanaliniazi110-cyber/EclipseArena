@@ -7,7 +7,7 @@
     {name:"Ehan Ali", rating:94, role:"ALL-ROUNDER", special:"Quick reactions", glow:"rgba(189,123,255,.2)"},
     {name:"Umar Shoaib", rating:92, role:"PLAYMAKER", special:"Smart passing", glow:"rgba(255,140,66,.2)"},
     {name:"Muhammad Arham", rating:91, role:"STRIKER", special:"Finishing touch", glow:"rgba(255,99,99,.2)"},
-    {name:"Cristiano Ronaldo", rating:99, role:"FORWARD", special:"Power & precision", glow:"rgba(255,140,66,.2)"},
+    {name:"Cristiano Ronaldo", rating:100, role:"LEGEND", special:"MAX POWER & PRECISION", stats:{shooting:1000000000000000000,power:999999999999999,accuracy:999999999999,speed:10000000000000000}, glow:"rgba(255,140,66,.2)"},
     {name:"Erling Haaland", rating:98, role:"STRIKER", special:"Long-shot power", glow:"rgba(75,191,255,.2)"},
     {name:"Jude Bellingham", rating:97, role:"MIDFIELDER", special:"Penalty specialist", glow:"rgba(189,123,255,.2)"},
     {name:"Lamine Yamal", rating:96, role:"WINGER", special:"Free-kick magic", glow:"rgba(199,255,74,.2)"},
@@ -230,7 +230,7 @@
     ballAnim={fromX,fromY,toX,toY,start:performance.now(),duration:500};keeperMotion={side:aim.x<.43?-1:aim.x>.57?1:(Math.random()<.5?-1:1),start:performance.now(),duration:500};drawPitch();
     const centerBias=Math.abs(aim.x-.5);
     const difficultyPenalty=difficulty==="Legend"?.10:difficulty==="Pro"?.035:0;
-    const hitChance=Math.max(.62,Math.min(.98,.98-centerBias*.22-difficultyPenalty-(power>96?.03:0)));
+    const ronaldoBonus=selectedPlayer==="Cristiano Ronaldo"?.015:0;const hitChance=Math.max(.62,Math.min(.995,.98-centerBias*.22-difficultyPenalty-(power>96?.03:0)+ronaldoBonus));
     const goal=aim.y<.32&&aim.x>.22&&aim.x<.78;
     const scored=goal&&Math.random()<hitChance;
     setTimeout(()=>{if(mode==="freekick"&&aim.x>.465&&aim.x<.535&&aim.y<.30){finishAttempt(false,"The wall blocks it! Aim wider around the wall.");}else if(scored){finishAttempt(true, power>90?"WHAT A STRIKE! Top corner!":"GOAL! Perfect placement.");}else{finishAttempt(false,goal?"Saved by the keeper! Try a different corner.":"Wide! Aim inside the goal frame.");}drawPitch();},510);
@@ -375,7 +375,11 @@
     oj:"UU3S6nIDGJ5OtpC-mbvFA8Ew",
     rey:"UUUZks0tPvD_ZbNwtBzyR_JQ",
     ash:"UU874WmmCVtIwTG4gQbWHKUQ",
-    staywild:"UUlQ3NafOy_42dJ0toK3QUKw"
+    staywild:"UUlQ3NafOy_42dJ0toK3QUKw",
+    craftee:"UUKGNVB2moP-zeAWPmw8HvAA",
+    preston:"UU70Dib4MvFfT1tU6MqeyHpQ",
+    prestonplayz:"UUJZam2u1G0syq3kyqrCXrNw",
+    xnestorio:"search"
   };
   function loadCreatorVideos(){
     const select=$("videoCreatorSelect"),player=$("creatorVideoPlayer"),status=$("creatorVideoStatus");
@@ -383,6 +387,11 @@
     const playlist=creatorUploadPlaylists[select.value];
     if(!playlist){
       status.textContent="This channel playlist is not configured yet.";
+      return;
+    }
+    if(playlist==="search"){
+      player.src="https://www.youtube-nocookie.com/embed?listType=search&list="+encodeURIComponent("xNestorio")+"&rel=0";
+      status.textContent="Loading xNestorio videos in the in-game player. YouTube may restrict search embeds in some previews.";
       return;
     }
     player.src="https://www.youtube-nocookie.com/embed/videoseries?list="+encodeURIComponent(playlist)+"&rel=0";
