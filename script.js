@@ -280,18 +280,18 @@
     speed:"vrY1THC_NQE",
     dreamers:"IwzkfMmNMpM",
     waka:"pRpeEdMmmQ0",
-    nights:"XmIgg9De9hY",
+    nights:"UtF6Jej8yb4",
     believer:"7wtfhZwyrcc",
     seven:"0J2QdDbelmY",
-    sunflower:"Lk0sZwXTwnc",
+    sunflower:"ApXoWvfEYVU",
     dynamite:"gdZLi9oWNZg",
-    desire:"SneOq6ww8W8",
-    montagemtomada:"D96pPLjYkjs",
-    montagemcoral:"_GeFRxt4a1E",
-    montagemmysterious:"q7BsRRogwDg",
-    montagemxonada:"lnUiopggh60",
+    desire:"Uc8LehnnjJk",
+    montagemtomada:"Qsk6bMvGj_o",
+    montagemcoral:"P1EwJbIZWnQ",
+    montagemmysterious:"dJM5DN1mMls",
+    montagemxonada:"YbcevoTpItI",
     takefive:"vmDDOFXSgAs",
-    flymoon:"JYuyWrkwpok",
+    flymoon:"ZEcqHA7dbwM",
     autumnleaves:"JTt_2-ykGCQ",
     sowhat:"zqNTltOGh5c",
     entertainer:"BNBXDC77FVA"
@@ -303,7 +303,7 @@
       return false;
     }
     stopArenaMusic();
-    $("musicPlayer").src="https://www.youtube-nocookie.com/embed/"+videoId+"?playsinline=1&rel=0&controls=1";
+    $("musicPlayer").src="https://www.youtube.com/embed/"+videoId+"?playsinline=1&rel=0&controls=1&modestbranding=1";
     $("musicPlayerWrap").classList.remove("hidden");
     $("musicStatus").textContent="Song loaded inside the game. Tap ▶ in the player to start; Safari blocks automatic audio playback.";
     return true;
