@@ -109,3 +109,7 @@
 .youtube-channel-fav:hover,.youtube-channel-fav:focus-visible{border-color:var(--lime);color:var(--lime)}
 .youtube-empty{grid-column:1/-1;color:var(--muted);font-size:11px;line-height:1.6}
 @media(max-width:600px){.youtube-channel-grid{grid-template-columns:1fr}.youtube-section-title{align-items:flex-start;flex-direction:column;gap:5px}.youtube-channel-category{min-height:0}}
+
+.youtube-channel-links{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.youtube-channel-links a{display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:6px 8px;border:1px solid var(--line);background:#0d1714;color:var(--lime);font-size:8px;font-weight:900;letter-spacing:.35px;text-decoration:none;overflow-wrap:anywhere}
+.youtube-channel-links a:hover,.youtube-channel-links a:focus-visible{border-color:var(--lime);text-decoration:underline}
