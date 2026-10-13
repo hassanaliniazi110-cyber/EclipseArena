@@ -264,7 +264,12 @@
   document.querySelectorAll("[data-move]").forEach(b=>{const clear=()=>{if(match.move===b.dataset.move)match.move="";};b.addEventListener("pointerdown",e=>{e.preventDefault();match.move=b.dataset.move;b.setPointerCapture?.(e.pointerId)});b.addEventListener("pointerup",clear);b.addEventListener("pointercancel",clear);b.addEventListener("lostpointercapture",clear);});
   document.querySelectorAll("[data-action]").forEach(b=>b.addEventListener("click",()=>matchAction(b.dataset.action)));
   document.querySelectorAll("[data-mode]").forEach(b=>b.addEventListener("click",()=>startMode(b.dataset.mode)));
-  document.querySelectorAll("[data-open-youtube]").forEach(b=>b.addEventListener("click",openYouTubeArea));
+  document.addEventListener("click",e=>{
+    const youtubeButton=e.target.closest("[data-open-youtube]");
+    if(!youtubeButton)return;
+    e.preventDefault();
+    openYouTubeArea();
+  });
   $("youtubeBackBtn").addEventListener("click",closeYouTubeArea);
   document.querySelectorAll("[data-difficulty]").forEach(b=>b.addEventListener("click",()=>{difficulty=b.dataset.difficulty;document.querySelectorAll("[data-difficulty]").forEach(x=>x.classList.toggle("selected",x===b));}));
   $("playNowBtn").addEventListener("click",()=>{document.querySelector(".mode-section").scrollIntoView({behavior:"smooth",block:"start"});toast("Choose a challenge to begin")});
@@ -301,13 +306,18 @@
   function openOfficialSong(value){
     const videoId=officialSongs[value];
     if(!videoId){
-      $("musicStatus").textContent="This song hasn't been connected to the in-game player yet. Choose a supported track for now.";
+      $("musicStatus").textContent="This song isn't available here yet. Choose another track.";
       return false;
     }
     stopArenaMusic();
-    $("musicPlayer").src="https://www.youtube.com/embed/"+videoId+"?playsinline=1&rel=0&controls=1&modestbranding=1";
-    $("musicPlayerWrap").classList.remove("hidden");
-    $("musicStatus").textContent="Song loaded inside the game. Tap ▶ in the player to start; Safari blocks automatic audio playback.";
+    $("musicStatus").textContent="Opening this song in YouTube Area, outside gameplay.";
+    openYouTubeArea();
+    $("youtubeVideoUrl").value="https://www.youtube.com/watch?v="+videoId;
+    $("youtubeAreaPlayer").src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(videoId)+"?rel=0";
+    $("youtubeAreaStatus").textContent="Song loaded in YouTube Area. If playback is blocked, use the link below.";
+    $("youtubeOpenVideoLink").href="https://www.youtube.com/watch?v="+videoId;
+    $("youtubeOpenVideoLink").textContent="OPEN SONG ON YOUTUBE ↗";
+    $("youtubeOpenVideoLink").classList.remove("hidden");
     return true;
   }
   function getMusicContext(){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;if(!musicContext)musicContext=new AC();return musicContext;}
@@ -360,7 +370,6 @@
     $("musicOfficialBtn").classList.toggle("hidden",!official);
     $("musicPlayBtn").classList.toggle("hidden",official);
     $("musicPlayBtn").textContent=value==="silence"?"MUSIC OFF":"▶ PLAY BEAT";
-    if(!official){$("musicPlayerWrap").classList.add("hidden");$("musicPlayer").src="about:blank";}
     $("musicStatus").textContent=official?"Tap PLAY SONG IN GAME to load the recording here.":value==="silence"?"Music is off.":"Original "+value.toUpperCase()+" beat ready.";
   });
   $("musicPlayBtn").addEventListener("click",startArenaMusic);
