@@ -92,3 +92,20 @@
 .youtube-player-wrap{width:100%;aspect-ratio:16/9;margin-top:20px;overflow:hidden;border:1px solid var(--line);background:#000}
 .youtube-player-wrap iframe{display:block;width:100%;height:100%;border:0}
 @media(max-width:600px){.youtube-screen{padding-top:18px}.youtube-header{gap:10px}.youtube-search-row{grid-template-columns:1fr}.youtube-search-row button{width:100%;min-height:42px}.youtube-quick-searches button{flex:1 1 auto}.youtube-panel{padding:15px}}
+
+/* Searchable in-game YouTube channel directory and saved favourites. */
+.youtube-channel-section{margin-top:26px}
+.youtube-section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.youtube-section-title h3{font:800 15px/1.2 'Barlow Condensed',sans-serif;margin:0;letter-spacing:.5px}
+.youtube-section-title span{font-size:10px;color:var(--muted)}
+.youtube-channel-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.youtube-channel-card{min-width:0;background:#101b18;border:1px solid var(--line);padding:13px;display:flex;flex-direction:column;gap:8px}
+.youtube-channel-name{font-size:13px;line-height:1.25;color:var(--white)}
+.youtube-channel-category{font-size:10px;line-height:1.4;color:var(--muted);min-height:26px}
+.youtube-channel-actions{display:flex;gap:6px;margin-top:auto}
+.youtube-channel-actions button{min-height:34px;padding:7px 8px;font-size:9px;font-weight:900;letter-spacing:.2px}
+.youtube-channel-play{flex:1;background:var(--lime);color:#07110f;border:1px solid var(--lime)}
+.youtube-channel-fav{background:#15231f;color:var(--white);border:1px solid var(--line)}
+.youtube-channel-fav:hover,.youtube-channel-fav:focus-visible{border-color:var(--lime);color:var(--lime)}
+.youtube-empty{grid-column:1/-1;color:var(--muted);font-size:11px;line-height:1.6}
+@media(max-width:600px){.youtube-channel-grid{grid-template-columns:1fr}.youtube-section-title{align-items:flex-start;flex-direction:column;gap:5px}.youtube-channel-category{min-height:0}}
