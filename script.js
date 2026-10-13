@@ -384,6 +384,11 @@
     montagemmysterious:"dJM5DN1mMls", montagemxonada:"YbcevoTpItI",
     montagembailao:"p7mJqlhPvtk", montagemsupersonic:"4C-b3ml5xQc",
     montagemrugada:"pszU-BtiW2I", brazilianphonk2026:"m_52WB-sYd4",
+    montagemalquimia:"m_52WB-sYd4", montagemmatadora:"m_52WB-sYd4",
+    montagemnobatidao:"m_52WB-sYd4", montagemhomagefunk:"m_52WB-sYd4",
+    montagemacelerada:"m_52WB-sYd4", montagemvocenamira:"m_52WB-sYd4",
+    montagemgozalo:"m_52WB-sYd4", montagemvemvem:"m_52WB-sYd4",
+    montagemperigosa:"m_52WB-sYd4", montagempassobemsolto:"m_52WB-sYd4",
     takefive:"vmDDOFXSgAs", flymoon:"ZEcqHA7dbwM", autumnleaves:"JTt_2-ykGCQ",
     sowhat:"zqNTltOGh5c", entertainer:"BNBXDC77FVA",
     wc26daidai:"fcnDmrtj6Sk", wc26goals:"safzyuZNCGI", wc26gametime:"JLucCHwY-2c",
@@ -394,6 +399,13 @@
     if(player)player.src="about:blank";
     if(wrap)wrap.classList.add("hidden");
   }
+  const officialSongSegments={
+    montagemalquimia:[0,111], montagemmatadora:[111,200],
+    montagemnobatidao:[275,395], montagemhomagefunk:[446,569],
+    montagemacelerada:[569,631], montagemvocenamira:[631,768],
+    montagemgozalo:[860,974], montagemvemvem:[974,1059],
+    montagempassobemsolto:[1171,1300], montagemperigosa:[1300,1381]
+  };
   function openOfficialSong(value){
     const videoId=officialSongs[value];
     if(!videoId){$("musicStatus").textContent="This song is not available here yet.";return false;}
@@ -401,7 +413,9 @@
     const wrap=$("musicEmbedWrap"),player=$("musicEmbedPlayer");
     if(!wrap||!player){$("musicStatus").textContent="In-game player missing. Refresh the game and try again.";return false;}
     wrap.classList.remove("hidden");
-    player.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(videoId)+"?autoplay=1&playsinline=1&controls=1&rel=0";
+    const segment=officialSongSegments[value];
+    const segmentParams=segment?"&start="+segment[0]+"&end="+segment[1]:"";
+    player.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(videoId)+"?autoplay=1&playsinline=1&controls=1&rel=0"+segmentParams;
     $("musicStatus").textContent="Song loaded in the in-game soundtrack player. If it does not autoplay, press play on the player.";
     return true;
   }
