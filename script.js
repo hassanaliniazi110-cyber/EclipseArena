@@ -143,6 +143,7 @@
     // Head shape, jaw and facial features.
     ctx.beginPath();ctx.ellipse(0,-.625,.145,.185,0,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="rgba(255,255,255,.16)";ctx.beginPath();ctx.ellipse(-.045,-.67,.045,.075,-.3,0,Math.PI*2);ctx.fill();
+    // Blank face and bald head: no hair, eyebrows, eyes, nose, mouth, or facial marks.
     ctx.restore();
   }
   function drawFullMatchPitch(){
