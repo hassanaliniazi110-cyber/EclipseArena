@@ -34,7 +34,7 @@
         </div>
 
         <section class="mode-section">
-          <div class="section-heading"><div><p class="eyebrow">CHOOSE YOUR CHALLENGE</p><h2>Pick your <em>mode.</em></h2></div><span class="section-count">06 MODES</span></div>
+          <div class="section-heading"><div><p class="eyebrow">CHOOSE YOUR CHALLENGE</p><h2>Pick your <em>mode.</em></h2></div><span class="section-count">06 MODES + YOUTUBE</span></div>
           <div class="mode-grid">
             <button class="mode-card penalty" data-mode="penalty"><span class="mode-number">01</span><span class="mode-icon">◎</span><span class="mode-title">PENALTY</span><span class="mode-desc">Stay cool. Find the corner.</span><span class="mode-arrow">↗</span></button>
             <button class="mode-card freekick" data-mode="freekick"><span class="mode-number">02</span><span class="mode-icon">⌁</span><span class="mode-title">FREE KICK</span><span class="mode-desc">Bend it around the wall.</span><span class="mode-arrow">↗</span></button>
@@ -42,6 +42,7 @@
             <button class="mode-card goalie" data-mode="goalkeeping"><span class="mode-number">04</span><span class="mode-icon">✦</span><span class="mode-title">GOALKEEPER</span><span class="mode-desc">Read it. React. Make the save.</span><span class="mode-arrow">↗</span></button>
             <button class="mode-card random-rush" data-mode="random"><span class="mode-number">05</span><span class="mode-icon">🎲</span><span class="mode-title">RANDOM RUSH</span><span class="mode-desc">Get a surprise challenge every time.</span><span class="mode-arrow">↗</span></button>
             <button class="mode-card vs-attack" data-mode="vsattack"><span class="mode-number">06</span><span class="mode-icon">⚡</span><span class="mode-title">VS ATTACK</span><span class="mode-desc">Five attacks. Beat your rival.</span><span class="mode-arrow">↗</span></button>
+            <button class="mode-card youtube-area" type="button" data-open-youtube><span class="mode-number">07</span><span class="mode-icon">▶</span><span class="mode-title">YOUTUBE AREA</span><span class="mode-desc">Search channels and watch videos.</span><span class="mode-arrow">↗</span></button>
           </div>
         </section>
 
@@ -116,35 +117,42 @@
               </div>
               <p id="musicStatus" class="music-status" aria-live="polite">Choose a style, then play. Official tracks play in the embedded player.</p>
             </section>
-            <section class="creator-panel" aria-label="In-game video hub">
-              <div class="music-panel-heading"><span class="music-note">▶</span><div><p class="eyebrow">VIDEO HUB</p><strong>Watch inside the game</strong></div></div>
-              <p class="creator-note">Choose a creator. Videos play here when the source allows embedding. Some videos may be unavailable due to creator or platform restrictions.</p>
-              <label class="music-label" for="videoCreatorSelect">CHOOSE A CHANNEL</label>
-              <select id="videoCreatorSelect" class="music-select">
-                <option value="mrbeast">MrBeast</option>
-                <option value="rkreddy">RkReddy</option>
-                <option value="brawlstars">Brawl Stars Official</option>
-                <option value="lex">Lex — Brawl Stars</option>
-                <option value="oj">OJ Gaming — Brawl Stars</option>
-                <option value="rey">Rey — Brawl Stars</option>
-                <option value="ash">Ash Brawl Stars</option>
-                <option value="staywild">Stay Wild</option>
-                <option value="staywildgaming">Stay Wild Gaming</option>
-                <option value="craftee">Craftee</option>
-                <option value="xnestorio">xNestorio</option>
-                <option value="preston">Preston</option>
-                <option value="prestonplayz">PrestonPlayz</option>
-              </select>
-              <div class="video-frame-wrap">
-                <iframe id="creatorVideoPlayer" title="Selected creator videos" src="https://www.youtube-nocookie.com/embed/videoseries?list=UUX6OQ3DkcsbYNE6H8uQQuVA" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-              </div>
-              <p id="creatorVideoStatus" class="music-status" aria-live="polite">MrBeast's uploads playlist is loaded. Pick another channel to load its in-page video search.</p>
-              <button id="creatorVideoLoadBtn" type="button" class="music-official-btn">▶ LOAD SELECTED VIDEOS</button>
-            </section>
+
             <div id="keeperPad" class="keeper-pad hidden"><span>GOALKEEPER DIVE</span><div><button data-dive="left">↙ LEFT</button><button data-dive="center">↑ CENTRE</button><button data-dive="right">RIGHT ↘</button></div></div>
             <div class="touch-note"><span class="touch-dot"></span> MADE FOR TOUCH · IPAD READY</div>
           </aside>
         </div>
+      </section>
+
+      <section id="youtubeScreen" class="screen youtube-screen hidden">
+        <div class="game-header youtube-header">
+          <button id="youtubeBackBtn" class="back-btn" type="button">← HOME</button>
+          <div><p class="eyebrow">ECLIPSE ARENA</p><h2>YOUTUBE <em>AREA</em></h2></div>
+        </div>
+        <section class="youtube-panel">
+          <div class="youtube-panel-heading"><span class="music-note">▶</span><div><p class="eyebrow">EXPLORE THE WORLD</p><h3>Find your next <em>watch.</em></h3></div></div>
+          <p class="youtube-help">Search YouTube for channels, creators, live streams, or videos from around the world. Search results open on YouTube; paste a video link below to watch it here when embedding is allowed.</p>
+          <form id="youtubeSearchForm" class="youtube-search-form">
+            <label class="music-label" for="youtubeSearchInput">SEARCH CHANNELS OR VIDEOS</label>
+            <div class="youtube-search-row"><input id="youtubeSearchInput" class="music-select" type="search" placeholder="Try football, gaming, science..." autocomplete="off" required><button class="music-play-btn" type="submit">SEARCH ↗</button></div>
+          </form>
+          <div class="youtube-quick-searches" aria-label="Popular search topics">
+            <button type="button" data-youtube-search="football highlights">Football</button>
+            <button type="button" data-youtube-search="gaming creators">Gaming</button>
+            <button type="button" data-youtube-search="Brawl Stars">Brawl Stars</button>
+            <button type="button" data-youtube-search="science experiments">Science</button>
+            <button type="button" data-youtube-search="music videos">Music</button>
+            <button type="button" data-youtube-search="Minecraft">Minecraft</button>
+          </div>
+          <a id="youtubeSearchLink" class="youtube-open-link hidden" href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer">OPEN YOUTUBE RESULTS ↗</a>
+          <form id="youtubeWatchForm" class="youtube-watch-form">
+            <label class="music-label" for="youtubeVideoUrl">WATCH A VIDEO HERE</label>
+            <div class="youtube-search-row"><input id="youtubeVideoUrl" class="music-select" type="url" placeholder="Paste a YouTube video URL" autocomplete="url"><button class="music-play-btn" type="submit">LOAD VIDEO</button></div>
+          </form>
+          <div class="youtube-player-wrap"><iframe id="youtubeAreaPlayer" title="YouTube Area video player" src="about:blank" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+          <p id="youtubeAreaStatus" class="music-status" aria-live="polite">Search for any creator, then paste a video link to watch it here. Some videos or channels block embedded playback.</p>
+          <a id="youtubeOpenVideoLink" class="youtube-open-link hidden" href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer">OPEN VIDEO ON YOUTUBE ↗</a>
+        </section>
       </section>
     </main>
     <footer><span>© ECLIPSE ARENA</span><span>PLAY FAIR. PLAY BOLD.</span><button id="resetBtn">RESET GAME ↻</button></footer>
