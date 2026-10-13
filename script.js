@@ -110,6 +110,36 @@
       "Lev Yashin":{number:1,hair:"#171311",skin:"#bd8b6c",shorts:"#151519",trim:"#c9c9d0",style:"short"}
     };
     const p=known[name]||{number:isKeeper?1:7,hair:"#211b18",skin:"#c99572",shorts:"#182331",trim:"#f2f4f2",style:"short"};
+    // Recognisable club/national-team kit palettes for the real players.
+    // Custom EclipseArena players keep their own signature colours.
+    const realKits = {
+      "Cristiano Ronaldo":{shirt:"#f5d52f",shorts:"#173d86",trim:"#f5d52f"},
+      "Erling Haaland":{shirt:"#6caddf",shorts:"#ffffff",trim:"#172b4d"},
+      "Jude Bellingham":{shirt:"#f8f8f4",shorts:"#f8f8f4",trim:"#d4b16a"},
+      "Lamine Yamal":{shirt:"#b51f3a",shorts:"#153a8a",trim:"#f5f5ef"},
+      "Lionel Messi":{shirt:"#f4a4c3",shorts:"#171717",trim:"#f8f8f4"},
+      "Kylian Mbappé":{shirt:"#f8f8f4",shorts:"#f8f8f4",trim:"#d4b16a"},
+      "Kevin De Bruyne":{shirt:"#1767c7",shorts:"#f8f8f4",trim:"#f8f8f4"},
+      "Mohamed Salah":{shirt:"#c92536",shorts:"#c92536",trim:"#f8f8f4"},
+      "Vinícius Júnior":{shirt:"#f8f8f4",shorts:"#f8f8f4",trim:"#d4b16a"},
+      "Neymar Jr.":{shirt:"#ffffff",shorts:"#111111",trim:"#c92536"},
+      "Harry Kane":{shirt:"#c91f36",shorts:"#c91f36",trim:"#f8f8f4"},
+      "Bukayo Saka":{shirt:"#c92536",shorts:"#f8f8f4",trim:"#f8f8f4"},
+      "Phil Foden":{shirt:"#6caddf",shorts:"#ffffff",trim:"#172b4d"},
+      "Alisson":{shirt:"#2f7d55",shorts:"#172b3a",trim:"#f8f8f4"},
+      "Thibaut Courtois":{shirt:"#3cbd78",shorts:"#172b3a",trim:"#f8f8f4"},
+      "Manuel Neuer":{shirt:"#f28b35",shorts:"#172b3a",trim:"#f8f8f4"},
+      "Ederson":{shirt:"#f28b35",shorts:"#172b3a",trim:"#f8f8f4"},
+      "Marc-André ter Stegen":{shirt:"#39b86a",shorts:"#172b3a",trim:"#f8f8f4"},
+      "Gianluigi Donnarumma":{shirt:"#242936",shorts:"#242936",trim:"#f8f8f4"},
+      "Emiliano Martínez":{shirt:"#65baff",shorts:"#172b3a",trim:"#f8f8f4"},
+      "Jan Oblak":{shirt:"#39b86a",shorts:"#172b3a",trim:"#f8f8f4"},
+      "David Raya":{shirt:"#39b86a",shorts:"#172b3a",trim:"#f8f8f4"},
+      "Mike Maignan":{shirt:"#f2cf35",shorts:"#172b3a",trim:"#171717"},
+      "Lev Yashin":{shirt:"#191919",shorts:"#151519",trim:"#c9c9d0"}
+    };
+    const kit=realKits[name];
+    if(kit){p.shorts=kit.shorts;p.trim=kit.trim;jersey=kit.shirt;}
     ctx.save();ctx.translate(cx,cy);ctx.rotate(rotation);ctx.scale(size,size);ctx.lineCap="round";ctx.lineJoin="round";
     // Soft ground shadow and detailed football boots.
     ctx.fillStyle="rgba(0,0,0,.28)";ctx.beginPath();ctx.ellipse(0,.43,.36,.075,0,0,Math.PI*2);ctx.fill();
@@ -138,12 +168,10 @@
     ctx.strokeStyle=p.trim;ctx.lineWidth=.075;ctx.beginPath();ctx.moveTo(-.16,.15);ctx.lineTo(-.19,.30);ctx.moveTo(.15,.15);ctx.lineTo(.20,.29);ctx.stroke();
     ctx.fillStyle="#f4f5f3";ctx.beginPath();ctx.ellipse(-.25,.405,.12,.055,-.15,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(.25,.39,.12,.055,.1,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#c7ff4a";ctx.fillRect(-.32,.43,.12,.025);ctx.fillRect(.19,.415,.12,.025);
-    // Neck and ears.
-    ctx.fillStyle=p.skin;ctx.fillRect(-.055,-.53,.11,.13);ctx.beginPath();ctx.ellipse(-.15,-.60,.035,.06,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(.15,-.60,.035,.06,0,0,Math.PI*2);ctx.fill();
-    // Head shape, jaw and facial features.
-    ctx.beginPath();ctx.ellipse(0,-.625,.145,.185,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="rgba(255,255,255,.16)";ctx.beginPath();ctx.ellipse(-.045,-.67,.045,.075,-.3,0,Math.PI*2);ctx.fill();
-    // Blank face and bald head: no hair, eyebrows, eyes, nose, mouth, or facial marks.
+    // Short neck only: ears are intentionally omitted.
+    ctx.fillStyle=p.skin;ctx.fillRect(-.055,-.53,.11,.13);
+    // Round bald head with a completely blank face.
+    ctx.beginPath();ctx.arc(0,-.625,.15,0,Math.PI*2);ctx.fill();
     ctx.restore();
   }
   function drawFullMatchPitch(){
