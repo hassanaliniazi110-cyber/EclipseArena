@@ -315,9 +315,6 @@
     $("youtubeVideoUrl").value="https://www.youtube.com/watch?v="+videoId;
     $("youtubeAreaPlayer").src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(videoId)+"?rel=0";
     $("youtubeAreaStatus").textContent="Song loaded in YouTube Area. If playback is blocked, use the link below.";
-    $("youtubeOpenVideoLink").href="https://www.youtube.com/watch?v="+videoId;
-    $("youtubeOpenVideoLink").textContent="OPEN SONG ON YOUTUBE ↗";
-    $("youtubeOpenVideoLink").classList.remove("hidden");
     return true;
   }
   function getMusicContext(){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;if(!musicContext)musicContext=new AC();return musicContext;}
@@ -393,15 +390,14 @@
   }
   function youtubeSearch(query){
     const cleaned=String(query||"").trim();
-    if(!cleaned){$("youtubeAreaStatus").textContent="Type a channel name, creator, or video topic to search.";return;}
-    const url="https://www.youtube.com/results?search_query="+encodeURIComponent(cleaned);
-    const link=$("youtubeSearchLink");
-    link.href=url;
-    link.classList.remove("hidden");
-    link.textContent='OPEN YOUTUBE RESULTS FOR "'+cleaned.toUpperCase()+'" ↗';
-    $("youtubeAreaStatus").textContent="Search ready. Open the YouTube results to browse channels and videos. To play a video inside this area, paste its video URL below.";
-    window.open(url,"_blank","noopener,noreferrer");
+    const status=$("youtubeAreaStatus");
+    if(!cleaned){
+      status.textContent="Type a channel name or topic to search.";
+      return;
+    }
+    status.textContent='In-game search received: "'+cleaned+'". A live catalogue of 1,000+ real YouTube channels needs a YouTube Data API connection. Paste a video URL below to try playing a video here.';
   }
+
   $("youtubeSearchForm").addEventListener("submit",e=>{
     e.preventDefault();
     youtubeSearch($("youtubeSearchInput").value);
@@ -413,11 +409,11 @@
   $("youtubeWatchForm").addEventListener("submit",e=>{
     e.preventDefault();
     const raw=$("youtubeVideoUrl").value.trim();
-    const status=$("youtubeAreaStatus"),player=$("youtubeAreaPlayer"),openLink=$("youtubeOpenVideoLink");
+    const status=$("youtubeAreaStatus"),player=$("youtubeAreaPlayer");
     if(!raw){status.textContent="Paste a YouTube video link first.";return;}
-    let videoId="",playlistId="",originalUrl=raw;
+    let videoId="",playlistId="";
     try{
-      if(/^[a-zA-Z0-9_-]{11}$/.test(raw)){videoId=raw;originalUrl="https://www.youtube.com/watch?v="+raw;}
+      if(/^[a-zA-Z0-9_-]{11}$/.test(raw)){videoId=raw;}
       else{
         const u=new URL(raw);
         const host=u.hostname.toLowerCase().replace(/^www\./,"");
@@ -431,21 +427,12 @@
     }catch(_){status.textContent="That link doesn't look valid. Paste a full YouTube video URL, such as youtube.com/watch?v=...";return;}
     if(videoId&&/^[a-zA-Z0-9_-]{11}$/.test(videoId)){
       player.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(videoId)+"?rel=0";
-      status.textContent="Loading video. If playback is blocked, use the link below to watch it on YouTube.";
-      openLink.href=originalUrl;
-      openLink.classList.remove("hidden");
-      openLink.textContent="OPEN VIDEO ON YOUTUBE ↗";
+      status.textContent="Loading video inside YouTube Area. Some videos block embedded playback.";
     }else if(playlistId){
       player.src="https://www.youtube-nocookie.com/embed/videoseries?list="+encodeURIComponent(playlistId);
       status.textContent="Loading playlist. Some playlists may not allow embedded playback.";
-      openLink.href=originalUrl;
-      openLink.classList.remove("hidden");
-      openLink.textContent="OPEN PLAYLIST ON YOUTUBE ↗";
     }else{
       status.textContent="That looks like a channel or search page, not a single video. Use Search above to explore it, or paste a video link.";
-      openLink.href=originalUrl;
-      openLink.classList.remove("hidden");
-      openLink.textContent="OPEN LINK ON YOUTUBE ↗";
     }
   });
 
