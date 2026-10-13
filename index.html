@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#07110f">
   <title>ECLIPSE ARENA | Football</title>
-  <link rel="stylesheet" href="style.css?v=youtube-in-app-10">
+  <link rel="stylesheet" href="style.css?v=youtube-in-app-11">
   <script src="script.js?v=youtube-in-app-10" defer></script>
 </head>
 <body>
@@ -128,24 +128,33 @@
         </div>
         <section class="youtube-panel">
           <div class="youtube-panel-heading"><span class="music-note">▶</span><div><p class="eyebrow">EXPLORE THE WORLD</p><h3>Find your next <em>watch.</em></h3></div></div>
-          <p class="youtube-help">Search YouTube for channels, creators, live streams, or videos from around the world. Search results open on YouTube; paste a video link below to watch it here when embedding is allowed.</p>
+          <p class="youtube-help">Choose a channel to load its uploads playlist inside the game. Search this built-in directory, save favourites, or paste a video/playlist link. YouTube may block embedding for some videos or playlists.</p>
           <form id="youtubeSearchForm" class="youtube-search-form">
-            <label class="music-label" for="youtubeSearchInput">SEARCH THE IN-GAME DIRECTORY</label>
-            <div class="youtube-search-row"><input id="youtubeSearchInput" class="music-select" type="search" placeholder="Try a channel name or topic..." autocomplete="off" required><button class="music-play-btn" type="submit">SEARCH ↗</button></div>
+            <label class="music-label" for="youtubeSearchInput">SEARCH THE IN-GAME CHANNEL DIRECTORY</label>
+            <div class="youtube-search-row"><input id="youtubeSearchInput" class="music-select" type="search" placeholder="Search football, gaming, science, music..." autocomplete="off"><button class="music-play-btn" type="submit">SEARCH</button></div>
           </form>
           <div class="youtube-quick-searches" aria-label="Popular search topics">
-            <button type="button" data-youtube-search="football highlights">Football</button>
-            <button type="button" data-youtube-search="gaming creators">Gaming</button>
-            <button type="button" data-youtube-search="science experiments">Science</button>
-            <button type="button" data-youtube-search="music videos">Music</button>
-            <button type="button" data-youtube-search="Minecraft">Minecraft</button>
+            <button type="button" data-youtube-search="football">Football</button>
+            <button type="button" data-youtube-search="gaming">Gaming</button>
+            <button type="button" data-youtube-search="science">Science</button>
+            <button type="button" data-youtube-search="music">Music</button>
+            <button type="button" data-youtube-search="technology">Technology</button>
+            <button type="button" data-youtube-search="comedy">Comedy</button>
           </div>
+          <section class="youtube-channel-section">
+            <div class="youtube-section-title"><h3>★ YOUR PREFERRED CHANNELS</h3><span>Tap ☆ to save favourites</span></div>
+            <div id="youtubePreferredGrid" class="youtube-channel-grid"></div>
+          </section>
+          <section class="youtube-channel-section">
+            <div class="youtube-section-title"><h3>CHANNEL DIRECTORY</h3><span id="youtubeChannelCount">15 channels</span></div>
+            <div id="youtubeDirectoryGrid" class="youtube-channel-grid"></div>
+          </section>
           <form id="youtubeWatchForm" class="youtube-watch-form">
-            <label class="music-label" for="youtubeVideoUrl">WATCH A VIDEO HERE</label>
-            <div class="youtube-search-row"><input id="youtubeVideoUrl" class="music-select" type="url" placeholder="Paste a YouTube video URL" autocomplete="url"><button class="music-play-btn" type="submit">LOAD VIDEO</button></div>
+            <label class="music-label" for="youtubeVideoUrl">OR WATCH A SPECIFIC VIDEO / PLAYLIST</label>
+            <div class="youtube-search-row"><input id="youtubeVideoUrl" class="music-select" type="url" placeholder="Paste a YouTube video or playlist URL" autocomplete="url"><button class="music-play-btn" type="submit">LOAD HERE</button></div>
           </form>
           <div class="youtube-player-wrap"><iframe id="youtubeAreaPlayer" title="YouTube Area video player" src="about:blank" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
-          <p id="youtubeAreaStatus" class="music-status" aria-live="polite">Search stays in this game. Paste a video link below to try playing it here; some videos block embedded playback.</p>
+          <p id="youtubeAreaStatus" class="music-status" aria-live="polite">Pick a channel above to load its uploads playlist here. Playback is tested by YouTube when it loads; some channels or videos may refuse embedding.</p>
         </section>
       </section>
     </main>
