@@ -89,7 +89,13 @@
                   <option value="funk">Brazilian funk vibe · Original</option>
                   <option value="silence">No music</option>
                 </optgroup>
-                <optgroup label="OFFICIAL SONGS — IN-GAME PLAYER">
+                <optgroup label="FIFA WORLD CUP 2026 OFFICIAL SONGS">
+                  <option value="wc26goals">Goals — LISA, Anitta &amp; Rema</option>
+                  <option value="wc26gametime">Game Time — Future &amp; Tyla</option>
+                  <option value="wc26illuminate">Illuminate — Jessie Reyez &amp; Elyanna</option>
+                  <option value="wc26echo">Echo — Daddy Yankee &amp; Shenseea</option>
+                </optgroup>
+                <optgroup label="MORE OFFICIAL SONGS — IN-GAME PLAYER">
                   <option value="speed">iShowSpeed — World Cup (Champions)</option>
                   <option value="dreamers">Jung Kook — Dreamers</option>
                   <option value="waka">Shakira — Waka Waka</option>
@@ -111,8 +117,11 @@
                 </optgroup>
               </select>
               <div class="music-actions"><button id="musicPlayBtn" type="button" class="music-play-btn">▶ PLAY BEAT</button><button id="musicStopBtn" type="button" class="music-stop-btn">■ STOP</button></div>
-              <button id="musicOfficialBtn" type="button" class="music-official-btn hidden">▶ PLAY SONG IN YOUTUBE AREA</button>
-              <p id="musicStatus" class="music-status" aria-live="polite">Choose a style, then play. Official tracks play in the embedded player.</p>
+              <button id="musicOfficialBtn" type="button" class="music-official-btn hidden">▶ PLAY SONG IN GAME</button>
+              <div id="musicEmbedWrap" class="music-embed-wrap hidden">
+                <iframe id="musicEmbedPlayer" title="In-game soundtrack player" src="about:blank" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+              </div>
+              <p id="musicStatus" class="music-status" aria-live="polite">Choose a style or song. Official songs play here on the game screen.</p>
             </section>
 
             <div id="keeperPad" class="keeper-pad hidden"><span>GOALKEEPER DIVE</span><div><button data-dive="left">↙ LEFT</button><button data-dive="center">↑ CENTRE</button><button data-dive="right">RIGHT ↘</button></div></div>
