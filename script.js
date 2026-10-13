@@ -51,11 +51,12 @@
   let selectedPlayer = "Zayd Quadri", selectedGoalkeeper = "Hassan Ali", difficulty = "Pro", mode = "penalty";
   let score = 0, opponentScore = 0, matchMinute = 0, matchAttacks = 0, attempt = 1, aim = {x:.5,y:.27}, power = 78, shotTaken = false, keeperDive = "center", keeperMotion = null, ballAnim = null, animationFrame = 0;
   const canvas = $("pitch"), ctx = canvas.getContext("2d");
-  let cw = 900, ch = 620, lastResult = "", shotTimer = null, soundOn = false;
+  let cw = 900, ch = 620, lastResult = "", shotTimer = null, soundOn = false, masterVolume = 0.65, passcodeFailures=0, passcodeLockUntil=0, lastShotReplay=null;
   const match = {active:false,finished:false,clock:0,lastTick:0,player:{x:.5,y:.72},rival:{x:.5,y:.28},ball:{x:.5,y:.72},move:"",sprint:false,hasBall:true,playerGoals:0,rivalGoals:0,rankPoints:0,rank:"ROOKIE III",lastRivalShot:0};
 
   function playerCard(p, selected, attr){
-    return '<button class="player-card '+(p.name===selected?'selected':'')+'" '+attr+'="'+p.name.replace(/"/g,"&quot;")+'" style="--player-glow:'+p.glow+'"><div class="player-rating">'+p.rating+'</div><div class="player-role">'+p.role+'</div><div class="player-name">'+p.name+'</div><div class="player-special">'+p.special+'</div></button>';
+    const xp=career.players[p.name]||0,level=1+Math.floor(xp/100),rating=p.rating+(p.name==="Hassan Ali"?0:level-1);
+    return '<button class="player-card '+(p.name===selected?'selected':'')+'" '+attr+'="'+p.name.replace(/"/g,"&quot;")+'" style="--player-glow:'+p.glow+'"><div class="player-rating">'+rating+'</div><div class="player-role">'+p.role+' · LVL '+level+'</div><div class="player-name">'+p.name+'</div><div class="player-special">'+p.special+' · '+xp+' XP</div></button>';
   }
   function renderPlayers(){
     $("playerGrid").innerHTML = players.map(p=>playerCard(p,selectedPlayer,"data-player")).join("");
@@ -67,7 +68,11 @@
       selectedGoalkeeper=btn.dataset.goalkeeper;renderPlayers();toast(selectedGoalkeeper+" selected as goalkeeper");
     }));
   }
-  function toast(message){const el=$("toast");el.textContent=message;el.classList.add("show");clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove("show"),1800)}
+  function toast(message){const el=$("toast");el.textContent=message;el.classList.add("show");clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove("show"),2600)}
+  const career=(()=>{try{return Object.assign({attempts:0,goals:0,saves:0,xp:0,players:{},tournamentWins:0,bestScore:0},JSON.parse(localStorage.getItem("eclipseCareer")||"{}"));}catch(_){return {attempts:0,goals:0,saves:0,xp:0,players:{},tournamentWins:0,bestScore:0};}})();
+  function saveCareer(){try{localStorage.setItem("eclipseCareer",JSON.stringify(career));}catch(_){}}
+  function awardProgress(success){career.attempts++;if(success){if(mode==="goalkeeping"||mode==="survival")career.saves++;else career.goals++;}const earned=10+(success?20:0);career.xp+=earned;career.players[selectedPlayer]=(career.players[selectedPlayer]||0)+earned;career.bestScore=Math.max(career.bestScore,score);saveCareer();renderPlayers();return "CAREER · "+career.goals+" goals · "+career.saves+" saves · "+career.xp+" XP · LVL "+(1+Math.floor((career.players[selectedPlayer]||0)/100));}
+  function playCue(kind){if(!soundOn)return;const ac=getMusicContext();if(!ac)return;try{ac.resume();const t=ac.currentTime+.01;if(kind==="goal"){tone(523,.12,"triangle",.05,t);tone(659,.16,"triangle",.045,t+.12);tone(784,.22,"triangle",.04,t+.25);}else{tone(220,.14,"sine",.035,t);tone(165,.18,"sine",.025,t+.12);}}catch(_){}}
   function resizeCanvas(){
     const rect=canvas.getBoundingClientRect();if(!rect.width)return;
     const dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.width/1.36*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);cw=rect.width;ch=rect.width/1.36;drawPitch();
@@ -166,8 +171,8 @@
     if(ballAnim){
       const t=Math.min(1,(performance.now()-ballAnim.start)/ballAnim.duration);
       const ease=1-Math.pow(1-t,2);
-      const x=ballAnim.fromX+(ballAnim.toX-ballAnim.fromX)*ease;
-      const y=ballAnim.fromY+(ballAnim.toY-ballAnim.fromY)*ease-Math.sin(t*Math.PI)*h*.16;
+      const x=ballAnim.fromX+(ballAnim.toX-ballAnim.fromX)*ease+Math.sin(t*Math.PI)*(ballAnim.curve||0)*w;
+      const y=ballAnim.fromY+(ballAnim.toY-ballAnim.fromY)*ease-Math.sin(t*Math.PI)*h*(ballAnim.lift||.16);
       ctx.fillStyle="#f5f6ed";ctx.beginPath();ctx.arc(x,y,Math.max(5,w*.012)*(1-ease*.25),0,Math.PI*2);ctx.fill();
       ctx.strokeStyle="#17251c";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x-3,y-2);ctx.lineTo(x+3,y+2);ctx.moveTo(x+2,y-4);ctx.lineTo(x-2,y+4);ctx.stroke();
       if(t<1){animationFrame=requestAnimationFrame(drawPitch)}else{ballAnim=null}
@@ -223,14 +228,18 @@
       message += "  |  "+(mode==="headtohead"?matchMinute+"'":"ATTACK "+matchAttacks+"/5")+" · YOU "+Math.floor(score/100)+" - "+opponentScore+" RIVAL";
     }
     $("scoreValue").textContent=mode==="headtohead"||mode==="vsattack"?Math.floor(score/100)+"-"+opponentScore:score;
-    $("feedback").textContent=message;$("shootBtn").classList.add("hidden");$("nextBtn").classList.remove("hidden");
+    const careerLine=awardProgress(success);playCue(success?"goal":"save");if(success&&mode!=="goalkeeping"&&mode!=="survival")message="🏆 "+message+"  ✨ GOAL CELEBRATION!";$("feedback").textContent=message+"  |  "+careerLine+"  |  Press R to replay your last shot.";
+    $("shootBtn").classList.add("hidden");$("nextBtn").classList.remove("hidden");
     $("nextBtn").textContent=(mode==="headtohead"&&matchMinute>=90)||(mode==="vsattack"&&matchAttacks>=5)?"FINISH MATCH":"NEXT ATTACK →";
     $("roundLabel").textContent=mode==="headtohead"?matchMinute+"' · "+(matchMinute>=90?"FULL TIME":"MATCH LIVE"):mode==="vsattack"?"ATTACK "+matchAttacks+" / 5":"ATTEMPT "+String(attempt).padStart(2,"0")+" · COMPLETE";
   }
   function shoot(){
     if(shotTaken)return;
     const fromX=cw*.5,fromY=ch*.77,toX=aim.x*cw,toY=aim.y*ch;
-    ballAnim={fromX,fromY,toX,toY,start:performance.now(),duration:500};keeperMotion={side:aim.x<.43?-1:aim.x>.57?1:(Math.random()<.5?-1:1),start:performance.now(),duration:500};drawPitch();
+    const curveStrength=mode==="freekick"?.12:selectedPlayer==="Lamine Yamal"?.085:selectedPlayer==="Lionel Messi"?.065:selectedPlayer==="Zayd Quadri"?.045:.018;
+    const curve=(aim.x<.5?1:-1)*curveStrength*(power/78);
+    lastShotReplay={fromX,fromY,toX,toY,curve,lift:.16,duration:500,mode,aim:{...aim},power,player:selectedPlayer};
+    ballAnim={...lastShotReplay,start:performance.now()};keeperMotion={side:aim.x<.43?-1:aim.x>.57?1:(Math.random()<.5?-1:1),start:performance.now(),duration:500};drawPitch();
     const centerBias=Math.abs(aim.x-.5);
     const keeperIsHassan=selectedGoalkeeper==="Hassan Ali";
     const baseScoreChance=difficulty==="Rookie"?.88:difficulty==="Pro"?.58:.24;
@@ -289,7 +298,7 @@
   $("keeperPad").addEventListener("click",e=>{if(e.target.closest("[data-dive]"))return;});
 
   // Original, synthesized soundtrack loops. Licensed songs open their official video separately.
-  let musicContext=null,musicTimer=null,musicStep=0,musicStyle="hiphop",musicPlaying=false;
+  let musicContext=null,musicMaster=null,musicTimer=null,musicStep=0,musicStyle="hiphop",musicPlaying=false;
   // Official recordings load inside the soundtrack panel; no navigation away from the game.
   const officialSongs={
     speed:"vrY1THC_NQE", dreamers:"IwzkfMmNMpM", waka:"pRpeEdMmmQ0",
@@ -320,12 +329,12 @@
     $("musicStatus").textContent="Song loaded in the in-game soundtrack player. If it does not autoplay, press play on the player.";
     return true;
   }
-  function getMusicContext(){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;if(!musicContext)musicContext=new AC();return musicContext;}
+  function getMusicContext(){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;if(!musicContext){musicContext=new AC();musicMaster=musicContext.createGain();musicMaster.gain.value=soundOn?masterVolume:0;musicMaster.connect(musicContext.destination);}return musicContext;}
   function tone(freq,duration,type,volume,when){
     if(!musicContext||!freq)return;
     const osc=musicContext.createOscillator(),gain=musicContext.createGain(),start=when||musicContext.currentTime;
     osc.type=type||"sine";osc.frequency.setValueAtTime(freq,start);gain.gain.setValueAtTime(Math.max(.0001,volume||.035),start);gain.gain.exponentialRampToValueAtTime(.0001,start+duration);
-    osc.connect(gain);gain.connect(musicContext.destination);osc.start(start);osc.stop(start+duration+.02);
+    osc.connect(gain);gain.connect(musicMaster||musicContext.destination);osc.start(start);osc.stop(start+duration+.02);
   }
   function beatKick(t){tone(125,.18,"sine",.12,t);tone(48,.15,"sine",.1,t);}
   function beatSnare(t){tone(180,.08,"triangle",.045,t);tone(95,.07,"square",.018,t+.015);}
@@ -420,11 +429,13 @@
   const defaultPreferred = youtubeChannels.filter(c=>c.preferred).map(c=>c.name);
   let preferredChannels = (()=>{try{const saved=JSON.parse(localStorage.getItem("eclipseYoutubePreferred")||"null");return Array.isArray(saved)?[...new Set([...defaultPreferred,...saved])]:defaultPreferred.slice();}catch(_){return defaultPreferred.slice();}})();
   function openYouTubeArea(){
+    if(Date.now()<passcodeLockUntil){toast("YouTube Area temporarily locked. Try again in a moment.");return;}
     const enteredPasscode=window.prompt("ECLIPSE ARENA — YouTube Area is locked. Enter passcode:");
     if(enteredPasscode!=="2728"){
-      if(enteredPasscode!==null)toast("Incorrect passcode. YouTube Area remains locked.");
+      if(enteredPasscode!==null){passcodeFailures++;toast("Incorrect passcode. YouTube Area remains locked.");if(passcodeFailures>=3){passcodeLockUntil=Date.now()+20000;passcodeFailures=0;toast("Too many attempts. Locked for 20 seconds.");}}
       return;
     }
+    passcodeFailures=0;
     match.active=false;
     cancelAnimationFrame(animationFrame);
     $("gameScreen").classList.add("hidden");
@@ -532,8 +543,9 @@
   });
   renderYouTubeChannels();
 
-  $("soundBtn").addEventListener("click",()=>{soundOn=!soundOn;$("soundBtn").textContent=soundOn?"♫":"♪";toast(soundOn?"Music controls are below":"Sound cues muted")});
-  $("resetBtn").addEventListener("click",()=>{match.active=false;match.finished=false;cancelAnimationFrame(animationFrame);score=0;attempt=1;shotTaken=false;ballAnim=null;$("scoreValue").textContent="0";toast("Score reset")});
+  $("soundBtn").addEventListener("click",()=>{soundOn=!soundOn;$("soundBtn").textContent=soundOn?"♫":"♪";if(musicMaster)musicMaster.gain.setTargetAtTime(soundOn?masterVolume:0,musicContext.currentTime,.04);toast(soundOn?"Sound on · volume "+Math.round(masterVolume*100)+"%":"Sound muted. Use + and − keys to change volume.")});
+  document.addEventListener("keydown",e=>{if(e.target.matches("input,textarea,select")||e.metaKey||e.ctrlKey||e.altKey)return;if(e.key.toLowerCase()==="r"&&lastShotReplay&&!$("gameScreen").classList.contains("hidden")){ballAnim={...lastShotReplay,start:performance.now()};keeperMotion=null;drawPitch();toast("Replaying last shot");return;}if(e.key==="+"||e.key==="="||e.key==="-"||e.key==="_"){masterVolume=Math.max(0,Math.min(1,masterVolume+(e.key==="-"||e.key==="_"?-.1:.1)));if(musicMaster&&soundOn)musicMaster.gain.setTargetAtTime(masterVolume,musicContext.currentTime,.04);toast("Game volume: "+Math.round(masterVolume*100)+"%");}});
+  $("resetBtn").addEventListener("click",()=>{match.active=false;match.finished=false;cancelAnimationFrame(animationFrame);score=0;attempt=1;shotTaken=false;ballAnim=null;$("scoreValue").textContent="0";toast("Session score reset · Career records and upgrades are saved")});
   // A touch-friendly joystick appears only in goalkeeper mode as an extra dive input.
   window.addEventListener("resize",()=>{if(!$("gameScreen").classList.contains("hidden"))resizeCanvas()});
   renderPlayers();resizeCanvas();
