@@ -168,10 +168,7 @@
     ctx.strokeStyle=p.trim;ctx.lineWidth=.075;ctx.beginPath();ctx.moveTo(-.16,.15);ctx.lineTo(-.19,.30);ctx.moveTo(.15,.15);ctx.lineTo(.20,.29);ctx.stroke();
     ctx.fillStyle="#f4f5f3";ctx.beginPath();ctx.ellipse(-.25,.405,.12,.055,-.15,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(.25,.39,.12,.055,.1,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#c7ff4a";ctx.fillRect(-.32,.43,.12,.025);ctx.fillRect(.19,.415,.12,.025);
-    // Short neck only: ears are intentionally omitted.
-    ctx.fillStyle=p.skin;ctx.fillRect(-.055,-.53,.11,.13);
-    // Round bald head with a completely blank face.
-    ctx.beginPath();ctx.arc(0,-.625,.15,0,Math.PI*2);ctx.fill();
+    // Head drawing temporarily removed before reapplying the blank round head.
     ctx.restore();
   }
   function drawFullMatchPitch(){
