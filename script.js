@@ -292,7 +292,7 @@
     takefive:"vmDDOFXSgAs", flymoon:"ZEcqHA7dbwM", autumnleaves:"JTt_2-ykGCQ",
     sowhat:"zqNTltOGh5c", entertainer:"BNBXDC77FVA",
     wc26goals:"safzyuZNCGI", wc26gametime:"JLucCHwY-2c",
-    wc26illuminate:"im0FLUw7wtY", wc26echo:"228FtMaq8uY"
+    wc26illuminate:"im0FLUw7wtY", wc26echo:"228FtMaq8uY", wc26dna:"alTzdOAAMhc"
   };
   function clearInGameSong(){
     const wrap=$("musicEmbedWrap"),player=$("musicEmbedPlayer");
