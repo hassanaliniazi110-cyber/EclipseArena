@@ -377,6 +377,7 @@
   // In-game YouTube directory. Channel upload playlists use YouTube's public UU playlist IDs.
   // No API key is needed for this curated directory; YouTube still controls embed availability.
   const youtubeChannels = [
+    {name:"Muhammad Arham",category:"YouTube creator",tags:"muhammad arham muhammadarham-o1p1h creator",playlist:"",channelUrl:"https://www.youtube.com/@muhammadarham-o1p1h",websiteUrl:"",websiteLabel:"",preferred:true},
     {name:"KairosTime Gaming",category:"Brawl Stars · gaming",tags:"kairos kairostime brawl stars gaming",playlist:"UUmG2EhfOwSjpPMX4LjGY__A",channelUrl:"https://www.youtube.com/@kairosgaming",websiteUrl:"https://x.com/KairosTime",websiteLabel:"CREATOR LINKS",preferred:true},
     {name:"RkReddy",category:"FC Mobile · football gaming",tags:"rkreddy fc mobile fifa football soccer",playlist:"UUurtk6gwUZPnccBndhFPNMQ",channelUrl:"https://www.youtube.com/@rkreddy",websiteUrl:"https://www.digitalsportsmgmt.com/rkreddy",websiteLabel:"CREATOR WEBSITE",preferred:true},
     {name:"Dude Perfect",category:"Sports · comedy · trick shots",tags:"football soccer sports comedy tricks",playlist:"UURijo3ddMTht_IHyNSNXpNQ",channelUrl:"https://www.youtube.com/@DudePerfect",websiteUrl:"https://dudeperfect.com/",websiteLabel:"OFFICIAL WEBSITE",preferred:true},
@@ -413,9 +414,15 @@
   }
   function playChannelPlaylist(channel){
     const player=$("youtubeAreaPlayer");
-    player.src="https://www.youtube-nocookie.com/embed/videoseries?list="+encodeURIComponent(channel.playlist)+"&rel=0";
-    $("youtubeAreaStatus").textContent="Loading "+channel.name+"'s uploads playlist inside FootballGame3. YouTube will determine whether the playlist can be embedded here.";
-    $("youtubeVideoUrl").value="https://www.youtube.com/playlist?list="+channel.playlist;
+    if(channel.playlist){
+      player.src="https://www.youtube-nocookie.com/embed/videoseries?list="+encodeURIComponent(channel.playlist)+"&rel=0";
+      $("youtubeAreaStatus").textContent="Loading "+channel.name+"'s uploads playlist inside FootballGame3. YouTube will determine whether the playlist can be embedded here.";
+      $("youtubeVideoUrl").value="https://www.youtube.com/playlist?list="+channel.playlist;
+    }else{
+      player.src="https://www.youtube-nocookie.com/embed?listType=search&list="+encodeURIComponent(channel.name);
+      $("youtubeAreaStatus").textContent="Trying to play "+channel.name+"'s videos inside FootballGame3. YouTube may block embedded search results; if that happens, use CHANNEL URL.";
+      $("youtubeVideoUrl").value=channel.channelUrl||"";
+    }
     player.scrollIntoView({behavior:"smooth",block:"center"});
   }
   function togglePreferredChannel(name){
