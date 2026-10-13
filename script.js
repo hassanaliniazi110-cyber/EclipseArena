@@ -420,6 +420,11 @@
   const defaultPreferred = youtubeChannels.filter(c=>c.preferred).map(c=>c.name);
   let preferredChannels = (()=>{try{const saved=JSON.parse(localStorage.getItem("eclipseYoutubePreferred")||"null");return Array.isArray(saved)?[...new Set([...defaultPreferred,...saved])]:defaultPreferred.slice();}catch(_){return defaultPreferred.slice();}})();
   function openYouTubeArea(){
+    const enteredPasscode=window.prompt("ECLIPSE ARENA — YouTube Area is locked. Enter passcode:");
+    if(enteredPasscode!=="2728"){
+      if(enteredPasscode!==null)toast("Incorrect passcode. YouTube Area remains locked.");
+      return;
+    }
     match.active=false;
     cancelAnimationFrame(animationFrame);
     $("gameScreen").classList.add("hidden");
