@@ -6,7 +6,7 @@
     {name:"Zayd Quadri", rating:96, role:"DRIBBLER", special:"Close control", glow:"rgba(75,191,255,.2)"},
     {name:"Ehan Ali", rating:94, role:"ALL-ROUNDER", special:"Quick reactions", glow:"rgba(189,123,255,.2)"},
     {name:"Umar Shoaib", rating:92, role:"PLAYMAKER", special:"Smart passing", glow:"rgba(255,140,66,.2)"},
-    {name:"Muhammad Arham", rating:91, role:"STRIKER", special:"Finishing touch", glow:"rgba(255,99,99,.2)"},
+    {name:"Muhammad Arham", rating:122, role:"STRIKER", special:"Finishing touch", glow:"rgba(255,99,99,.2)"},
     {name:"Cristiano Ronaldo", rating:999, role:"LEGEND", special:"MAX POWER & PRECISION", stats:{shooting:1000000000000000000,power:999999999999999,accuracy:999999999999,speed:10000000000000000}, glow:"rgba(255,140,66,.2)"},
     {name:"Erling Haaland", rating:98, role:"STRIKER", special:"Long-shot power", glow:"rgba(75,191,255,.2)"},
     {name:"Jude Bellingham", rating:97, role:"MIDFIELDER", special:"Penalty specialist", glow:"rgba(189,123,255,.2)"},
@@ -35,7 +35,7 @@
     {name:"David Raya",rating:89,role:"GOALKEEPER",special:"Quick distribution",glow:"rgba(100,220,130,.2)"},
     {name:"Mike Maignan",rating:90,role:"GOALKEEPER",special:"Explosive reactions",glow:"rgba(90,210,240,.2)"},
     {name:"Lev Yashin",rating:98,role:"THE BLACK SPIDER",special:"Legendary reflexes & reach",glow:"rgba(30,30,38,.28)"},
-    {name:"Muhammad Arham",rating:93,role:"GOALKEEPER",special:"Brave close-range saves",glow:"rgba(255,99,99,.2)"}
+    {name:"Muhammad Arham",rating:122,role:"GOALKEEPER",special:"Brave close-range saves",glow:"rgba(255,99,99,.2)"}
   ];
   const modeNames = {penalty:"PENALTY",freekick:"FREE KICK",longshot:"LONG SHOT",goalkeeping:"GOALKEEPER",headtohead:"HEAD-TO-HEAD",vsattack:"VS ATTACK"};
   const modeText = {
