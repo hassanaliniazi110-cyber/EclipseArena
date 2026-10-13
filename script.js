@@ -113,16 +113,16 @@
     // Recognisable club/national-team kit palettes for the real players.
     // Custom EclipseArena players keep their own signature colours.
     const realKits = {
-      "Cristiano Ronaldo":{shirt:"#f5d52f",shorts:"#173d86",trim:"#f5d52f"},
+      "Cristiano Ronaldo":{shirt:"#f5d52f",shorts:"#17469b",trim:"#173d86"},
       "Erling Haaland":{shirt:"#6caddf",shorts:"#ffffff",trim:"#172b4d"},
       "Jude Bellingham":{shirt:"#f8f8f4",shorts:"#f8f8f4",trim:"#d4b16a"},
-      "Lamine Yamal":{shirt:"#b51f3a",shorts:"#153a8a",trim:"#f5f5ef"},
-      "Lionel Messi":{shirt:"#f4a4c3",shorts:"#171717",trim:"#f8f8f4"},
-      "Kylian Mbappé":{shirt:"#f8f8f4",shorts:"#f8f8f4",trim:"#d4b16a"},
-      "Kevin De Bruyne":{shirt:"#1767c7",shorts:"#f8f8f4",trim:"#f8f8f4"},
+      "Lamine Yamal":{shirt:"#153a8a",shorts:"#153a8a",trim:"#b51f3a"},
+      "Lionel Messi":{shirt:"#f4a4c3",shorts:"#171717",trim:"#171717"},
+      "Kylian Mbappé":{shirt:"#f8f8f4",shorts:"#f8f8f4",trim:"#173d86"},
+      "Kevin De Bruyne":{shirt:"#6caddf",shorts:"#ffffff",trim:"#172b4d"},
       "Mohamed Salah":{shirt:"#c92536",shorts:"#c92536",trim:"#f8f8f4"},
       "Vinícius Júnior":{shirt:"#f8f8f4",shorts:"#f8f8f4",trim:"#d4b16a"},
-      "Neymar Jr.":{shirt:"#ffffff",shorts:"#111111",trim:"#c92536"},
+      "Neymar Jr.":{shirt:"#ffffff",shorts:"#ffffff",trim:"#111111"},
       "Harry Kane":{shirt:"#c91f36",shorts:"#c91f36",trim:"#f8f8f4"},
       "Bukayo Saka":{shirt:"#c92536",shorts:"#f8f8f4",trim:"#f8f8f4"},
       "Phil Foden":{shirt:"#6caddf",shorts:"#ffffff",trim:"#172b4d"},
@@ -131,9 +131,9 @@
       "Manuel Neuer":{shirt:"#f28b35",shorts:"#172b3a",trim:"#f8f8f4"},
       "Ederson":{shirt:"#f28b35",shorts:"#172b3a",trim:"#f8f8f4"},
       "Marc-André ter Stegen":{shirt:"#39b86a",shorts:"#172b3a",trim:"#f8f8f4"},
-      "Gianluigi Donnarumma":{shirt:"#242936",shorts:"#242936",trim:"#f8f8f4"},
-      "Emiliano Martínez":{shirt:"#65baff",shorts:"#172b3a",trim:"#f8f8f4"},
-      "Jan Oblak":{shirt:"#39b86a",shorts:"#172b3a",trim:"#f8f8f4"},
+      "Gianluigi Donnarumma":{shirt:"#43c6b7",shorts:"#102b34",trim:"#f8f8f4"},
+      "Emiliano Martínez":{shirt:"#a88bff",shorts:"#242033",trim:"#f8f8f4"},
+      "Jan Oblak":{shirt:"#55d6e8",shorts:"#123b49",trim:"#f8f8f4"},
       "David Raya":{shirt:"#39b86a",shorts:"#172b3a",trim:"#f8f8f4"},
       "Mike Maignan":{shirt:"#f2cf35",shorts:"#172b3a",trim:"#171717"},
       "Lev Yashin":{shirt:"#191919",shorts:"#151519",trim:"#c9c9d0"}
@@ -168,7 +168,10 @@
     ctx.strokeStyle=p.trim;ctx.lineWidth=.075;ctx.beginPath();ctx.moveTo(-.16,.15);ctx.lineTo(-.19,.30);ctx.moveTo(.15,.15);ctx.lineTo(.20,.29);ctx.stroke();
     ctx.fillStyle="#f4f5f3";ctx.beginPath();ctx.ellipse(-.25,.405,.12,.055,-.15,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(.25,.39,.12,.055,.1,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#c7ff4a";ctx.fillRect(-.32,.43,.12,.025);ctx.fillRect(.19,.415,.12,.025);
-    // Head drawing temporarily removed before reapplying the blank round head.
+    // Short neck only: ears are intentionally omitted.
+    ctx.fillStyle=p.skin;ctx.fillRect(-.055,-.53,.11,.13);
+    // Round bald head with a completely blank face.
+    ctx.beginPath();ctx.arc(0,-.625,.15,0,Math.PI*2);ctx.fill();
     ctx.restore();
   }
   function drawFullMatchPitch(){
