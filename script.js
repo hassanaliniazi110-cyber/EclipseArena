@@ -84,19 +84,19 @@
       "Ehan Ali":{number:8,hair:"#30241d",skin:"#d5a57d",shorts:"#252033",trim:"#bd7bff",style:"short"},
       "Umar Shoaib":{number:10,hair:"#191919",skin:"#bd8967",shorts:"#202b37",trim:"#ffb45f",style:"wavy"},
       "Muhammad Arham":{number:9,hair:"#201b18",skin:"#b77d58",shorts:"#192a42",trim:"#ff6b6b",style:"short"},
-      "Cristiano Ronaldo":{number:7,hair:"#35251b",skin:"#c58d68",shorts:"#f5f5f5",trim:"#c99d43",style:"short"},
-      "Erling Haaland":{number:9,hair:"#d4b17b",skin:"#efc9a6",shorts:"#69b9f4",trim:"#f5f5ef",style:"long"},
-      "Jude Bellingham":{number:5,hair:"#171311",skin:"#89573f",shorts:"#262038",trim:"#d8b9ff",style:"curly"},
-      "Lamine Yamal":{number:19,hair:"#171311",skin:"#a96f50",shorts:"#242b35",trim:"#ffd28a",style:"curly"},
-      "Lionel Messi":{number:10,hair:"#5a3828",skin:"#d2a17d",shorts:"#75b9ee",trim:"#f5f5ef",style:"short"},
-      "Kylian Mbappé":{number:7,hair:"#171311",skin:"#925d43",shorts:"#272238",trim:"#e1c8ff",style:"short"},
-      "Kevin De Bruyne":{number:17,hair:"#bd956b",skin:"#e5bd9c",shorts:"#c7d8e7",trim:"#fff",style:"short"},
+      "Cristiano Ronaldo":{number:7,hair:"#35251b",skin:"#c58d68",shorts:"#173d86",trim:"#f6d447",style:"short"},
+      "Erling Haaland":{number:9,hair:"#d4b17b",skin:"#efc9a6",shorts:"#ffffff",trim:"#ffffff",style:"long"},
+      "Jude Bellingham":{number:5,hair:"#171311",skin:"#89573f",shorts:"#ffffff",trim:"#d4b16a",style:"curly"},
+      "Lamine Yamal":{number:19,hair:"#171311",skin:"#a96f50",shorts:"#153a8a",trim:"#b82035",style:"curly"},
+      "Lionel Messi":{number:10,hair:"#5a3828",skin:"#d2a17d",shorts:"#f4a4c3",trim:"#171717",style:"short"},
+      "Kylian Mbappé":{number:7,hair:"#171311",skin:"#925d43",shorts:"#ffffff",trim:"#d4b16a",style:"short"},
+      "Kevin De Bruyne":{number:17,hair:"#bd956b",skin:"#e5bd9c",shorts:"#ffffff",trim:"#ffffff",style:"short"},
       "Mohamed Salah":{number:11,hair:"#211713",skin:"#9c674d",shorts:"#c83d45",trim:"#f5f5ef",style:"curly"},
-      "Vinícius Júnior":{number:7,hair:"#171311",skin:"#8e593f",shorts:"#20222d",trim:"#c7ff4a",style:"short"},
-      "Neymar Jr.":{number:10,hair:"#2d211a",skin:"#c18d6a",shorts:"#f4d24d",trim:"#fff",style:"wavy"},
-      "Harry Kane":{number:9,hair:"#765139",skin:"#e2b997",shorts:"#fff",trim:"#b7d8ff",style:"short"},
-      "Bukayo Saka":{number:7,hair:"#171311",skin:"#986246",shorts:"#252033",trim:"#ff9e62",style:"short"},
-      "Phil Foden":{number:47,hair:"#bd956b",skin:"#e3bb98",shorts:"#75b9ef",trim:"#fff",style:"short"},
+      "Vinícius Júnior":{number:7,hair:"#171311",skin:"#8e593f",shorts:"#ffffff",trim:"#d4b16a",style:"short"},
+      "Neymar Jr.":{number:10,hair:"#2d211a",skin:"#c18d6a",shorts:"#ffffff",trim:"#111111",style:"wavy"},
+      "Harry Kane":{number:9,hair:"#765139",skin:"#e2b997",shorts:"#c91f36",trim:"#ffffff",style:"short"},
+      "Bukayo Saka":{number:7,hair:"#171311",skin:"#986246",shorts:"#ffffff",trim:"#ffffff",style:"short"},
+      "Phil Foden":{number:47,hair:"#bd956b",skin:"#e3bb98",shorts:"#ffffff",trim:"#ffffff",style:"short"},
       "Alisson":{number:1,hair:"#382b20",skin:"#c58f6b",shorts:"#25313d",trim:"#4bbfff",style:"short"},
       "Thibaut Courtois":{number:1,hair:"#765139",skin:"#e2b997",shorts:"#263448",trim:"#ffb45f",style:"short"},
       "Manuel Neuer":{number:1,hair:"#a98662",skin:"#e0b995",shorts:"#25313d",trim:"#ffe27a",style:"short"},
@@ -197,7 +197,7 @@
     const kx = w*.5 + (diving ? side*w*diveRange*diveProgress : 0);
     const ky = h*.135 - (diving ? h*(selectedGoalkeeper==="Hassan Ali"?.085:.055)*Math.sin(keeperT*Math.PI/2) : 0);
     const rotation = diving ? side*1.25*diveProgress : 0;
-    const keeperJersey = selectedGoalkeeper==="Hassan Ali" ? "#c7ff4a" : selectedGoalkeeper==="Ehan Ali" ? "#bd7bff" : selectedGoalkeeper==="Alisson" ? "#4bbfff" : "#ff8c42";
+    const keeperKits = {"Hassan Ali":"#c7ff4a","Ehan Ali":"#bd7bff","Alisson":"#f2cf35","Thibaut Courtois":"#3cbd78","Manuel Neuer":"#f28b35","Ederson":"#f28b35","Marc-André ter Stegen":"#39b86a","Gianluigi Donnarumma":"#242936","Emiliano Martínez":"#65baff","Jan Oblak":"#39b86a","David Raya":"#39b86a","Mike Maignan":"#f2cf35","Lev Yashin":"#191919","Muhammad Arham":"#ff6b6b"}; const keeperJersey=keeperKits[selectedGoalkeeper]||"#ff8c42";
     drawFootballer(kx,ky,Math.max(12,w*.105),rotation,keeperJersey,true,selectedGoalkeeper);
     ctx.fillStyle="rgba(5,15,10,.82)";ctx.fillRect(w*.5-w*.095,h*.205,w*.19,h*.026);
     ctx.fillStyle="#f2f7f2";ctx.font="800 "+Math.max(8,w*.013)+"px sans-serif";ctx.textAlign="center";
@@ -209,7 +209,7 @@
       ctx.beginPath();ctx.moveTo(w*.5,h*.72);ctx.lineTo(w*.5+((aim.x-.5)*w*.4),h*.48);ctx.stroke();ctx.setLineDash([]);
     }else{
       // Shooter at the spot, with a distinct kit and ball at their feet.
-      const shooterJersey = selectedPlayer==="Cristiano Ronaldo" ? "#f2f4ec" : selectedPlayer==="Erling Haaland" ? "#65baff" : selectedPlayer==="Jude Bellingham" ? "#bd7bff" : selectedPlayer==="Lamine Yamal" ? "#ff8c42" : "#f2f4ec";
+      const shooterKits = {"Hassan Ali":"#f2f4ec","Zayd Quadri":"#f2f4ec","Ehan Ali":"#bd7bff","Umar Shoaib":"#ff8c42","Muhammad Arham":"#ff6b6b","Cristiano Ronaldo":"#f5d52f","Erling Haaland":"#65baff","Jude Bellingham":"#f8f8f4","Lamine Yamal":"#b51f3a","Lionel Messi":"#f4a4c3","Kylian Mbappé":"#f8f8f4","Kevin De Bruyne":"#1767c7","Mohamed Salah":"#c92536","Vinícius Júnior":"#f8f8f4","Neymar Jr.":"#f8f8f4","Harry Kane":"#c91f36","Bukayo Saka":"#d92535","Phil Foden":"#65baff"}; const shooterJersey=shooterKits[selectedPlayer]||"#f2f4ec";
       drawFootballer(w*.5,h*.755,Math.max(13,w*.105),-.08,shooterJersey,false,selectedPlayer);
       // Kick leg swings when the shot is taken.
       if(ballAnim){
