@@ -284,37 +284,30 @@
   let musicContext=null,musicTimer=null,musicStep=0,musicStyle="hiphop",musicPlaying=false;
   // Official recordings load inside the soundtrack panel; no navigation away from the game.
   const officialSongs={
-    speed:"vrY1THC_NQE",
-    dreamers:"IwzkfMmNMpM",
-    waka:"pRpeEdMmmQ0",
-    nights:"UtF6Jej8yb4",
-    believer:"7wtfhZwyrcc",
-    seven:"0J2QdDbelmY",
-    sunflower:"ApXoWvfEYVU",
-    dynamite:"gdZLi9oWNZg",
-    desire:"Uc8LehnnjJk",
-    montagemtomada:"Qsk6bMvGj_o",
-    montagemcoral:"P1EwJbIZWnQ",
-    montagemmysterious:"dJM5DN1mMls",
-    montagemxonada:"YbcevoTpItI",
-    takefive:"vmDDOFXSgAs",
-    flymoon:"ZEcqHA7dbwM",
-    autumnleaves:"JTt_2-ykGCQ",
-    sowhat:"zqNTltOGh5c",
-    entertainer:"BNBXDC77FVA"
+    speed:"vrY1THC_NQE", dreamers:"IwzkfMmNMpM", waka:"pRpeEdMmmQ0",
+    nights:"UtF6Jej8yb4", believer:"7wtfhZwyrcc", seven:"0J2QdDbelmY",
+    sunflower:"ApXoWvfEYVU", dynamite:"gdZLi9oWNZg", desire:"Uc8LehnnjJk",
+    montagemtomada:"Qsk6bMvGj_o", montagemcoral:"P1EwJbIZWnQ",
+    montagemmysterious:"dJM5DN1mMls", montagemxonada:"YbcevoTpItI",
+    takefive:"vmDDOFXSgAs", flymoon:"ZEcqHA7dbwM", autumnleaves:"JTt_2-ykGCQ",
+    sowhat:"zqNTltOGh5c", entertainer:"BNBXDC77FVA",
+    wc26goals:"safzyuZNCGI", wc26gametime:"JLucCHwY-2c",
+    wc26illuminate:"im0FLUw7wtY", wc26echo:"228FtMaq8uY"
   };
+  function clearInGameSong(){
+    const wrap=$("musicEmbedWrap"),player=$("musicEmbedPlayer");
+    if(player)player.src="about:blank";
+    if(wrap)wrap.classList.add("hidden");
+  }
   function openOfficialSong(value){
     const videoId=officialSongs[value];
-    if(!videoId){
-      $("musicStatus").textContent="This song isn't available here yet. Choose another track.";
-      return false;
-    }
+    if(!videoId){$("musicStatus").textContent="This song is not available here yet.";return false;}
     stopArenaMusic();
-    $("musicStatus").textContent="Opening this song in YouTube Area, outside gameplay.";
-    openYouTubeArea();
-    $("youtubeVideoUrl").value="https://www.youtube.com/watch?v="+videoId;
-    $("youtubeAreaPlayer").src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(videoId)+"?rel=0";
-    $("youtubeAreaStatus").textContent="Song loaded in YouTube Area. If playback is blocked, use the link below.";
+    const wrap=$("musicEmbedWrap"),player=$("musicEmbedPlayer");
+    if(!wrap||!player){$("musicStatus").textContent="In-game player missing. Refresh the game and try again.";return false;}
+    wrap.classList.remove("hidden");
+    player.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(videoId)+"?autoplay=1&playsinline=1&controls=1&rel=0";
+    $("musicStatus").textContent="Song loaded in the in-game soundtrack player. If it does not autoplay, press play on the player.";
     return true;
   }
   function getMusicContext(){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;if(!musicContext)musicContext=new AC();return musicContext;}
@@ -351,7 +344,8 @@
   }
   async function startArenaMusic(){
     const value=$("musicSelect").value;
-    if(Object.prototype.hasOwnProperty.call(officialSongs,value)){stopArenaMusic();openOfficialSong(value);return;}
+    if(Object.prototype.hasOwnProperty.call(officialSongs,value)){openOfficialSong(value);return;}
+    clearInGameSong();
     if(value==="silence"){stopArenaMusic();$("musicStatus").textContent="Music is off.";return;}
     const ac=getMusicContext();if(!ac){$("musicStatus").textContent="This browser does not support generated audio.";return;}
     try{await ac.resume();}catch(e){}
@@ -359,6 +353,7 @@
   }
   function stopArenaMusic(){
     musicPlaying=false;clearTimeout(musicTimer);clearInterval(musicTimer);musicTimer=null;
+    clearInGameSong();
     if(musicContext){try{musicContext.suspend();}catch(e){}}
     $("musicStatus").textContent="Music stopped.";
   }
@@ -367,7 +362,7 @@
     $("musicOfficialBtn").classList.toggle("hidden",!official);
     $("musicPlayBtn").classList.toggle("hidden",official);
     $("musicPlayBtn").textContent=value==="silence"?"MUSIC OFF":"▶ PLAY BEAT";
-    $("musicStatus").textContent=official?"Tap PLAY SONG IN GAME to load the recording here.":value==="silence"?"Music is off.":"Original "+value.toUpperCase()+" beat ready.";
+    $("musicStatus").textContent=official?"Tap PLAY SONG IN GAME to play it on this game screen.":value==="silence"?"Music is off.":"Original "+value.toUpperCase()+" beat ready.";
   });
   $("musicPlayBtn").addEventListener("click",startArenaMusic);
   $("musicStopBtn").addEventListener("click",stopArenaMusic);
