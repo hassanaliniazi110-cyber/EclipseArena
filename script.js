@@ -397,7 +397,7 @@
     {name:"CrashCourse",category:"Learning · school subjects",tags:"education school history science biology learning",playlist:"UUX6b17PVsYBQ0ip5gyeme-Q",channelUrl:"https://www.youtube.com/@crashcourse",websiteUrl:"https://thecrashcourse.com/",websiteLabel:"OFFICIAL WEBSITE"}
   ];
   const defaultPreferred = youtubeChannels.filter(c=>c.preferred).map(c=>c.name);
-  let preferredChannels = (()=>{try{const saved=JSON.parse(localStorage.getItem("eclipseYoutubePreferred")||"null");return Array.isArray(saved)?saved:defaultPreferred.slice();}catch(_){return defaultPreferred.slice();}})();
+  let preferredChannels = (()=>{try{const saved=JSON.parse(localStorage.getItem("eclipseYoutubePreferred")||"null");return Array.isArray(saved)?[...new Set([...defaultPreferred,...saved])]:defaultPreferred.slice();}catch(_){return defaultPreferred.slice();}})();
   function openYouTubeArea(){
     match.active=false;
     cancelAnimationFrame(animationFrame);
@@ -419,9 +419,9 @@
       $("youtubeAreaStatus").textContent="Loading "+channel.name+"'s uploads playlist inside FootballGame3. YouTube will determine whether the playlist can be embedded here.";
       $("youtubeVideoUrl").value="https://www.youtube.com/playlist?list="+channel.playlist;
     }else{
-      player.src="https://www.youtube-nocookie.com/embed?listType=search&list="+encodeURIComponent(channel.name);
-      $("youtubeAreaStatus").textContent="Trying to play "+channel.name+"'s videos inside FootballGame3. YouTube may block embedded search results; if that happens, use CHANNEL URL.";
-      $("youtubeVideoUrl").value=channel.channelUrl||"";
+      player.src="about:blank";
+      $("youtubeAreaStatus").textContent=channel.name+" is in your YouTube selection. YouTube can't play a channel handle as an embedded video. Tap CHANNEL URL to open the channel, or paste one of the channel's video links below to play that specific video here.";
+      $("youtubeVideoUrl").value="";
     }
     player.scrollIntoView({behavior:"smooth",block:"center"});
   }
