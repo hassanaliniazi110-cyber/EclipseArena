@@ -143,19 +143,7 @@
     // Head shape, jaw and facial features.
     ctx.beginPath();ctx.ellipse(0,-.625,.145,.185,0,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="rgba(255,255,255,.16)";ctx.beginPath();ctx.ellipse(-.045,-.67,.045,.075,-.3,0,Math.PI*2);ctx.fill();
-    // Bald head: leave the entire scalp bare, with no hair, hat, or head accessory.
-    if(false){
-      for(let k=-2;k<=2;k++){ctx.beginPath();ctx.arc(k*.052,-.755-Math.abs(k)*.005,.045,0,Math.PI*2);ctx.fill();}
-    }else if(p.style==="wavy"){
-      ctx.beginPath();ctx.moveTo(-.15,-.72);ctx.quadraticCurveTo(-.05,-.82,.02,-.72);ctx.quadraticCurveTo(.09,-.81,.15,-.70);ctx.lineTo(.12,-.66);ctx.lineTo(-.13,-.66);ctx.closePath();ctx.fill();
-    }else if(p.style==="long"){
-      ctx.beginPath();ctx.moveTo(-.14,-.72);ctx.quadraticCurveTo(-.22,-.62,-.16,-.50);ctx.lineTo(-.10,-.54);ctx.lineTo(-.09,-.68);ctx.fill();ctx.beginPath();ctx.moveTo(.14,-.72);ctx.quadraticCurveTo(.21,-.61,.15,-.50);ctx.lineTo(.10,-.55);ctx.lineTo(.09,-.68);ctx.fill();
-    }
-    // (Hair drawing is intentionally disabled so every player is completely bald.)
-    // Eyes, eyebrows, nose and smile, scaled with the character.
-    ctx.strokeStyle=p.hair;ctx.lineWidth=.018;ctx.beginPath();ctx.moveTo(-.09,-.65);ctx.lineTo(-.035,-.65);ctx.moveTo(.035,-.65);ctx.lineTo(.09,-.65);ctx.stroke();
-    ctx.fillStyle="#201a17";ctx.beginPath();ctx.arc(-.06,-.625,.018,0,Math.PI*2);ctx.arc(.06,-.625,.018,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#754b39";ctx.lineWidth=.012;ctx.beginPath();ctx.moveTo(0,-.62);ctx.lineTo(-.01,-.59);ctx.moveTo(-.045,-.555);ctx.quadraticCurveTo(0,-.535,.045,-.555);ctx.stroke();
+    // Blank face and bald head: no hair, eyebrows, eyes, nose, mouth, or facial marks.
     ctx.restore();
   }
   function drawFullMatchPitch(){
