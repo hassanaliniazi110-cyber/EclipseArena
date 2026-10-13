@@ -374,13 +374,34 @@
   $("musicOfficialBtn").addEventListener("click",()=>openOfficialSong($("musicSelect").value));
 
 
-  // YouTube Area is separate from gameplay so videos do not sit in the match controls.
+  // In-game YouTube directory. Channel upload playlists use YouTube's public UU playlist IDs.
+  // No API key is needed for this curated directory; YouTube still controls embed availability.
+  const youtubeChannels = [
+    {name:"Dude Perfect",category:"Sports · comedy · trick shots",tags:"football soccer sports comedy tricks",playlist:"UURijo3ddMTht_IHyNSNXpNQ",preferred:true},
+    {name:"Real Madrid",category:"Football · club highlights",tags:"football soccer real madrid goals highlights",playlist:"UUWV3obpZVGgJ3j9FVhEjF2Q",preferred:true},
+    {name:"FIFA",category:"Football · World Cup",tags:"football soccer fifa world cup international",playlist:"UUpcTrCXblq78GZrTUTLWeBw",preferred:true},
+    {name:"MrBeast",category:"Challenges · entertainment",tags:"gaming comedy challenge entertainment",playlist:"UUX6OQ3DkcsbYNE6H8uQQuVA",preferred:true},
+    {name:"Mark Rober",category:"Science · engineering",tags:"science engineering experiments inventions",playlist:"UUY1kMZp36IQSyNx_9h4mpCg",preferred:true},
+    {name:"NASA",category:"Space · science",tags:"science space nasa planets astronomy",playlist:"UU_aP7p621ATY_yAa8jMqUVA",preferred:true},
+    {name:"TED-Ed",category:"Learning · science",tags:"education learning science history facts",playlist:"UUsooa4yRKGN_zEE8iknghZA"},
+    {name:"Kurzgesagt",category:"Science · animation",tags:"science space biology animation learning",playlist:"UUsXVk37bltHxD1rDPwtNM8Q"},
+    {name:"Veritasium",category:"Science · experiments",tags:"science experiments physics education",playlist:"UUHnyfMqiRRG1u-2MsSQLbXA"},
+    {name:"Marques Brownlee (MKBHD)",category:"Technology · reviews",tags:"technology tech phones reviews gadgets",playlist:"UUBJycsmduvYEL83R_U4JriQ"},
+    {name:"Linus Tech Tips",category:"Technology · computers",tags:"technology computers pc gaming hardware",playlist:"UUXuqSBlHAE6Xw-yeJA0Tunw"},
+    {name:"Sidemen",category:"Gaming · challenges · comedy",tags:"gaming comedy challenges football sidemen",playlist:"UUDogdKl7t7NHzQ95aEwkdMw"},
+    {name:"NBA",category:"Basketball · sports",tags:"basketball nba sports highlights",playlist:"UUWJ2lWNubArHWmf3FIHbfcQ"},
+    {name:"National Geographic",category:"Nature · science",tags:"nature animals science geography documentary",playlist:"UUpVm7bg6pXKo1Pr6k5kxG9A"},
+    {name:"CrashCourse",category:"Learning · school subjects",tags:"education school history science biology learning",playlist:"UUX6b17PVsYBQ0ip5gyeme-Q"}
+  ];
+  const defaultPreferred = youtubeChannels.filter(c=>c.preferred).map(c=>c.name);
+  let preferredChannels = (()=>{try{const saved=JSON.parse(localStorage.getItem("eclipseYoutubePreferred")||"null");return Array.isArray(saved)?saved:defaultPreferred.slice();}catch(_){return defaultPreferred.slice();}})();
   function openYouTubeArea(){
     match.active=false;
     cancelAnimationFrame(animationFrame);
     $("gameScreen").classList.add("hidden");
     $("homeScreen").classList.add("hidden");
     $("youtubeScreen").classList.remove("hidden");
+    renderYouTubeChannels();
     window.scrollTo({top:0,behavior:"smooth"});
   }
   function closeYouTubeArea(){
@@ -388,35 +409,57 @@
     $("homeScreen").classList.remove("hidden");
     window.scrollTo({top:0,behavior:"smooth"});
   }
-  function youtubeSearch(query){
-    const cleaned=String(query||"").trim();
-    const status=$("youtubeAreaStatus");
-    if(!cleaned){
-      status.textContent="Type a channel name or topic to search.";
-      return;
-    }
-    status.textContent='In-game search received: "'+cleaned+'". A live catalogue of 1,000+ real YouTube channels needs a YouTube Data API connection. Paste a video URL below to try playing a video here.';
+  function playChannelPlaylist(channel){
+    const player=$("youtubeAreaPlayer");
+    player.src="https://www.youtube-nocookie.com/embed/videoseries?list="+encodeURIComponent(channel.playlist)+"&rel=0";
+    $("youtubeAreaStatus").textContent="Loading "+channel.name+"'s uploads playlist inside FootballGame3. YouTube will determine whether the playlist can be embedded here.";
+    $("youtubeVideoUrl").value="https://www.youtube.com/playlist?list="+channel.playlist;
+    player.scrollIntoView({behavior:"smooth",block:"center"});
   }
-
-  $("youtubeSearchForm").addEventListener("submit",e=>{
-    e.preventDefault();
-    youtubeSearch($("youtubeSearchInput").value);
-  });
-  document.querySelectorAll("[data-youtube-search]").forEach(b=>b.addEventListener("click",()=>{
-    $("youtubeSearchInput").value=b.dataset.youtubeSearch;
-    youtubeSearch(b.dataset.youtubeSearch);
-  }));
+  function togglePreferredChannel(name){
+    preferredChannels=preferredChannels.includes(name)?preferredChannels.filter(n=>n!==name):[name,...preferredChannels];
+    try{localStorage.setItem("eclipseYoutubePreferred",JSON.stringify(preferredChannels));}catch(_){}
+    renderYouTubeChannels();
+  }
+  function makeChannelCard(channel){
+    const card=document.createElement("article");
+    card.className="youtube-channel-card";
+    const title=document.createElement("strong");title.className="youtube-channel-name";title.textContent=channel.name;
+    const category=document.createElement("span");category.className="youtube-channel-category";category.textContent=channel.category;
+    const actions=document.createElement("div");actions.className="youtube-channel-actions";
+    const play=document.createElement("button");play.type="button";play.className="youtube-channel-play";play.textContent="▶ PLAY IN GAME";play.addEventListener("click",()=>playChannelPlaylist(channel));
+    const fav=document.createElement("button");fav.type="button";fav.className="youtube-channel-fav";const isFav=preferredChannels.includes(channel.name);fav.textContent=isFav?"★ SAVED":"☆ SAVE";fav.setAttribute("aria-label",(isFav?"Remove ":"Add ")+channel.name+" "+(isFav?"from":"to")+" preferred channels");fav.addEventListener("click",()=>togglePreferredChannel(channel.name));
+    actions.append(play,fav);card.append(title,category,actions);return card;
+  }
+  function renderYouTubeChannels(){
+    const query=($("youtubeSearchInput")?.value||"").trim().toLowerCase();
+    const matches=youtubeChannels.filter(c=>!query||(c.name+" "+c.category+" "+c.tags).toLowerCase().includes(query));
+    const preferred=$("youtubePreferredGrid"),directory=$("youtubeDirectoryGrid");
+    preferred.replaceChildren();directory.replaceChildren();
+    const preferredMatches=matches.filter(c=>preferredChannels.includes(c.name));
+    preferredMatches.forEach(c=>preferred.appendChild(makeChannelCard(c)));
+    if(!preferredMatches.length){const empty=document.createElement("p");empty.className="youtube-empty";empty.textContent=query?"No preferred channels match this search. Save channels with ☆ to see them here.":"Save channels with ☆ and they'll appear here.";preferred.appendChild(empty);}
+    matches.forEach(c=>directory.appendChild(makeChannelCard(c)));
+    $("youtubeChannelCount").textContent=matches.length+" of "+youtubeChannels.length+" channels";
+    $("youtubeAreaStatus").textContent=query?("Showing "+matches.length+" matching channels in the built-in directory. This offline directory does not search all of YouTube."):("Ready: "+youtubeChannels.length+" curated channels. Choose PLAY IN GAME to load a channel uploads playlist.");
+  }
+  function youtubeSearch(query){
+    $("youtubeSearchInput").value=String(query||"").trim();
+    renderYouTubeChannels();
+    if(!$("youtubeDirectoryGrid").children.length)$("youtubeAreaStatus").textContent="No channels matched. Try football, science, gaming, technology, nature, or comedy.";
+  }
+  $("youtubeSearchForm").addEventListener("submit",e=>{e.preventDefault();youtubeSearch($("youtubeSearchInput").value);});
+  $("youtubeSearchInput").addEventListener("input",renderYouTubeChannels);
+  document.querySelectorAll("[data-youtube-search]").forEach(b=>b.addEventListener("click",()=>youtubeSearch(b.dataset.youtubeSearch)));
   $("youtubeWatchForm").addEventListener("submit",e=>{
     e.preventDefault();
-    const raw=$("youtubeVideoUrl").value.trim();
-    const status=$("youtubeAreaStatus"),player=$("youtubeAreaPlayer");
-    if(!raw){status.textContent="Paste a YouTube video link first.";return;}
+    const raw=$("youtubeVideoUrl").value.trim(),status=$("youtubeAreaStatus"),player=$("youtubeAreaPlayer");
+    if(!raw){status.textContent="Paste a YouTube video or playlist link first.";return;}
     let videoId="",playlistId="";
     try{
-      if(/^[a-zA-Z0-9_-]{11}$/.test(raw)){videoId=raw;}
+      if(/^[a-zA-Z0-9_-]{11}$/.test(raw))videoId=raw;
       else{
-        const u=new URL(raw);
-        const host=u.hostname.toLowerCase().replace(/^www\./,"");
+        const u=new URL(raw),host=u.hostname.toLowerCase().replace(/^www\./,"");
         if(host==="youtu.be")videoId=u.pathname.split("/").filter(Boolean)[0]||"";
         if(host.endsWith("youtube.com")||host==="youtube-nocookie.com"){
           videoId=u.searchParams.get("v")||"";
@@ -424,17 +467,16 @@
           playlistId=u.searchParams.get("list")||"";
         }
       }
-    }catch(_){status.textContent="That link doesn't look valid. Paste a full YouTube video URL, such as youtube.com/watch?v=...";return;}
+    }catch(_){status.textContent="That link doesn't look valid. Paste a full YouTube video or playlist URL.";return;}
     if(videoId&&/^[a-zA-Z0-9_-]{11}$/.test(videoId)){
       player.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(videoId)+"?rel=0";
-      status.textContent="Loading video inside YouTube Area. Some videos block embedded playback.";
+      status.textContent="Loading video inside YouTube Area. YouTube may block embedded playback.";
     }else if(playlistId){
-      player.src="https://www.youtube-nocookie.com/embed/videoseries?list="+encodeURIComponent(playlistId);
-      status.textContent="Loading playlist. Some playlists may not allow embedded playback.";
-    }else{
-      status.textContent="That looks like a channel or search page, not a single video. Use Search above to explore it, or paste a video link.";
-    }
+      player.src="https://www.youtube-nocookie.com/embed/videoseries?list="+encodeURIComponent(playlistId)+"&rel=0";
+      status.textContent="Loading playlist inside YouTube Area. Some playlists may block embedded playback.";
+    }else status.textContent="That link doesn't contain a video or playlist ID. Choose a channel above or paste a video/playlist URL.";
   });
+  renderYouTubeChannels();
 
   $("soundBtn").addEventListener("click",()=>{soundOn=!soundOn;$("soundBtn").textContent=soundOn?"♫":"♪";toast(soundOn?"Music controls are below":"Sound cues muted")});
   $("resetBtn").addEventListener("click",()=>{match.active=false;match.finished=false;cancelAnimationFrame(animationFrame);score=0;attempt=1;shotTaken=false;ballAnim=null;$("scoreValue").textContent="0";toast("Score reset")});
