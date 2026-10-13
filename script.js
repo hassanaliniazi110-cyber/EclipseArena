@@ -77,30 +77,84 @@
     const rect=canvas.getBoundingClientRect();if(!rect.width)return;
     const dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.width/1.36*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);cw=rect.width;ch=rect.width/1.36;drawPitch();
   }
-  function drawFootballer(cx,cy,size,rotation,jersey,isKeeper){
+  function drawFootballer(cx,cy,size,rotation,jersey,isKeeper,playerName){
+    const name=playerName||"",known={
+      "Hassan Ali":{number:1,hair:"#171717",skin:"#b77d58",shorts:"#182331",trim:"#c7ff4a",style:"short"},
+      "Zayd Quadri":{number:7,hair:"#171717",skin:"#b77d58",shorts:"#182331",trim:"#f5f5ef",style:"curly"},
+      "Ehan Ali":{number:8,hair:"#30241d",skin:"#d5a57d",shorts:"#252033",trim:"#bd7bff",style:"short"},
+      "Umar Shoaib":{number:10,hair:"#191919",skin:"#bd8967",shorts:"#202b37",trim:"#ffb45f",style:"wavy"},
+      "Muhammad Arham":{number:9,hair:"#201b18",skin:"#b77d58",shorts:"#192a42",trim:"#ff6b6b",style:"short"},
+      "Cristiano Ronaldo":{number:7,hair:"#35251b",skin:"#c58d68",shorts:"#f5f5f5",trim:"#c99d43",style:"short"},
+      "Erling Haaland":{number:9,hair:"#d4b17b",skin:"#efc9a6",shorts:"#69b9f4",trim:"#f5f5ef",style:"long"},
+      "Jude Bellingham":{number:5,hair:"#171311",skin:"#89573f",shorts:"#262038",trim:"#d8b9ff",style:"curly"},
+      "Lamine Yamal":{number:19,hair:"#171311",skin:"#a96f50",shorts:"#242b35",trim:"#ffd28a",style:"curly"},
+      "Lionel Messi":{number:10,hair:"#5a3828",skin:"#d2a17d",shorts:"#75b9ee",trim:"#f5f5ef",style:"short"},
+      "Kylian Mbappé":{number:7,hair:"#171311",skin:"#925d43",shorts:"#272238",trim:"#e1c8ff",style:"short"},
+      "Kevin De Bruyne":{number:17,hair:"#bd956b",skin:"#e5bd9c",shorts:"#c7d8e7",trim:"#fff",style:"short"},
+      "Mohamed Salah":{number:11,hair:"#211713",skin:"#9c674d",shorts:"#c83d45",trim:"#f5f5ef",style:"curly"},
+      "Vinícius Júnior":{number:7,hair:"#171311",skin:"#8e593f",shorts:"#20222d",trim:"#c7ff4a",style:"short"},
+      "Neymar Jr.":{number:10,hair:"#2d211a",skin:"#c18d6a",shorts:"#f4d24d",trim:"#fff",style:"wavy"},
+      "Harry Kane":{number:9,hair:"#765139",skin:"#e2b997",shorts:"#fff",trim:"#b7d8ff",style:"short"},
+      "Bukayo Saka":{number:7,hair:"#171311",skin:"#986246",shorts:"#252033",trim:"#ff9e62",style:"short"},
+      "Phil Foden":{number:47,hair:"#bd956b",skin:"#e3bb98",shorts:"#75b9ef",trim:"#fff",style:"short"},
+      "Alisson":{number:1,hair:"#382b20",skin:"#c58f6b",shorts:"#25313d",trim:"#4bbfff",style:"short"},
+      "Thibaut Courtois":{number:1,hair:"#765139",skin:"#e2b997",shorts:"#263448",trim:"#ffb45f",style:"short"},
+      "Manuel Neuer":{number:1,hair:"#a98662",skin:"#e0b995",shorts:"#25313d",trim:"#ffe27a",style:"short"},
+      "Ederson":{number:31,hair:"#4c392a",skin:"#bd8b6c",shorts:"#25313d",trim:"#50dcb8",style:"short"},
+      "Marc-André ter Stegen":{number:1,hair:"#8d745c",skin:"#e4c09e",shorts:"#25313d",trim:"#5aa0ff",style:"short"},
+      "Gianluigi Donnarumma":{number:1,hair:"#5d4534",skin:"#dfb696",shorts:"#25313d",trim:"#ff6e82",style:"short"},
+      "Emiliano Martínez":{number:23,hair:"#62482f",skin:"#c99975",shorts:"#25313d",trim:"#ffad66",style:"short"},
+      "Jan Oblak":{number:1,hair:"#5e4736",skin:"#e0b995",shorts:"#25313d",trim:"#a078ff",style:"short"},
+      "David Raya":{number:22,hair:"#49362a",skin:"#bd8b6c",shorts:"#25313d",trim:"#64dc82",style:"short"},
+      "Mike Maignan":{number:16,hair:"#171311",skin:"#89573f",shorts:"#25313d",trim:"#5ad2f0",style:"short"},
+      "Lev Yashin":{number:1,hair:"#171311",skin:"#bd8b6c",shorts:"#151519",trim:"#c9c9d0",style:"short"}
+    };
+    const p=known[name]||{number:isKeeper?1:7,hair:"#211b18",skin:"#c99572",shorts:"#182331",trim:"#f2f4f2",style:"short"};
     ctx.save();ctx.translate(cx,cy);ctx.rotate(rotation);ctx.scale(size,size);ctx.lineCap="round";ctx.lineJoin="round";
-    ctx.strokeStyle=jersey;ctx.lineWidth=.13;
+    // Soft ground shadow and detailed football boots.
+    ctx.fillStyle="rgba(0,0,0,.28)";ctx.beginPath();ctx.ellipse(0,.43,.36,.075,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#20252c";ctx.lineWidth=.11;
+    ctx.beginPath();ctx.moveTo(-.12,.12);ctx.lineTo(-.19,.39);ctx.moveTo(.12,.12);ctx.lineTo(.22,.37);ctx.stroke();
+    ctx.fillStyle=p.shorts;ctx.fillRect(-.22,-.025,.44,.19);
+    ctx.fillStyle=jersey;ctx.beginPath();ctx.moveTo(-.19,-.43);ctx.lineTo(.19,-.43);ctx.lineTo(.25,-.05);ctx.lineTo(-.25,-.05);ctx.closePath();ctx.fill();
+    // Shirt seams, shoulder panels and collar.
+    ctx.strokeStyle=p.trim;ctx.lineWidth=.025;ctx.beginPath();ctx.moveTo(-.17,-.40);ctx.lineTo(-.11,-.07);ctx.moveTo(.17,-.40);ctx.lineTo(.11,-.07);ctx.stroke();
+    ctx.fillStyle=p.trim;ctx.fillRect(-.22,-.41,.06,.13);ctx.fillRect(.16,-.41,.06,.13);
+    ctx.strokeStyle=p.trim;ctx.lineWidth=.025;ctx.beginPath();ctx.arc(0,-.42,.065,0,Math.PI);ctx.stroke();
+    // Large readable jersey number.
+    ctx.fillStyle=p.trim;ctx.font="900 .19px Arial,sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(String(p.number),0,-.245);
+    ctx.fillStyle="rgba(0,0,0,.24)";ctx.fillRect(-.13,-.13,.26,.035);
+    // Arms, wrist tape and gloves.
+    ctx.strokeStyle=jersey;ctx.lineWidth=.105;
     if(isKeeper){
-      // Keeper: wide ready stance with extended arms and unmistakable lime gloves.
-      ctx.beginPath();ctx.moveTo(-.16,-.38);ctx.lineTo(-.43,-.53);ctx.lineTo(-.59,-.42);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(.16,-.38);ctx.lineTo(.43,-.53);ctx.lineTo(.59,-.42);ctx.stroke();
-      ctx.fillStyle="#c7ff4a";
-      ctx.beginPath();ctx.arc(-.61,-.41,.13,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(.61,-.41,.13,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.moveTo(-.17,-.38);ctx.lineTo(-.43,-.50);ctx.lineTo(-.57,-.40);ctx.moveTo(.17,-.38);ctx.lineTo(.43,-.50);ctx.lineTo(.57,-.40);ctx.stroke();
+      ctx.fillStyle=p.trim;ctx.beginPath();ctx.arc(-.60,-.39,.105,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(.60,-.39,.105,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#f5f5ef";ctx.fillRect(-.53,-.44,.10,.055);ctx.fillRect(.43,-.44,.10,.055);
     }else{
-      // Shooter: arms tucked for a run-up, not a goalkeeper's spread-arm pose.
-      ctx.beginPath();ctx.moveTo(-.16,-.37);ctx.lineTo(-.32,-.20);ctx.lineTo(-.20,-.06);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(.16,-.37);ctx.lineTo(.31,-.25);ctx.lineTo(.24,-.10);ctx.stroke();
-      ctx.fillStyle="#d5a57d";
-      ctx.beginPath();ctx.arc(-.20,-.05,.065,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(.24,-.09,.065,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.moveTo(-.17,-.37);ctx.lineTo(-.31,-.20);ctx.lineTo(-.21,-.08);ctx.moveTo(.17,-.37);ctx.lineTo(.30,-.24);ctx.lineTo(.23,-.10);ctx.stroke();
+      ctx.strokeStyle=p.skin;ctx.lineWidth=.07;ctx.beginPath();ctx.moveTo(-.21,-.08);ctx.lineTo(-.18,-.04);ctx.moveTo(.23,-.10);ctx.lineTo(.24,-.06);ctx.stroke();
     }
-    // Head and neck
-    ctx.fillStyle="#d5a57d";ctx.beginPath();ctx.arc(0,-.56,.15,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=jersey;ctx.fillRect(-.22,-.43,.44,.42);
-    // Shorts, legs and boots
-    ctx.fillStyle="#17231c";ctx.fillRect(-.22,-.02,.44,.18);
-    ctx.strokeStyle="#d5a57d";ctx.lineWidth=.105;
-    ctx.beginPath();ctx.moveTo(-.12,.13);ctx.lineTo(-.20,.39);ctx.moveTo(.12,.13);ctx.lineTo(.22,.37);ctx.stroke();
-    ctx.fillStyle="#f2f4f2";ctx.fillRect(-.30,.37,.20,.09);ctx.fillRect(.14,.35,.20,.09);
+    // Socks and cleats.
+    ctx.strokeStyle=p.trim;ctx.lineWidth=.075;ctx.beginPath();ctx.moveTo(-.16,.15);ctx.lineTo(-.19,.30);ctx.moveTo(.15,.15);ctx.lineTo(.20,.29);ctx.stroke();
+    ctx.fillStyle="#f4f5f3";ctx.beginPath();ctx.ellipse(-.25,.405,.12,.055,-.15,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(.25,.39,.12,.055,.1,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#c7ff4a";ctx.fillRect(-.32,.43,.12,.025);ctx.fillRect(.19,.415,.12,.025);
+    // Neck and ears.
+    ctx.fillStyle=p.skin;ctx.fillRect(-.055,-.53,.11,.13);ctx.beginPath();ctx.ellipse(-.15,-.60,.035,.06,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(.15,-.60,.035,.06,0,0,Math.PI*2);ctx.fill();
+    // Head shape, jaw and facial features.
+    ctx.beginPath();ctx.ellipse(0,-.625,.145,.185,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="rgba(255,255,255,.16)";ctx.beginPath();ctx.ellipse(-.045,-.67,.045,.075,-.3,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=p.hair;ctx.beginPath();ctx.ellipse(0,-.735,.15,.09,0,Math.PI,Math.PI*2);ctx.fill();
+    if(p.style==="curly"){
+      for(let k=-2;k<=2;k++){ctx.beginPath();ctx.arc(k*.052,-.755-Math.abs(k)*.005,.045,0,Math.PI*2);ctx.fill();}
+    }else if(p.style==="wavy"){
+      ctx.beginPath();ctx.moveTo(-.15,-.72);ctx.quadraticCurveTo(-.05,-.82,.02,-.72);ctx.quadraticCurveTo(.09,-.81,.15,-.70);ctx.lineTo(.12,-.66);ctx.lineTo(-.13,-.66);ctx.closePath();ctx.fill();
+    }else if(p.style==="long"){
+      ctx.beginPath();ctx.moveTo(-.14,-.72);ctx.quadraticCurveTo(-.22,-.62,-.16,-.50);ctx.lineTo(-.10,-.54);ctx.lineTo(-.09,-.68);ctx.fill();ctx.beginPath();ctx.moveTo(.14,-.72);ctx.quadraticCurveTo(.21,-.61,.15,-.50);ctx.lineTo(.10,-.55);ctx.lineTo(.09,-.68);ctx.fill();
+    }
+    // Eyes, eyebrows, nose and smile, scaled with the character.
+    ctx.strokeStyle=p.hair;ctx.lineWidth=.018;ctx.beginPath();ctx.moveTo(-.09,-.65);ctx.lineTo(-.035,-.65);ctx.moveTo(.035,-.65);ctx.lineTo(.09,-.65);ctx.stroke();
+    ctx.fillStyle="#201a17";ctx.beginPath();ctx.arc(-.06,-.625,.018,0,Math.PI*2);ctx.arc(.06,-.625,.018,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#754b39";ctx.lineWidth=.012;ctx.beginPath();ctx.moveTo(0,-.62);ctx.lineTo(-.01,-.59);ctx.moveTo(-.045,-.555);ctx.quadraticCurveTo(0,-.535,.045,-.555);ctx.stroke();
     ctx.restore();
   }
   function drawFullMatchPitch(){
@@ -144,7 +198,7 @@
     const ky = h*.135 - (diving ? h*(selectedGoalkeeper==="Hassan Ali"?.085:.055)*Math.sin(keeperT*Math.PI/2) : 0);
     const rotation = diving ? side*1.25*diveProgress : 0;
     const keeperJersey = selectedGoalkeeper==="Hassan Ali" ? "#c7ff4a" : selectedGoalkeeper==="Ehan Ali" ? "#bd7bff" : selectedGoalkeeper==="Alisson" ? "#4bbfff" : "#ff8c42";
-    drawFootballer(kx,ky,Math.max(12,w*.105),rotation,keeperJersey,true);
+    drawFootballer(kx,ky,Math.max(12,w*.105),rotation,keeperJersey,true,selectedGoalkeeper);
     ctx.fillStyle="rgba(5,15,10,.82)";ctx.fillRect(w*.5-w*.095,h*.205,w*.19,h*.026);
     ctx.fillStyle="#f2f7f2";ctx.font="800 "+Math.max(8,w*.013)+"px sans-serif";ctx.textAlign="center";
     ctx.fillText(selectedGoalkeeper.toUpperCase(),w*.5,h*.224);
@@ -156,7 +210,7 @@
     }else{
       // Shooter at the spot, with a distinct kit and ball at their feet.
       const shooterJersey = selectedPlayer==="Cristiano Ronaldo" ? "#f2f4ec" : selectedPlayer==="Erling Haaland" ? "#65baff" : selectedPlayer==="Jude Bellingham" ? "#bd7bff" : selectedPlayer==="Lamine Yamal" ? "#ff8c42" : "#f2f4ec";
-      drawFootballer(w*.5,h*.755,Math.max(13,w*.105),-.08,shooterJersey,false);
+      drawFootballer(w*.5,h*.755,Math.max(13,w*.105),-.08,shooterJersey,false,selectedPlayer);
       // Kick leg swings when the shot is taken.
       if(ballAnim){
         const kickT=Math.min(1,(performance.now()-ballAnim.start)/ballAnim.duration);
