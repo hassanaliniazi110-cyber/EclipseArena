@@ -144,8 +144,8 @@
     ctx.fillStyle="#f2f7f2";ctx.font="800 "+Math.max(8,w*.013)+"px sans-serif";ctx.textAlign="center";
     ctx.fillText(selectedGoalkeeper.toUpperCase(),w*.5,h*.224);
 
-    if(mode==="goalkeeping"){
-      // Keeper mode uses the same single keeper at the goal; the dive controls move that player.
+    if(mode==="goalkeeping"||mode==="survival"){
+      // Keeper modes use the same single keeper at the goal; dive controls move that player.
       ctx.strokeStyle="#c7ff4a";ctx.lineWidth=3;ctx.setLineDash([5,5]);
       ctx.beginPath();ctx.moveTo(w*.5,h*.72);ctx.lineTo(w*.5+((aim.x-.5)*w*.4),h*.48);ctx.stroke();ctx.setLineDash([]);
     }else{
@@ -243,11 +243,12 @@
   }
   function dive(){
     if(shotTaken)return;
-    const targetSide=aim.x<.38?"left":aim.x>.62?"right":"center";
+    const targetSide=["left","center","right"][Math.floor(Math.random()*3)];
+    aim={x:targetSide==="left"?.28:targetSide==="right"?.72:.5,y:.055+Math.random()*.08};
     const matchedDive=targetSide===keeperDive;
     const save=selectedGoalkeeper==="Hassan Ali" ? Math.random()>=.00001 : matchedDive||(difficulty==="Rookie"&&Math.random()<.12);
     ballAnim={fromX:cw*.5,fromY:ch*.28,toX:aim.x*cw,toY:aim.y*ch,start:performance.now(),duration:430};keeperMotion={side:keeperDive==="left"?-1:keeperDive==="right"?1:0,start:performance.now(),duration:430};drawPitch();
-    setTimeout(()=>{finishAttempt(save,save?"INCREDIBLE SAVE! You read the shot.":"GOAL CONCEDED. Read the direction next time.");drawPitch()},450);
+    setTimeout(()=>{finishAttempt(save,save?"INCREDIBLE SAVE! "+selectedGoalkeeper+" reads the shot!":"GOAL CONCEDED. Read the direction next time.");drawPitch()},450);
   }
   function nextAttempt(){
     if((mode==="headtohead"&&matchMinute>=90)||(mode==="vsattack"&&matchAttacks>=5)){
