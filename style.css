@@ -171,3 +171,5 @@
 .friend-entry{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
 .friend-entry>div{display:flex;flex-direction:column;gap:4px;min-width:0}.friend-entry strong{font-size:11px}.friend-entry small{font-size:9px;color:var(--muted);overflow-wrap:anywhere}.friend-entry button{background:transparent;color:var(--muted);border:1px solid var(--line);padding:7px;font-size:8px}
 @media(max-width:600px){.friend-add-row{flex-direction:column;align-items:stretch}.friend-add-row button{width:100%}.friend-id-row{flex-wrap:wrap}}
+
+.fc-attributes{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:2px;margin-top:8px;width:100%}.fc-attributes span{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}.fc-attributes b{font-size:7px;letter-spacing:.2px;color:var(--muted)}.fc-attributes strong{font:700 10px 'Barlow Condensed',sans-serif;color:var(--white)}.player-locked .fc-attributes{opacity:.75}
