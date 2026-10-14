@@ -562,15 +562,20 @@
     $("homeScreen").classList.remove("hidden");
     window.scrollTo({top:0,behavior:"smooth"});
   }
+  function setYouTubePlaybackStatus(message,url){
+    const status=$("youtubeAreaStatus");status.textContent=message;
+    const link=document.createElement("a");link.href=url;link.target="_blank";link.rel="noopener noreferrer";link.textContent="Open on YouTube";
+    status.appendChild(document.createTextNode(" · "));status.appendChild(link);
+  }
   function playChannelPlaylist(channel){
     const player=$("youtubeAreaPlayer");
     if(channel.videoId){
       player.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(channel.videoId)+"?rel=0";
-      $("youtubeAreaStatus").textContent="Loading a video from "+channel.name+" inside Eclipse Arena. YouTube may block embedding for some videos.";
+      setYouTubePlaybackStatus("Loading a video from "+channel.name+" inside Eclipse Arena. YouTube may block embedding for some videos.","https://www.youtube.com/watch?v="+channel.videoId);
       $("youtubeVideoUrl").value="https://www.youtube.com/watch?v="+channel.videoId;
     }else if(channel.playlist){
       player.src="https://www.youtube-nocookie.com/embed/videoseries?list="+encodeURIComponent(channel.playlist)+"&rel=0";
-      $("youtubeAreaStatus").textContent="Loading "+channel.name+"'s uploads playlist inside Eclipse Arena. YouTube will determine whether the playlist can be embedded here.";
+      setYouTubePlaybackStatus("Loading "+channel.name+" uploads playlist inside Eclipse Arena. YouTube determines whether the playlist can be embedded here.","https://www.youtube.com/playlist?list="+channel.playlist);
       $("youtubeVideoUrl").value="https://www.youtube.com/playlist?list="+channel.playlist;
     }else{
       player.src="about:blank";
@@ -624,7 +629,7 @@
   function youtubeSearch(query){
     $("youtubeSearchInput").value=String(query||"").trim();
     renderYouTubeChannels();
-    if(!$("youtubeDirectoryGrid").children.length)$("youtubeAreaStatus").textContent="No channels matched. Try football, science, gaming, technology, nature, or comedy.";
+    if(!$("youtubeDirectoryGrid").children.length){const status=$("youtubeAreaStatus");status.textContent="No directory match. Search all of YouTube instead: ";const link=document.createElement("a");link.href="https://www.youtube.com/results?search_query="+encodeURIComponent($("youtubeSearchInput").value.trim());link.target="_blank";link.rel="noopener noreferrer";link.textContent="Search YouTube";status.appendChild(link);}
   }
   $("youtubeSearchForm").addEventListener("submit",e=>{e.preventDefault();youtubeSearch($("youtubeSearchInput").value);});
   $("youtubeSearchInput").addEventListener("input",renderYouTubeChannels);
@@ -659,10 +664,10 @@
     }catch(_){status.textContent="That link doesn't look valid. Paste a full YouTube video, playlist, or channel URL.";return;}
     if(videoId&&/^[a-zA-Z0-9_-]{11}$/.test(videoId)){
       player.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(videoId)+"?rel=0";
-      status.textContent="Loading video inside YouTube Area. YouTube may block embedded playback.";
+      setYouTubePlaybackStatus("Loading video inside YouTube Area. YouTube may block embedded playback.","https://www.youtube.com/watch?v="+videoId);
     }else if(playlistId&&/^[a-zA-Z0-9_-]+$/.test(playlistId)){
       player.src="https://www.youtube-nocookie.com/embed/videoseries?list="+encodeURIComponent(playlistId)+"&rel=0";
-      status.textContent="Loading playlist inside YouTube Area. Some playlists may block embedded playback.";
+      setYouTubePlaybackStatus("Loading playlist inside YouTube Area. Some playlists may block embedded playback.","https://www.youtube.com/playlist?list="+playlistId);
     }else if(channelHandle||channelId){
       const cleanHandle=(channelHandle||"").replace(/^@/,"");
       const matchedChannel=youtubeChannels.find(c=>{
