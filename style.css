@@ -159,3 +159,15 @@
 @media(max-width:600px){.career-extra-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.trophy-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.career-extra-actions{display:grid;grid-template-columns:1fr 1fr}.career-extra-actions button{width:100%;padding:8px 6px;font-size:8px}}
 
 .player-card-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.player-collect-card{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-height:128px;padding:12px;border:1px solid var(--line);background:linear-gradient(145deg,#17251f,#0d1714)}.player-collect-card>span{font-size:25px}.player-collect-card>small{font-size:8px;letter-spacing:.8px;color:var(--lime);font-weight:900}.player-collect-card>strong{font-size:11px}.player-collect-card>b{margin-top:auto;font-size:8px;letter-spacing:.7px}.player-collect-card.card-unlocked{border-color:rgba(199,255,74,.55)}.player-collect-card.card-locked{opacity:.5;filter:saturate(.3)}@media(max-width:600px){.player-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* FC-style OVR cards and friends UI: preserves the existing site background and shell. */
+.player-locked{opacity:.52;filter:saturate(.35);cursor:not-allowed!important;border-style:dashed!important}
+.ovr-meter{height:3px;width:100%;margin-top:8px;background:#27352f}.ovr-meter i{display:block;height:100%;width:100%;background:var(--lime)}.ovr-meter span{display:block;height:100%;background:var(--lime)}
+.friends-panel{margin-top:22px;padding:16px;background:var(--panel2);border:1px solid var(--line)}
+.friends-panel h3{font:800 18px 'Barlow Condensed',sans-serif;margin:0 0 8px}.friends-panel>p{font-size:10px;line-height:1.6;color:var(--muted)}
+.friend-id-row,.friend-add-row{display:flex;gap:8px;align-items:center;margin:10px 0}.friend-id-row strong{padding:10px 12px;border:1px solid var(--lime);color:var(--lime);letter-spacing:1px}
+.friend-add-row input,.friends-panel textarea{width:100%;min-width:0;padding:12px;background:#0d1714;color:var(--white);border:1px solid var(--line);border-radius:0;font-size:11px}
+.friends-panel textarea{margin-top:8px;resize:vertical}.friend-add-row button{white-space:nowrap;min-height:42px;padding:10px;font-size:9px}
+.friend-entry{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.friend-entry>div{display:flex;flex-direction:column;gap:4px;min-width:0}.friend-entry strong{font-size:11px}.friend-entry small{font-size:9px;color:var(--muted);overflow-wrap:anywhere}.friend-entry button{background:transparent;color:var(--muted);border:1px solid var(--line);padding:7px;font-size:8px}
+@media(max-width:600px){.friend-add-row{flex-direction:column;align-items:stretch}.friend-add-row button{width:100%}.friend-id-row{flex-wrap:wrap}}
