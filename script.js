@@ -609,27 +609,62 @@
   $("youtubeWatchForm").addEventListener("submit",e=>{
     e.preventDefault();
     const raw=$("youtubeVideoUrl").value.trim(),status=$("youtubeAreaStatus"),player=$("youtubeAreaPlayer");
-    if(!raw){status.textContent="Paste a YouTube video or playlist link first.";return;}
-    let videoId="",playlistId="";
+    if(!raw){status.textContent="Paste a YouTube video, playlist, or channel URL first.";return;}
+    let videoId="",playlistId="",channelHandle="",normalizedUrl="";
     try{
       if(/^[a-zA-Z0-9_-]{11}$/.test(raw))videoId=raw;
       else{
-        const u=new URL(raw),host=u.hostname.toLowerCase().replace(/^www\./,"");
+        const u=new URL(raw);
+        const host=u.hostname.toLowerCase().replace(/^www\./,"");
         if(host==="youtu.be")videoId=u.pathname.split("/").filter(Boolean)[0]||"";
-        if(host.endsWith("youtube.com")||host==="youtube-nocookie.com"){
+        if(host==="youtube.com"||host==="m.youtube.com"||host==="youtube-nocookie.com"){
           videoId=u.searchParams.get("v")||"";
           if(!videoId){const m=u.pathname.match(/\/(?:embed|shorts|live)\/([^/?]+)/);if(m)videoId=m[1];}
           playlistId=u.searchParams.get("list")||"";
+          const handleMatch=u.pathname.match(/^\/@([^/]+)/);
+          if(handleMatch)channelHandle=handleMatch[1].toLowerCase();
+          normalizedUrl="https://www.youtube.com"+u.pathname.replace(/\/$/,"");
+          if(!videoId&&!playlistId&&!channelHandle){
+            const channelIdMatch=u.pathname.match(/^\/(?:channel|c|user)\/([^/?]+)/);
+            if(channelIdMatch)channelHandle=channelIdMatch[1].toLowerCase();
+          }
+        }else{
+          status.textContent="Please paste a URL from youtube.com or youtu.be.";
+          return;
         }
       }
-    }catch(_){status.textContent="That link doesn't look valid. Paste a full YouTube video or playlist URL.";return;}
+    }catch(_){status.textContent="That link doesn't look valid. Paste a full YouTube video, playlist, or channel URL.";return;}
     if(videoId&&/^[a-zA-Z0-9_-]{11}$/.test(videoId)){
       player.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(videoId)+"?rel=0";
       status.textContent="Loading video inside YouTube Area. YouTube may block embedded playback.";
-    }else if(playlistId){
+    }else if(playlistId&&/^[a-zA-Z0-9_-]+$/.test(playlistId)){
       player.src="https://www.youtube-nocookie.com/embed/videoseries?list="+encodeURIComponent(playlistId)+"&rel=0";
       status.textContent="Loading playlist inside YouTube Area. Some playlists may block embedded playback.";
-    }else status.textContent="That link doesn't contain a video or playlist ID. Choose a channel above or paste a video/playlist URL.";
+    }else if(channelHandle){
+      const cleanHandle=channelHandle.replace(/^@/,"");
+      const matchedChannel=youtubeChannels.find(c=>{
+        const m=(c.channelUrl||"").match(/youtube\.com\/@?([^/?]+)/i);
+        return m&&m[1].toLowerCase()===cleanHandle;
+      });
+      if(matchedChannel&&(matchedChannel.playlist||matchedChannel.videoId)){
+        if(matchedChannel.playlist){
+          player.src="https://www.youtube-nocookie.com/embed/videoseries?list="+encodeURIComponent(matchedChannel.playlist)+"&rel=0";
+          status.textContent="Loading "+matchedChannel.name+"'s channel uploads playlist inside Eclipse Arena. YouTube may restrict embedded playback.";
+        }else{
+          player.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(matchedChannel.videoId)+"?rel=0";
+          status.textContent="This channel has a video configured, so that video is loading inside Eclipse Arena.";
+        }
+      }else{
+        player.src="about:blank";
+        status.textContent="YouTube does not allow a full channel page to play inside an embedded player. For this channel, paste its uploads playlist URL instead, or open the channel on YouTube.";
+        const openLink=document.createElement("a");
+        openLink.href=normalizedUrl||("https://www.youtube.com/@"+cleanHandle);
+        openLink.target="_blank";openLink.rel="noopener noreferrer";openLink.textContent=" Open channel on YouTube";
+        status.appendChild(openLink);
+      }
+    }else{
+      status.textContent="That link doesn't contain a valid video, playlist, or supported channel URL.";
+    }
   });
   renderYouTubeChannels();
 
