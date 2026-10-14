@@ -61,11 +61,11 @@
   function renderPlayers(){
     $("playerGrid").innerHTML = players.map(p=>playerCard(p,selectedPlayer,"data-player")).join("");
     $("playerGrid").querySelectorAll("[data-player]").forEach(btn=>btn.addEventListener("click",()=>{
-      selectedPlayer=btn.dataset.player;renderPlayers();toast(selectedPlayer+" selected as shooter");
+      selectedPlayer=btn.dataset.player;renderPlayers();if(typeof renderCareerHub==="function")renderCareerHub();toast(selectedPlayer+" selected as shooter");
     }));
     $("goalkeeperGrid").innerHTML = goalkeepers.map(p=>playerCard(p,selectedGoalkeeper,"data-goalkeeper")).join("");
     $("goalkeeperGrid").querySelectorAll("[data-goalkeeper]").forEach(btn=>btn.addEventListener("click",()=>{
-      selectedGoalkeeper=btn.dataset.goalkeeper;renderPlayers();toast(selectedGoalkeeper+" selected as goalkeeper");
+      selectedGoalkeeper=btn.dataset.goalkeeper;renderPlayers();if(typeof renderCareerHub==="function")renderCareerHub();toast(selectedGoalkeeper+" selected as goalkeeper");
     }));
   }
   function toast(message){const el=$("toast");el.textContent=message;el.classList.add("show");clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove("show"),2600)}
@@ -260,7 +260,7 @@
   modeSection.insertBefore(modeToolbar,modeGrid);
   const modeFavourites=(()=>{try{return new Set(JSON.parse(localStorage.getItem("eclipseModeFavourites")||"[]"));}catch(_){return new Set();}})();
   let recentModes=(()=>{try{return JSON.parse(localStorage.getItem("eclipseRecentModes")||"[]");}catch(_){return [];}})();
-  const modeCategories={penalty:"attack",freekick:"attack",longshot:"attack",goalkeeping:"keeper",random:"attack",vsattack:"attack",crossbar:"attack",survival:"keeper"};
+  const modeCategories={penalty:"attack",freekick:"attack",longshot:"attack",goalkeeping:"keeper",random:"attack",vsattack:"attack",crossbar:"attack",survival:"keeper",headtohead:"attack"};
   function renderModeTools(){
     const q=$("modeSearch").value.trim().toLowerCase(),f=$("modeFilter").value;
     modeGrid.querySelectorAll("[data-mode],[data-open-youtube]").forEach(card=>{
@@ -275,6 +275,32 @@
     star.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();modeFavourites.has(key)?modeFavourites.delete(key):modeFavourites.add(key);try{localStorage.setItem("eclipseModeFavourites",JSON.stringify([...modeFavourites]));}catch(_){}renderModeTools();});card.appendChild(star);
   });
   $("modeSearch").addEventListener("input",renderModeTools);$("modeFilter").addEventListener("change",renderModeTools);renderModeTools();
+
+  const careerHub=document.createElement("section");careerHub.className="career-hub";
+  careerHub.innerHTML='<div class="career-hub-head"><div><p class="eyebrow">YOUR SEASON</p><h2>Career <em>hub.</em></h2></div><span class="career-hub-note">Progress saved on this device</span></div><div class="career-metrics" id="careerMetrics"></div><div class="career-hub-actions"><button type="button" id="dailyChallengeBtn" class="secondary-btn">🎯 DAILY CHALLENGE</button><button type="button" id="tournamentBtn" class="primary-btn">🏆 WORLD TOUR</button><button type="button" id="goalkeeperCareerBtn" class="secondary-btn">🧤 GOALKEEPER CAREER</button></div><p id="challengeStatus" class="career-hub-status" aria-live="polite"></p><div class="career-hub-columns"><section><h3>PLAYER DEVELOPMENT</h3><div id="playerDevelopment"></div></section><section><h3>ACHIEVEMENTS</h3><div id="achievementList"></div></section></div>';
+  document.querySelector(".roster-section").appendChild(careerHub);
+  let tournamentActive=false,tournamentWinsThisRun=0,dailyChallengeMode="crossbar",dailyChallengeActive=false;
+  function dateKey(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+  function dailyRecord(){try{return JSON.parse(localStorage.getItem("eclipseDailyChallenge")||"{}");}catch(_){return {};}}
+  function renderCareerHub(){
+    const metrics=$("careerMetrics"),dev=$("playerDevelopment"),ach=$("achievementList");if(!metrics||!dev||!ach)return;
+    metrics.innerHTML='<div><strong>'+career.goals+'</strong><span>GOALS</span></div><div><strong>'+career.saves+'</strong><span>SAVES</span></div><div><strong>'+career.xp+'</strong><span>TOTAL XP</span></div><div><strong>'+career.tournamentWins+'</strong><span>CUP WINS</span></div><div><strong>'+career.bestScore+'</strong><span>BEST SCORE</span></div>';
+    const p=players.find(x=>x.name===selectedPlayer)||players[0],g=goalkeepers.find(x=>x.name===selectedGoalkeeper)||goalkeepers[0],px=career.players[selectedPlayer]||0,gx=career.players[selectedGoalkeeper]||0;
+    const level=x=>1+Math.floor(x/100),stat=(base,x)=>Math.min(99,Math.max(1,Math.round(base+Math.min(15,Math.floor(x/100)))));
+    const ps=p.stats||{power:Math.min(99,Math.round(p.rating*.88)),accuracy:Math.min(99,Math.round(p.rating*.91)),speed:Math.min(99,Math.round(p.rating*.92))},kb=Math.min(99,Math.round(g.rating*.92));
+    dev.innerHTML='<div class="development-player"><strong>'+selectedPlayer+'</strong><span>LVL '+level(px)+' · '+px+' XP</span><div class="development-bars">'+[['Power',stat(ps.power||p.rating,px)],['Accuracy',stat(ps.accuracy||p.rating,px)],['Speed',stat(ps.speed||p.rating,px)],['Curve',stat(p.name==="Lamine Yamal"?96:p.name==="Lionel Messi"?92:Math.min(90,p.rating*.84),px)]].map(([n,v])=>'<label>'+n+' <b>'+v+'</b><i><span style="width:'+Math.min(100,v)+'%"></span></i></label>').join("")+'</div></div><div class="development-player"><strong>'+selectedGoalkeeper+' · GK</strong><span>LVL '+level(gx)+' · '+gx+' XP</span><div class="development-bars">'+[['Reflexes',Math.min(99,g.name==="Hassan Ali"?99:stat(kb,gx))],['Diving',Math.min(99,g.name==="Hassan Ali"?99:stat(kb-2,gx))],['Positioning',Math.min(99,stat(kb-1,gx))]].map(([n,v])=>'<label>'+n+' <b>'+v+'</b><i><span style="width:'+Math.min(100,v)+'%"></span></i></label>').join("")+'</div></div><p class="career-hub-hint">Play challenges to earn XP and level up your selected player or goalkeeper.</p>';
+    const badges=[["firstAttempt","FIRST WHISTLE","Complete your first attempt"],["firstGoal","FIRST GOAL","Score your first goal"],["hatTrick","HAT-TRICK HERO","Score 3 goals"],["keeperWall","KEEPER WALL","Make 5 saves"],["xp1000","XP COLLECTOR","Earn 1,000 XP"]];
+    ach.innerHTML=badges.map(([id,n,d])=>'<div class="achievement '+(career.achievements&&career.achievements[id]?'unlocked':'')+'"><span>'+(career.achievements&&career.achievements[id]?'★':'◇')+'</span><div><strong>'+n+'</strong><small>'+d+'</small></div></div>').join("");
+    const rec=dailyRecord(),done=rec.date===dateKey()&&rec.done;
+    $("challengeStatus").textContent=done?"Today's challenge completed! Come back tomorrow for a new target.":"Daily target: "+({crossbar:"Hit the crossbar zone",penalty:"Score a penalty",goalkeeping:"Make a goalkeeper save"}[dailyChallengeMode])+" · Finish one attempt to claim it.";
+    $("dailyChallengeBtn").textContent=done?"✓ DAILY COMPLETE":"🎯 DAILY CHALLENGE";
+    $("tournamentBtn").textContent=tournamentActive?"🏆 WORLD TOUR · ROUND "+(tournamentWinsThisRun+1)+"/3":"🏆 WORLD TOUR";
+  }
+  function launchDailyChallenge(){const rec=dailyRecord();if(rec.date===dateKey()&&rec.done){toast("Daily challenge already completed. Return tomorrow!");renderCareerHub();return;}const opts=["crossbar","penalty","goalkeeping"];dailyChallengeMode=opts[Math.floor(Date.now()/86400000)%opts.length];dailyChallengeActive=true;startMode(dailyChallengeMode);$("feedback").textContent="DAILY CHALLENGE · "+({crossbar:"Hit the crossbar zone.",penalty:"Score this penalty.",goalkeeping:"Make this save."}[dailyChallengeMode]);toast("Daily challenge: "+modeNames[dailyChallengeMode]);}
+  function launchWorldTour(){tournamentActive=true;tournamentWinsThisRun=0;startMode("vsattack");$("gameTitle").innerHTML="WORLD TOUR <em>ROUND 1</em>";$("controlHeading").textContent="World Tour · Round 1 of 3";$("controlText").textContent="Win this five-attack round to advance. Three round wins earn the World Tour trophy.";toast("WORLD TOUR started · Win 3 rounds to lift the trophy!");renderCareerHub();}
+  $("dailyChallengeBtn").addEventListener("click",launchDailyChallenge);$("tournamentBtn").addEventListener("click",launchWorldTour);
+  $("goalkeeperCareerBtn").addEventListener("click",()=>{startMode("goalkeeping");$("gameTitle").innerHTML="GOALKEEPER <em>CAREER</em>";$("controlHeading").textContent="Goalkeeper Career";$("controlText").textContent="Read the striker, choose your dive, and build your save record.";});
+  const originalSaveCareer=saveCareer;saveCareer=function(){originalSaveCareer();renderCareerHub();};renderCareerHub();
 
   function startMode(nextMode){
     const isRandomRush=nextMode==="random";
@@ -319,6 +345,8 @@
   function endFullMatch(){match.active=false;match.finished=true;cancelAnimationFrame(animationFrame);updateRank();const outcome=match.playerGoals>match.rivalGoals?"WIN":match.playerGoals===match.rivalGoals?"DRAW":"LOSS";$("matchResult").classList.remove("hidden");$("matchResult").textContent="FULL TIME · "+match.playerGoals+" - "+match.rivalGoals+" · "+outcome+" · RANK "+match.rank;$("feedback").textContent=$("matchResult").textContent;$("roundLabel").textContent="FULL TIME";drawPitch();}
   function finishAttempt(success,message){
     shotTaken=true;
+    const daily=dailyRecord();if(dailyChallengeActive&&mode===dailyChallengeMode&&!(daily.date===dateKey()&&daily.done)){try{localStorage.setItem("eclipseDailyChallenge",JSON.stringify({date:dateKey(),done:true,success:Boolean(success),mode}));}catch(_){}dailyChallengeActive=false;message+=" · DAILY CHALLENGE COMPLETED";renderCareerHub();}
+
     if(success)score+=mode==="goalkeeping"?150:100;
     if(mode==="headtohead"||mode==="vsattack"){
       matchAttacks++;
@@ -327,7 +355,7 @@
       message += "  |  "+(mode==="headtohead"?matchMinute+"'":"ATTACK "+matchAttacks+"/5")+" · YOU "+Math.floor(score/100)+" - "+opponentScore+" RIVAL";
     }
     $("scoreValue").textContent=mode==="headtohead"||mode==="vsattack"?Math.floor(score/100)+"-"+opponentScore:score;
-    const careerLine=awardProgress(success);playCue(success?"goal":"save");if(success&&mode!=="goalkeeping"&&mode!=="survival")celebrationUntil=performance.now()+900;if(mode==="vsattack"&&matchAttacks>=5&&Math.floor(score/100)>opponentScore){career.tournamentWins++;saveCareer();message+=" 🏆 TOURNAMENT WON! Total wins: "+career.tournamentWins;}if(success&&mode!=="goalkeeping"&&mode!=="survival")message="🏆 "+message+"  ✨ GOAL CELEBRATION!";$("feedback").textContent=message+"  |  "+careerLine+"  |  Press R to replay your last shot.";
+    const careerLine=awardProgress(success);playCue(success?"goal":"save");if(success&&mode!=="goalkeeping"&&mode!=="survival")celebrationUntil=performance.now()+900;if(mode==="vsattack"&&matchAttacks>=5&&Math.floor(score/100)>opponentScore&&!tournamentActive){career.tournamentWins++;saveCareer();message+=" 🏆 VS ATTACK WON! Total wins: "+career.tournamentWins;}if(success&&mode!=="goalkeeping"&&mode!=="survival")message="🏆 "+message+"  ✨ GOAL CELEBRATION!";$("feedback").textContent=message+"  |  "+careerLine+"  |  Press R to replay your last shot.";
     $("shootBtn").classList.add("hidden");$("nextBtn").classList.remove("hidden");
     $("nextBtn").textContent=(mode==="headtohead"&&matchMinute>=90)||(mode==="vsattack"&&matchAttacks>=5)?"FINISH MATCH":"NEXT ATTACK →";
     $("roundLabel").textContent=mode==="headtohead"?matchMinute+"' · "+(matchMinute>=90?"FULL TIME":"MATCH LIVE"):mode==="vsattack"?"ATTACK "+matchAttacks+" / 5":"ATTEMPT "+String(attempt).padStart(2,"0")+" · COMPLETE";
@@ -345,7 +373,9 @@
     const placementBonus=Math.max(0,.12-centerBias*.20)+(power>90?.025:0)+(selectedPlayer==="Cristiano Ronaldo"?.02:0);
     const goal=aim.y<.36&&aim.x>.18&&aim.x<.82;
     const crossbarHit=mode==="crossbar"&&aim.y>=.055&&aim.y<=.15&&aim.x>=.34&&aim.x<=.66;
-    const scoreChance=keeperIsHassan?.00001:Math.max(.03,Math.min(.98,baseScoreChance+placementBonus));
+    const keeperRating=(goalkeepers.find(g=>g.name===selectedGoalkeeper)||goalkeepers[0]).rating;
+    const keeperSkill=keeperIsHassan?.34:Math.max(.04,Math.min(.24,(keeperRating-82)*.009));
+    const scoreChance=Math.max(.08,Math.min(.96,baseScoreChance+placementBonus-keeperSkill+(centerBias>.34?.10:0)));
     const scored=mode==="crossbar"?(crossbarHit&&Math.random()<(difficulty==="Rookie"?.75:difficulty==="Pro"?.45:.18)):(goal&&Math.random()<scoreChance);
     setTimeout(()=>{if(mode==="freekick"&&aim.x>.465&&aim.x<.535&&aim.y<.30){finishAttempt(false,"The wall blocks it! Aim wider around the wall.");}else if(mode==="crossbar"&&!crossbarHit){finishAttempt(false,"MISS! Aim just beneath the crossbar.");}else if(scored){finishAttempt(true,mode==="crossbar"?"CROSSBAR CHALLENGE COMPLETE! Perfect timing!":power>90?"WHAT A STRIKE! Top corner!":"GOAL! Perfect placement.");}else{finishAttempt(false,goal?"SAVED BY "+selectedGoalkeeper.toUpperCase()+"! Try another corner.":"Wide! Aim inside the bigger goal frame.");}drawPitch();},510);
   }
@@ -354,11 +384,19 @@
     const targetSide=["left","center","right"][Math.floor(Math.random()*3)];
     aim={x:targetSide==="left"?.28:targetSide==="right"?.72:.5,y:.055+Math.random()*.08};
     const matchedDive=targetSide===keeperDive;
-    const save=selectedGoalkeeper==="Hassan Ali" ? Math.random()>=.00001 : matchedDive||(difficulty==="Rookie"&&Math.random()<.12);
+    const keeperRating=(goalkeepers.find(g=>g.name===selectedGoalkeeper)||goalkeepers[0]).rating;
+    const reactionBonus=selectedGoalkeeper==="Hassan Ali"?.22:Math.max(0,(keeperRating-85)*.008);
+    const save=matchedDive?Math.random()<Math.min(.99,.72+reactionBonus):Math.random()<Math.min(.78,.08+reactionBonus+(difficulty==="Rookie"?.12:0));
     ballAnim={fromX:cw*.5,fromY:ch*.28,toX:aim.x*cw,toY:aim.y*ch,start:performance.now(),duration:430};keeperMotion={side:keeperDive==="left"?-1:keeperDive==="right"?1:0,start:performance.now(),duration:430};drawPitch();
     setTimeout(()=>{finishAttempt(save,save?"INCREDIBLE SAVE! "+selectedGoalkeeper+" reads the shot!":"GOAL CONCEDED. Read the direction next time.");drawPitch()},450);
   }
   function nextAttempt(){
+    if(mode==="vsattack"&&matchAttacks>=5&&tournamentActive){
+      const won=Math.floor(score/100)>opponentScore;if(won)tournamentWinsThisRun++;
+      if(won&&tournamentWinsThisRun>=3){tournamentActive=false;career.tournamentWins++;saveCareer();$("feedback").textContent="🏆 WORLD TOUR CHAMPION! Three rounds won. Trophy added to your career.";$("nextBtn").classList.add("hidden");$("shootBtn").classList.remove("hidden");$("shootBtn").textContent="PLAY AGAIN ↻";$("shootBtn").onclick=()=>startMode("vsattack");renderCareerHub();toast("WORLD TOUR CHAMPION!");return;}
+      if(won){const r=tournamentWinsThisRun+1;startMode("vsattack");$("gameTitle").innerHTML="WORLD TOUR <em>ROUND "+r+"</em>";$("controlHeading").textContent="World Tour · Round "+r+" of 3";$("controlText").textContent="Win this five-attack round to advance toward the trophy.";toast("Round "+(r-1)+" won! Round "+r+" begins.");renderCareerHub();return;}
+      tournamentActive=false;renderCareerHub();$("feedback").textContent="WORLD TOUR ROUND LOST. Win 3 rounds to lift the trophy. Start World Tour to try again.";
+    }
     if((mode==="headtohead"&&matchMinute>=90)||(mode==="vsattack"&&matchAttacks>=5)){
       $("feedback").textContent="FULL TIME! Final score: "+Math.floor(score/100)+" - "+opponentScore+". "+(Math.floor(score/100)>opponentScore?"YOU WIN!":Math.floor(score/100)===opponentScore?"DRAW!":"RIVAL WINS!");
       $("nextBtn").classList.add("hidden");$("shootBtn").classList.remove("hidden");$("shootBtn").textContent="PLAY AGAIN ↻";
