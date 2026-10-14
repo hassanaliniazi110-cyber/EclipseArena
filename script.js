@@ -63,7 +63,10 @@ const goalkeepers = [
     const unlocked=isUnlocked(p,isKeeper),xp=career.players[p.name]||0,level=1+Math.floor(xp/100);
     const rating=Math.min(99,Math.max(60,(p.rating||60)+Math.min(4,Math.floor(xp/250))));
     const lockLabel=unlocked?"LVL "+level:"🔒 "+Math.max(0,(p.unlockXP||0)-career.xp)+" XP TO UNLOCK";
-    return '<button class="player-card '+(p.name===selected?'selected ':'')+(!unlocked?'player-locked':'')+'" '+(unlocked?'':'disabled aria-label="Locked player '+p.name+'" ')+attr+'="'+p.name.replace(/"/g,"&quot;")+'" style="--player-glow:'+p.glow+'"><div class="player-rating">'+rating+'</div><div class="player-role">'+p.role+' · OVR</div><div class="player-name">'+p.name+'</div><div class="player-special">'+(unlocked?p.special:lockLabel)+'</div><div class="ovr-meter"><i><span style="width:'+rating+'%"></span></i></div></button>';
+    const labels=isKeeper?["DIV","HAN","KIC","REF","SPD","POS"]:["PAC","SHO","PAS","DRI","DEF","PHY"];
+    const offsets=isKeeper?[1,0,-3,2,-2,1]:p.role==="ST"?[0,3,-2,-1,-4,2]:p.role==="RW"||p.role==="LW"?[3,0,-1,3,-5,-2]:p.role==="CAM"||p.role==="CM"?[-1,-1,3,1,0,0]:[0,0,0,0,0,0];
+    const attributes=labels.map((label,i)=>'<span><b>'+label+'</b><strong>'+Math.min(99,Math.max(45,rating+offsets[i]))+'</strong></span>').join("");
+    return '<button class="player-card '+(p.name===selected?'selected ':'')+(!unlocked?'player-locked':'')+'" '+(unlocked?'':'disabled aria-label="Locked player '+p.name+'" ')+attr+'="'+p.name.replace(/"/g,"&quot;")+'" style="--player-glow:'+p.glow+'"><div class="player-rating">'+rating+'</div><div class="player-role">'+p.role+' · OVR</div><div class="player-name">'+p.name+'</div><div class="player-special">'+(unlocked?p.special:lockLabel)+'</div><div class="fc-attributes">'+attributes+'</div><div class="ovr-meter"><i><span style="width:'+rating+'%"></span></i></div></button>';
   }
   function renderPlayers(){
     $("playerGrid").innerHTML=players.map(p=>playerCard(p,selectedPlayer,"data-player",false)).join("");
