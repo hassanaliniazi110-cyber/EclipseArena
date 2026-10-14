@@ -2,41 +2,45 @@
   "use strict";
   const $ = (id) => document.getElementById(id);
   const players = [
-    {name:"Hassan Ali", rating:300, role:"GOALKEEPER", special:"Elite reflexes", glow:"rgba(199,255,74,.22)"},
-    {name:"Zayd Quadri", rating:96, role:"DRIBBLER", special:"Close control", glow:"rgba(75,191,255,.2)"},
-    {name:"Ehan Ali", rating:94, role:"ALL-ROUNDER", special:"Quick reactions", glow:"rgba(189,123,255,.2)"},
-    {name:"Umar Shoaib", rating:92, role:"PLAYMAKER", special:"Smart passing", glow:"rgba(255,140,66,.2)"},
-    {name:"Muhammad Arham", rating:122, role:"STRIKER", special:"Finishing touch", glow:"rgba(255,99,99,.2)"},
-    {name:"Cristiano Ronaldo", rating:999, role:"LEGEND", special:"MAX POWER & PRECISION", stats:{shooting:1000000000000000000,power:999999999999999,accuracy:999999999999,speed:10000000000000000}, glow:"rgba(255,140,66,.2)"},
-    {name:"Erling Haaland", rating:98, role:"STRIKER", special:"Long-shot power", glow:"rgba(75,191,255,.2)"},
-    {name:"Jude Bellingham", rating:97, role:"MIDFIELDER", special:"Penalty specialist", glow:"rgba(189,123,255,.2)"},
-    {name:"Lamine Yamal", rating:96, role:"WINGER", special:"Free-kick magic", glow:"rgba(199,255,74,.2)"},
-    {name:"Lionel Messi",rating:99,role:"PLAYMAKER",special:"Dribbling & precision",glow:"rgba(75,191,255,.2)"},
-    {name:"Kylian Mbappé",rating:98,role:"FORWARD",special:"Pace & finishing",glow:"rgba(189,123,255,.2)"},
-    {name:"Kevin De Bruyne",rating:97,role:"MIDFIELDER",special:"Vision & passing",glow:"rgba(255,99,99,.2)"},
-    {name:"Mohamed Salah",rating:97,role:"WINGER",special:"Cut-inside finishing",glow:"rgba(255,140,66,.2)"},
-    {name:"Vinícius Júnior",rating:97,role:"WINGER",special:"Skill moves & speed",glow:"rgba(199,255,74,.2)"},
-    {name:"Neymar Jr.",rating:96,role:"PLAYMAKER",special:"Flair & close control",glow:"rgba(189,123,255,.2)"},
-    {name:"Harry Kane",rating:96,role:"STRIKER",special:"Finishing & link-up play",glow:"rgba(75,191,255,.2)"},
-    {name:"Bukayo Saka",rating:95,role:"WINGER",special:"Agility & crossing",glow:"rgba(255,140,66,.2)"},
-    {name:"Phil Foden",rating:95,role:"MIDFIELDER",special:"Quick turns",glow:"rgba(80,220,190,.2)"}
-  ];
-  const goalkeepers = [
-    {name:"Hassan Ali",rating:300,role:"ELITE KEEPER",special:"Best reflexes & diving",glow:"rgba(199,255,74,.22)"},
-    {name:"Ehan Ali",rating:94,role:"GOALKEEPER",special:"Quick reactions",glow:"rgba(189,123,255,.2)"},
-    {name:"Alisson",rating:95,role:"GOALKEEPER",special:"Fast one-on-ones",glow:"rgba(75,191,255,.2)"},
-    {name:"Thibaut Courtois",rating:95,role:"GOALKEEPER",special:"Huge reach",glow:"rgba(255,140,66,.2)"},
-    {name:"Manuel Neuer",rating:94,role:"SWEEPER KEEPER",special:"Rushes off the line",glow:"rgba(255,210,90,.2)"},
-    {name:"Ederson",rating:91,role:"PLAYMAKING KEEPER",special:"Accurate distribution",glow:"rgba(80,220,190,.2)"},
-    {name:"Marc-André ter Stegen",rating:90,role:"GOALKEEPER",special:"Sharp reflexes",glow:"rgba(90,160,255,.2)"},
-    {name:"Gianluigi Donnarumma",rating:94,role:"GOALKEEPER",special:"Big saves under pressure",glow:"rgba(255,110,130,.2)"},
-    {name:"Emiliano Martínez",rating:91,role:"PENALTY SPECIALIST",special:"Penalty mind games",glow:"rgba(255,170,80,.2)"},
-    {name:"Jan Oblak",rating:92,role:"GOALKEEPER",special:"Positioning expert",glow:"rgba(160,120,255,.2)"},
-    {name:"David Raya",rating:89,role:"GOALKEEPER",special:"Quick distribution",glow:"rgba(100,220,130,.2)"},
-    {name:"Mike Maignan",rating:90,role:"GOALKEEPER",special:"Explosive reactions",glow:"rgba(90,210,240,.2)"},
-    {name:"Lev Yashin",rating:98,role:"THE BLACK SPIDER",special:"Legendary reflexes & reach",glow:"rgba(30,30,38,.28)"},
-    {name:"Muhammad Arham",rating:122,role:"GOALKEEPER",special:"Brave close-range saves",glow:"rgba(255,99,99,.2)"}
-  ];
+{name:"Cristiano Ronaldo",rating:92,role:"ST",special:"Power · Finishing",unlockXP:0,glow:"rgba(255,140,66,.2)"},
+{name:"Lionel Messi",rating:93,role:"RW",special:"Dribbling · Vision",unlockXP:100,glow:"rgba(75,191,255,.2)"},
+{name:"Kylian Mbappé",rating:92,role:"ST",special:"Pace · Finishing",unlockXP:150,glow:"rgba(189,123,255,.2)"},
+{name:"Erling Haaland",rating:91,role:"ST",special:"Power · Shooting",unlockXP:200,glow:"rgba(75,191,255,.2)"},
+{name:"Jude Bellingham",rating:90,role:"CM",special:"Passing · Stamina",unlockXP:250,glow:"rgba(189,123,255,.2)"},
+{name:"Lamine Yamal",rating:89,role:"RW",special:"Curve · Agility",unlockXP:300,glow:"rgba(199,255,74,.2)"},
+{name:"Kevin De Bruyne",rating:91,role:"CAM",special:"Vision · Passing",unlockXP:350,glow:"rgba(255,99,99,.2)"},
+{name:"Mohamed Salah",rating:90,role:"RW",special:"Finishing · Pace",unlockXP:400,glow:"rgba(255,140,66,.2)"},
+{name:"Vinícius Júnior",rating:91,role:"LW",special:"Skill moves · Pace",unlockXP:450,glow:"rgba(199,255,74,.2)"},
+{name:"Neymar Jr.",rating:89,role:"LW",special:"Flair · Control",unlockXP:500,glow:"rgba(189,123,255,.2)"},
+{name:"Harry Kane",rating:90,role:"ST",special:"Finishing · Link-up",unlockXP:550,glow:"rgba(75,191,255,.2)"},
+{name:"Bukayo Saka",rating:88,role:"RW",special:"Agility · Crossing",unlockXP:600,glow:"rgba(255,140,66,.2)"},
+{name:"Phil Foden",rating:88,role:"CAM",special:"Control · Turns",unlockXP:650,glow:"rgba(80,220,190,.2)"},
+{name:"Zayd Quadri",rating:86,role:"CAM",special:"Close control",unlockXP:0,glow:"rgba(75,191,255,.2)"},
+{name:"Ehan Ali",rating:82,role:"CM",special:"Quick reactions",unlockXP:0,glow:"rgba(189,123,255,.2)"},
+{name:"Umar Shoaib",rating:80,role:"CAM",special:"Smart passing",unlockXP:0,glow:"rgba(255,140,66,.2)"},
+{name:"Muhammad Arham",rating:84,role:"ST",special:"Finishing touch",unlockXP:0,glow:"rgba(255,99,99,.2)"},
+{name:"Diego Maradona",rating:95,role:"CAM",special:"Legend · Dribbling",unlockXP:900,glow:"rgba(255,210,90,.2)"},
+{name:"Luís Figo",rating:91,role:"RW",special:"Legend · Crossing",unlockXP:750,glow:"rgba(255,210,90,.2)"},
+{name:"Zinedine Zidane",rating:94,role:"CAM",special:"Legend · Vision",unlockXP:1100,glow:"rgba(255,210,90,.2)"},
+{name:"Hassan Ali",rating:90,role:"GK",special:"Custom · Elite reflexes",unlockXP:1200,glow:"rgba(199,255,74,.22)"}
+];
+const goalkeepers = [
+{name:"David Raya",rating:87,role:"GOALKEEPER",special:"Quick distribution",unlockXP:0,glow:"rgba(100,220,130,.2)"},
+{name:"Alisson",rating:90,role:"GOALKEEPER",special:"Fast one-on-ones",unlockXP:100,glow:"rgba(75,191,255,.2)"},
+{name:"Thibaut Courtois",rating:91,role:"GOALKEEPER",special:"Huge reach",unlockXP:150,glow:"rgba(255,140,66,.2)"},
+{name:"Manuel Neuer",rating:90,role:"SWEEPER KEEPER",special:"Rushes off the line",unlockXP:200,glow:"rgba(255,210,90,.2)"},
+{name:"Ederson",rating:88,role:"PLAYMAKING KEEPER",special:"Accurate distribution",unlockXP:250,glow:"rgba(80,220,190,.2)"},
+{name:"Marc-André ter Stegen",rating:88,role:"GOALKEEPER",special:"Sharp reflexes",unlockXP:300,glow:"rgba(90,160,255,.2)"},
+{name:"Gianluigi Donnarumma",rating:91,role:"GOALKEEPER",special:"Big saves under pressure",unlockXP:350,glow:"rgba(255,110,130,.2)"},
+{name:"Emiliano Martínez",rating:88,role:"PENALTY SPECIALIST",special:"Penalty mind games",unlockXP:400,glow:"rgba(255,170,80,.2)"},
+{name:"Jan Oblak",rating:90,role:"GOALKEEPER",special:"Positioning expert",unlockXP:450,glow:"rgba(160,120,255,.2)"},
+{name:"Mike Maignan",rating:89,role:"GOALKEEPER",special:"Explosive reactions",unlockXP:500,glow:"rgba(90,210,240,.2)"},
+{name:"Gianluigi Buffon",rating:94,role:"ICON GOALKEEPER",special:"Legend · Reflexes & positioning",unlockXP:800,glow:"rgba(255,210,90,.2)"},
+{name:"Lev Yashin",rating:95,role:"ICON GOALKEEPER",special:"The Black Spider",unlockXP:1000,glow:"rgba(30,30,38,.28)"},
+{name:"Hassan Ali",rating:90,role:"CUSTOM GOALKEEPER",special:"Elite reflexes & diving",unlockXP:1200,glow:"rgba(199,255,74,.22)"},
+{name:"Ehan Ali",rating:80,role:"GOALKEEPER",special:"Quick reactions",unlockXP:0,glow:"rgba(189,123,255,.2)"},
+{name:"Muhammad Arham",rating:82,role:"GOALKEEPER",special:"Brave close-range saves",unlockXP:0,glow:"rgba(255,99,99,.2)"}
+];
   const modeNames = {penalty:"PENALTY",freekick:"FREE KICK",longshot:"LONG SHOT",goalkeeping:"GOALKEEPER",headtohead:"HEAD-TO-HEAD",vsattack:"VS ATTACK",crossbar:"CROSSBAR CHALLENGE",survival:"SURVIVAL SAVES"};
   const modeText = {
     penalty:["Pick your corner.","Drag on the goal to aim, then shoot."],
@@ -48,29 +52,30 @@
     crossbar:["Hit the bar.","Aim right under the crossbar and time your shot."],
     survival:["Survival saves.","Save as many shots as possible. Hassan makes an almost impossible wall."]
   };
-  let selectedPlayer = "Zayd Quadri", selectedGoalkeeper = "Hassan Ali", difficulty = "Pro", mode = "penalty";
+  let selectedPlayer = "Cristiano Ronaldo", selectedGoalkeeper = "David Raya", difficulty = "Pro", mode = "penalty";
   let score = 0, opponentScore = 0, matchMinute = 0, matchAttacks = 0, attempt = 1, aim = {x:.5,y:.27}, power = 78, shotTaken = false, keeperDive = "center", keeperMotion = null, ballAnim = null, animationFrame = 0;
   const canvas = $("pitch"), ctx = canvas.getContext("2d");
   let cw = 900, ch = 620, lastResult = "", shotTimer = null, soundOn = false, masterVolume = 0.65, passcodeFailures=0, passcodeLockUntil=0, lastShotReplay=null, celebrationUntil=0;
   const match = {active:false,finished:false,clock:0,lastTick:0,player:{x:.5,y:.72},rival:{x:.5,y:.28},ball:{x:.5,y:.72},move:"",sprint:false,hasBall:true,playerGoals:0,rivalGoals:0,rankPoints:0,rank:"ROOKIE III",lastRivalShot:0};
 
-  function playerCard(p, selected, attr){
-    const xp=career.players[p.name]||0,level=1+Math.floor(xp/100),rating=p.rating+(p.name==="Hassan Ali"?0:level-1);
-    return '<button class="player-card '+(p.name===selected?'selected':'')+'" '+attr+'="'+p.name.replace(/"/g,"&quot;")+'" style="--player-glow:'+p.glow+'"><div class="player-rating">'+rating+'</div><div class="player-role">'+p.role+' · LVL '+level+'</div><div class="player-name">'+p.name+'</div><div class="player-special">'+p.special+' · '+xp+' XP</div></button>';
+  function isUnlocked(p,isKeeper){return (p.unlockXP||0)<=career.xp;}
+  function playerCard(p, selected, attr, isKeeper){
+    const unlocked=isUnlocked(p,isKeeper),xp=career.players[p.name]||0,level=1+Math.floor(xp/100);
+    const rating=Math.min(99,Math.max(60,(p.rating||60)+Math.min(4,Math.floor(xp/250))));
+    const lockLabel=unlocked?"LVL "+level:"🔒 "+Math.max(0,(p.unlockXP||0)-career.xp)+" XP TO UNLOCK";
+    return '<button class="player-card '+(p.name===selected?'selected ':'')+(!unlocked?'player-locked':'')+'" '+(unlocked?'':'disabled aria-label="Locked player '+p.name+'" ')+attr+'="'+p.name.replace(/"/g,"&quot;")+'" style="--player-glow:'+p.glow+'"><div class="player-rating">'+rating+'</div><div class="player-role">'+p.role+' · OVR</div><div class="player-name">'+p.name+'</div><div class="player-special">'+(unlocked?p.special:lockLabel)+'</div><div class="ovr-meter"><i><span style="width:'+rating+'%"></span></i></div></button>';
   }
   function renderPlayers(){
-    $("playerGrid").innerHTML = players.map(p=>playerCard(p,selectedPlayer,"data-player")).join("");
-    $("playerGrid").querySelectorAll("[data-player]").forEach(btn=>btn.addEventListener("click",()=>{
-      selectedPlayer=btn.dataset.player;renderPlayers();if(typeof renderCareerHub==="function")renderCareerHub();toast(selectedPlayer+" selected as shooter");
-    }));
-    $("goalkeeperGrid").innerHTML = goalkeepers.map(p=>playerCard(p,selectedGoalkeeper,"data-goalkeeper")).join("");
-    $("goalkeeperGrid").querySelectorAll("[data-goalkeeper]").forEach(btn=>btn.addEventListener("click",()=>{
-      selectedGoalkeeper=btn.dataset.goalkeeper;renderPlayers();if(typeof renderCareerHub==="function")renderCareerHub();toast(selectedGoalkeeper+" selected as goalkeeper");
-    }));
+    $("playerGrid").innerHTML=players.map(p=>playerCard(p,selectedPlayer,"data-player",false)).join("");
+    $("playerGrid").querySelectorAll("[data-player]").forEach(btn=>btn.addEventListener("click",()=>{selectedPlayer=btn.dataset.player;renderPlayers();if(typeof renderCareerHub==="function")renderCareerHub();toast(selectedPlayer+" selected as player");}));
+    $("goalkeeperGrid").innerHTML=goalkeepers.map(p=>playerCard(p,selectedGoalkeeper,"data-goalkeeper",true)).join("");
+    $("goalkeeperGrid").querySelectorAll("[data-goalkeeper]").forEach(btn=>btn.addEventListener("click",()=>{selectedGoalkeeper=btn.dataset.goalkeeper;renderPlayers();if(typeof renderCareerHub==="function")renderCareerHub();toast(selectedGoalkeeper+" selected as goalkeeper");}));
+    const count=players.filter(p=>isUnlocked(p,false)).length,gcount=goalkeepers.filter(p=>isUnlocked(p,true)).length;
+    const counters=document.querySelectorAll(".section-count");if(counters[0])counters[0].textContent=count+" / "+players.length+" UNLOCKED";if(counters[1])counters[1].textContent=gcount+" / "+goalkeepers.length+" UNLOCKED";
   }
   function toast(message){const el=$("toast");el.textContent=message;el.classList.add("show");clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove("show"),2600)}
-  const career=(()=>{try{return Object.assign({attempts:0,goals:0,saves:0,xp:0,players:{},tournamentWins:0,bestScore:0},JSON.parse(localStorage.getItem("eclipseCareer")||"{}"));}catch(_){return {attempts:0,goals:0,saves:0,xp:0,players:{},tournamentWins:0,bestScore:0};}})();
-  function saveCareer(){try{localStorage.setItem("eclipseCareer",JSON.stringify(career));}catch(_){}if(typeof renderModeTools==="function")renderModeTools();}
+  const career=(()=>{const fresh={attempts:0,goals:0,saves:0,xp:0,players:{},tournamentWins:0,bestScore:0,achievements:{}};try{const saved=localStorage.getItem("eclipseCareerV2");return saved?Object.assign(fresh,JSON.parse(saved)):fresh;}catch(_){return fresh;}})();
+  function saveCareer(){try{localStorage.setItem("eclipseCareerV2",JSON.stringify(career));}catch(_){}if(typeof renderModeTools==="function")renderModeTools();}
   function awardProgress(success){career.attempts++;if(success){if(mode==="goalkeeping"||mode==="survival")career.saves++;else career.goals++;}const earned=10+(success?20:0),progressionPlayer=(mode==="goalkeeping"||mode==="survival")?selectedGoalkeeper:selectedPlayer;career.xp+=earned;career.players[progressionPlayer]=(career.players[progressionPlayer]||0)+earned;career.bestScore=Math.max(career.bestScore,score);career.achievements=career.achievements||{};const milestones=[["firstAttempt",career.attempts>=1,"First Whistle"],["firstGoal",career.goals>=1,"First Goal"],["hatTrick",career.goals>=3,"Hat-Trick Hero"],["keeperWall",career.saves>=5,"Keeper Wall"],["xp1000",career.xp>=1000,"XP Collector"]];const newlyUnlocked=[];milestones.forEach(([id,earnedNow,label])=>{if(earnedNow&&!career.achievements[id]){career.achievements[id]=true;newlyUnlocked.push(label);}});saveCareer();renderPlayers();const unlocked=newlyUnlocked.length?" · ACHIEVEMENT UNLOCKED: "+newlyUnlocked.join(", "):"";return "CAREER · "+career.goals+" goals · "+career.saves+" saves · "+career.xp+" XP · BEST "+career.bestScore+" · "+progressionPlayer+" LVL "+(1+Math.floor((career.players[progressionPlayer]||0)/100))+unlocked;}
   function playCue(kind){if(!soundOn)return;const ac=getMusicContext();if(!ac)return;try{ac.resume();const t=ac.currentTime+.01;if(kind==="goal"){tone(523,.12,"triangle",.05,t);tone(659,.16,"triangle",.045,t+.12);tone(784,.22,"triangle",.04,t+.25);}else{tone(220,.14,"sine",.035,t);tone(165,.18,"sine",.025,t+.12);}}catch(_){}}
   function resizeCanvas(){
@@ -277,7 +282,7 @@
   $("modeSearch").addEventListener("input",renderModeTools);$("modeFilter").addEventListener("change",renderModeTools);renderModeTools();
 
   const careerHub=document.createElement("section");careerHub.className="career-hub";
-  careerHub.innerHTML='<div class="career-hub-head"><div><p class="eyebrow">YOUR SEASON</p><h2>Career <em>hub.</em></h2></div><span class="career-hub-note">Progress saved on this device</span></div><div class="career-metrics" id="careerMetrics"></div><div class="career-hub-actions"><button type="button" id="dailyChallengeBtn" class="secondary-btn">🎯 DAILY CHALLENGE</button><button type="button" id="tournamentBtn" class="primary-btn">🏆 WORLD TOUR</button><button type="button" id="goalkeeperCareerBtn" class="secondary-btn">🧤 GOALKEEPER CAREER</button></div><p id="challengeStatus" class="career-hub-status" aria-live="polite"></p><div class="career-extra-actions"><button type="button" id="trainingAcademyBtn" class="secondary-btn">🎓 TRAINING ACADEMY</button><button type="button" id="trophyCabinetBtn" class="secondary-btn">🏆 TROPHY CABINET</button><button type="button" id="seasonBtn" class="secondary-btn">📅 CAREER SEASON</button><button type="button" id="rankingBtn" class="secondary-btn">📈 PERSONAL RANKING</button><button type="button" id="playerCardsBtn" class="secondary-btn">🃏 PLAYER COLLECTION</button></div><div id="careerExtraPanel" class="career-extra-panel" aria-live="polite"></div><div class="career-hub-columns"><section><h3>PLAYER DEVELOPMENT</h3><div id="playerDevelopment"></div></section><section><h3>ACHIEVEMENTS</h3><div id="achievementList"></div></section></div>';
+  careerHub.innerHTML='<div class="career-hub-head"><div><p class="eyebrow">YOUR SEASON</p><h2>Career <em>hub.</em></h2></div><span class="career-hub-note">Progress saved on this device</span></div><div class="career-metrics" id="careerMetrics"></div><div class="career-hub-actions"><button type="button" id="dailyChallengeBtn" class="secondary-btn">🎯 DAILY CHALLENGE</button><button type="button" id="tournamentBtn" class="primary-btn">🏆 WORLD TOUR</button><button type="button" id="goalkeeperCareerBtn" class="secondary-btn">🧤 GOALKEEPER CAREER</button></div><p id="challengeStatus" class="career-hub-status" aria-live="polite"></p><div class="career-extra-actions"><button type="button" id="trainingAcademyBtn" class="secondary-btn">🎓 TRAINING ACADEMY</button><button type="button" id="trophyCabinetBtn" class="secondary-btn">🏆 TROPHY CABINET</button><button type="button" id="seasonBtn" class="secondary-btn">📅 CAREER SEASON</button><button type="button" id="rankingBtn" class="secondary-btn">📈 PERSONAL RANKING</button><button type="button" id="playerCardsBtn" class="secondary-btn">🃏 PLAYER COLLECTION</button></div><div id="careerExtraPanel" class="career-extra-panel" aria-live="polite"></div><section class="friends-panel"><h3>👥 FRIENDS & PROGRESS</h3><p>Share your player ID and career profile code to compare stats. Live online matches need a multiplayer server, which is not connected yet.</p><div class="friend-id-row"><strong id="myPlayerId">EA-LOADING</strong><button type="button" id="copyPlayerIdBtn" class="secondary-btn">COPY ID</button></div><button type="button" id="showProfileCodeBtn" class="secondary-btn">CREATE PROFILE SHARE CODE</button><textarea id="profileShareCode" rows="3" readonly placeholder="Your share code appears here"></textarea><div class="friend-add-row"><input id="friendIdInput" placeholder="Friend player ID (EA-...)" maxlength="32"><button type="button" id="addFriendBtn" class="primary-btn">ADD FRIEND</button></div><div class="friend-add-row"><input id="friendCodeInput" placeholder="Paste your friend’s profile code"><button type="button" id="compareFriendBtn" class="secondary-btn">COMPARE</button></div><p id="friendStatus" class="career-hub-status" aria-live="polite"></p><div id="friendsList"></div></section><div class="career-hub-columns"><section><h3>PLAYER DEVELOPMENT</h3><div id="playerDevelopment"></div></section><section><h3>ACHIEVEMENTS</h3><div id="achievementList"></div></section></div>';
   document.querySelector(".roster-section").appendChild(careerHub);
   let tournamentActive=false,tournamentWinsThisRun=0,dailyChallengeMode="crossbar",dailyChallengeActive=false;
   function dateKey(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
@@ -326,7 +331,17 @@
   $("seasonBtn").addEventListener("click",()=>renderExtraPanel("season"));
   $("rankingBtn").addEventListener("click",()=>renderExtraPanel("ranking"));
   $("playerCardsBtn").addEventListener("click",()=>renderExtraPanel("cards"));
-  const originalSaveCareer=saveCareer;saveCareer=function(){originalSaveCareer();renderCareerHub();};renderCareerHub();
+  const originalSaveCareer=saveCareer;saveCareer=function(){originalSaveCareer();renderCareerHub();renderPlayers();};
+  const playerId=(()=>{try{let id=localStorage.getItem("eclipsePlayerId");if(!id){id="EA-"+Math.random().toString(36).slice(2,6).toUpperCase()+"-"+Math.random().toString(36).slice(2,6).toUpperCase();localStorage.setItem("eclipsePlayerId",id);}return id;}catch(_){return "EA-LOCAL";}})();
+  const savedFriends=(()=>{try{return JSON.parse(localStorage.getItem("eclipseFriends")||"[]");}catch(_){return [];}})();
+  function renderFriends(){const list=$("friendsList");if(!list)return;list.innerHTML=savedFriends.length?savedFriends.map(f=>'<div class="friend-entry"><div><strong>'+String(f.id).replace(/[<>&"]/g,"")+'</strong><small>'+(f.profile?String(f.profile.name||"Friend").replace(/[<>&"]/g,"")+' · '+(Number(f.profile.xp)||0)+' XP':'ID saved · waiting for their profile code')+'</small></div><button type="button" data-remove-friend="'+String(f.id).replace(/"/g,"&quot;")+'">REMOVE</button></div>').join(""):'<p class="career-hub-hint">No friends added yet.</p>';list.querySelectorAll("[data-remove-friend]").forEach(b=>b.addEventListener("click",()=>{const i=savedFriends.findIndex(f=>f.id===b.dataset.removeFriend);if(i>=0)savedFriends.splice(i,1);try{localStorage.setItem("eclipseFriends",JSON.stringify(savedFriends));}catch(_){}renderFriends();}));}
+  $("myPlayerId").textContent=playerId;
+  $("copyPlayerIdBtn").addEventListener("click",()=>{const value=playerId;if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(value).then(()=>toast("Player ID copied")).catch(()=>{$("friendStatus").textContent="Select and copy your ID manually: "+value;});else{$("friendStatus").textContent="Select and copy your ID manually: "+value;}});
+  $("showProfileCodeBtn").addEventListener("click",()=>{const profile={id:playerId,name:"Eclipse Player",xp:career.xp,goals:career.goals,saves:career.saves,wins:career.tournamentWins,best:career.bestScore,ovr:Math.min(99,92+Math.floor(career.xp/500))};$("profileShareCode").value=btoa(unescape(encodeURIComponent(JSON.stringify(profile))));$("friendStatus").textContent="Send this profile code to your friend so they can compare progress.";});
+  $("addFriendBtn").addEventListener("click",()=>{const id=$("friendIdInput").value.trim().toUpperCase();if(!/^EA-[A-Z0-9]{3,8}-[A-Z0-9]{3,8}$/.test(id)){$("friendStatus").textContent="Enter a valid EA player ID.";return;}if(id===playerId){$("friendStatus").textContent="That is your own ID.";return;}if(savedFriends.some(f=>f.id===id)){$("friendStatus").textContent="That friend is already on your list.";return;}savedFriends.push({id,profile:null});try{localStorage.setItem("eclipseFriends",JSON.stringify(savedFriends));}catch(_){}$("friendIdInput").value="";$("friendStatus").textContent="Friend ID saved on this device. Paste their profile code to compare stats.";renderFriends();});
+  $("compareFriendBtn").addEventListener("click",()=>{try{const raw=decodeURIComponent(escape(atob($("friendCodeInput").value.trim()))),p=JSON.parse(raw);if(!p.id||p.id===playerId)throw new Error("bad");let f=savedFriends.find(x=>x.id===p.id);if(!f){f={id:p.id,profile:p};savedFriends.push(f);}else f.profile=p;try{localStorage.setItem("eclipseFriends",JSON.stringify(savedFriends));}catch(_){}$("friendStatus").textContent="Progress comparison · You: "+career.xp+" XP, "+career.goals+" goals, "+career.saves+" saves, "+career.tournamentWins+" wins. Friend: "+(p.xp||0)+" XP, "+(p.goals||0)+" goals, "+(p.saves||0)+" saves, "+(p.wins||0)+" wins.";renderFriends();}catch(_){$("friendStatus").textContent="That profile code is invalid. Ask your friend to create and send their profile share code."; }});
+  renderFriends();
+  renderCareerHub();renderPlayers();
 
   function startMode(nextMode){
     const isRandomRush=nextMode==="random";
