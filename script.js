@@ -71,7 +71,7 @@
   function toast(message){const el=$("toast");el.textContent=message;el.classList.add("show");clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove("show"),2600)}
   const career=(()=>{try{return Object.assign({attempts:0,goals:0,saves:0,xp:0,players:{},tournamentWins:0,bestScore:0},JSON.parse(localStorage.getItem("eclipseCareer")||"{}"));}catch(_){return {attempts:0,goals:0,saves:0,xp:0,players:{},tournamentWins:0,bestScore:0};}})();
   function saveCareer(){try{localStorage.setItem("eclipseCareer",JSON.stringify(career));}catch(_){}if(typeof renderModeTools==="function")renderModeTools();}
-  function awardProgress(success){career.attempts++;if(success){if(mode==="goalkeeping"||mode==="survival")career.saves++;else career.goals++;}const earned=10+(success?20:0),progressionPlayer=(mode==="goalkeeping"||mode==="survival")?selectedGoalkeeper:selectedPlayer;career.xp+=earned;career.players[progressionPlayer]=(career.players[progressionPlayer]||0)+earned;career.bestScore=Math.max(career.bestScore,score);saveCareer();renderPlayers();return "CAREER · "+career.goals+" goals · "+career.saves+" saves · "+career.xp+" XP · "+progressionPlayer+" LVL "+(1+Math.floor((career.players[progressionPlayer]||0)/100));}
+  function awardProgress(success){career.attempts++;if(success){if(mode==="goalkeeping"||mode==="survival")career.saves++;else career.goals++;}const earned=10+(success?20:0),progressionPlayer=(mode==="goalkeeping"||mode==="survival")?selectedGoalkeeper:selectedPlayer;career.xp+=earned;career.players[progressionPlayer]=(career.players[progressionPlayer]||0)+earned;career.bestScore=Math.max(career.bestScore,score);career.achievements=career.achievements||{};const milestones=[["firstAttempt",career.attempts>=1,"First Whistle"],["firstGoal",career.goals>=1,"First Goal"],["hatTrick",career.goals>=3,"Hat-Trick Hero"],["keeperWall",career.saves>=5,"Keeper Wall"],["xp1000",career.xp>=1000,"XP Collector"]];const newlyUnlocked=[];milestones.forEach(([id,earnedNow,label])=>{if(earnedNow&&!career.achievements[id]){career.achievements[id]=true;newlyUnlocked.push(label);}});saveCareer();renderPlayers();const unlocked=newlyUnlocked.length?" · ACHIEVEMENT UNLOCKED: "+newlyUnlocked.join(", "):"";return "CAREER · "+career.goals+" goals · "+career.saves+" saves · "+career.xp+" XP · BEST "+career.bestScore+" · "+progressionPlayer+" LVL "+(1+Math.floor((career.players[progressionPlayer]||0)/100))+unlocked;}
   function playCue(kind){if(!soundOn)return;const ac=getMusicContext();if(!ac)return;try{ac.resume();const t=ac.currentTime+.01;if(kind==="goal"){tone(523,.12,"triangle",.05,t);tone(659,.16,"triangle",.045,t+.12);tone(784,.22,"triangle",.04,t+.25);}else{tone(220,.14,"sine",.035,t);tone(165,.18,"sine",.025,t+.12);}}catch(_){}}
   function resizeCanvas(){
     const rect=canvas.getBoundingClientRect();if(!rect.width)return;
@@ -511,7 +511,7 @@
     {name:"Ranking The Best Accent Slips Moments — PhantomShortz",category:"Funny · accent slips",tags:"funny accent slips stutters unexpected accent fails compilation",playlist:"",videoId:"TLupK1LZ67Y",channelUrl:"https://www.youtube.com/watch?v=TLupK1LZ67Y",websiteUrl:"",websiteLabel:"",preferred:true},
     {name:"Top 5 Funniest Accent Fails — MxRanks",category:"Funny · accent slips",tags:"funny accent fails accent mistakes try not to laugh shorts",playlist:"",videoId:"XwFJo1J9zVo",channelUrl:"https://www.youtube.com/watch?v=XwFJo1J9zVo",websiteUrl:"",websiteLabel:"",preferred:true},
     {name:"Friends — When Americans Fail at British Accents",category:"Funny · accent slips",tags:"friends british accent fail ross comedy accent slips",playlist:"",videoId:"l8k3orPWrQk",channelUrl:"https://www.youtube.com/watch?v=l8k3orPWrQk",websiteUrl:"",websiteLabel:"",preferred:true},
-    {name:"RkReddy",category:"FC Mobile · football gaming",tags:"rkreddy fc mobile fifa football soccer",playlist:"UUurtk6gwUZPnccBndhFPNMQ",videoId:"c0SkacQheBY",channelUrl:"https://www.youtube.com/@rkreddy",websiteUrl:"https://www.digitalsportsmgmt.com/rkreddy",websiteLabel:"CREATOR WEBSITE",preferred:true},
+    {name:"RkReddy",channelId:"UCurtk6gwUZPnccBndhFPNMQ",category:"FC Mobile · football gaming",tags:"rkreddy fc mobile fifa football soccer",playlist:"UUurtk6gwUZPnccBndhFPNMQ",videoId:"c0SkacQheBY",channelUrl:"https://www.youtube.com/@rkreddy",websiteUrl:"https://www.digitalsportsmgmt.com/rkreddy",websiteLabel:"CREATOR WEBSITE",preferred:true},
     {name:"RkReddy 2.0",category:"FC Mobile · football gaming",tags:"rkreddy 2.0 fc mobile fifa football",playlist:"",channelUrl:"https://www.youtube.com/@rkreddy2.0",websiteUrl:"",websiteLabel:"",preferred:true},
     {name:"NealGuides",category:"FC Mobile · guides and tactics",tags:"neal guides fc mobile football tactics tips",playlist:"UU0sB_mkyZZlWmnpF61a7ZXg",channelUrl:"https://www.youtube.com/@nealguides",websiteUrl:"https://nealguides.com/links/",websiteLabel:"CREATOR LINKS",preferred:true},
     {name:"KreekCraft",category:"Roblox · gaming",tags:"roblox kreekcraft gaming updates",playlist:"UUxsk7hqE_CwZWGEJEkGanbA",videoId:"I9Y9h8rvstI",channelUrl:"https://www.youtube.com/@KreekCraft",websiteUrl:"https://kreekcraft.stream/en-sgd/pages/links",websiteLabel:"CREATOR LINKS",preferred:true},
@@ -633,7 +633,7 @@
     e.preventDefault();
     const raw=$("youtubeVideoUrl").value.trim(),status=$("youtubeAreaStatus"),player=$("youtubeAreaPlayer");
     if(!raw){status.textContent="Paste a YouTube video, playlist, or channel URL first.";return;}
-    let videoId="",playlistId="",channelHandle="",normalizedUrl="";
+    let videoId="",playlistId="",channelHandle="",channelId="",normalizedUrl="";
     try{
       if(/^[a-zA-Z0-9_-]{11}$/.test(raw))videoId=raw;
       else{
@@ -663,11 +663,11 @@
     }else if(playlistId&&/^[a-zA-Z0-9_-]+$/.test(playlistId)){
       player.src="https://www.youtube-nocookie.com/embed/videoseries?list="+encodeURIComponent(playlistId)+"&rel=0";
       status.textContent="Loading playlist inside YouTube Area. Some playlists may block embedded playback.";
-    }else if(channelHandle){
-      const cleanHandle=channelHandle.replace(/^@/,"");
+    }else if(channelHandle||channelId){
+      const cleanHandle=(channelHandle||"").replace(/^@/,"");
       const matchedChannel=youtubeChannels.find(c=>{
         const m=(c.channelUrl||"").match(/youtube\.com\/@?([^/?]+)/i);
-        return m&&m[1].toLowerCase()===cleanHandle;
+        return (cleanHandle&&m&&m[1].toLowerCase()===cleanHandle)||(channelId&&c.channelId&&c.channelId.toLowerCase()===channelId);
       });
       if(matchedChannel&&(matchedChannel.playlist||matchedChannel.videoId)){
         if(matchedChannel.playlist){
