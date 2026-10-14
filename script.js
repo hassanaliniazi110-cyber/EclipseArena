@@ -70,7 +70,7 @@
   }
   function toast(message){const el=$("toast");el.textContent=message;el.classList.add("show");clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove("show"),2600)}
   const career=(()=>{try{return Object.assign({attempts:0,goals:0,saves:0,xp:0,players:{},tournamentWins:0,bestScore:0},JSON.parse(localStorage.getItem("eclipseCareer")||"{}"));}catch(_){return {attempts:0,goals:0,saves:0,xp:0,players:{},tournamentWins:0,bestScore:0};}})();
-  function saveCareer(){try{localStorage.setItem("eclipseCareer",JSON.stringify(career));}catch(_){}}
+  function saveCareer(){try{localStorage.setItem("eclipseCareer",JSON.stringify(career));}catch(_){}if(typeof renderModeTools==="function")renderModeTools();}
   function awardProgress(success){career.attempts++;if(success){if(mode==="goalkeeping"||mode==="survival")career.saves++;else career.goals++;}const earned=10+(success?20:0),progressionPlayer=(mode==="goalkeeping"||mode==="survival")?selectedGoalkeeper:selectedPlayer;career.xp+=earned;career.players[progressionPlayer]=(career.players[progressionPlayer]||0)+earned;career.bestScore=Math.max(career.bestScore,score);saveCareer();renderPlayers();return "CAREER · "+career.goals+" goals · "+career.saves+" saves · "+career.xp+" XP · "+progressionPlayer+" LVL "+(1+Math.floor((career.players[progressionPlayer]||0)/100));}
   function playCue(kind){if(!soundOn)return;const ac=getMusicContext();if(!ac)return;try{ac.resume();const t=ac.currentTime+.01;if(kind==="goal"){tone(523,.12,"triangle",.05,t);tone(659,.16,"triangle",.045,t+.12);tone(784,.22,"triangle",.04,t+.25);}else{tone(220,.14,"sine",.035,t);tone(165,.18,"sine",.025,t+.12);}}catch(_){}}
   function resizeCanvas(){
@@ -254,10 +254,33 @@
       animationFrame=requestAnimationFrame(drawPitch);
     }
   }
+  const modeGrid=document.querySelector(".mode-grid"), modeSection=document.querySelector(".mode-section");
+  const modeToolbar=document.createElement("div");modeToolbar.className="arena-tools";
+  modeToolbar.innerHTML='<input id="modeSearch" type="search" aria-label="Search game modes" placeholder="Search modes..."><select id="modeFilter" aria-label="Filter modes"><option value="all">All modes</option><option value="attack">Shooting</option><option value="keeper">Goalkeeping</option><option value="saved">Favourites</option><option value="recent">Recently played</option></select><span id="arenaStats" class="arena-stats"></span>';
+  modeSection.insertBefore(modeToolbar,modeGrid);
+  const modeFavourites=(()=>{try{return new Set(JSON.parse(localStorage.getItem("eclipseModeFavourites")||"[]"));}catch(_){return new Set();}})();
+  let recentModes=(()=>{try{return JSON.parse(localStorage.getItem("eclipseRecentModes")||"[]");}catch(_){return [];}})();
+  const modeCategories={penalty:"attack",freekick:"attack",longshot:"attack",goalkeeping:"keeper",random:"attack",vsattack:"attack",crossbar:"attack",survival:"keeper"};
+  function renderModeTools(){
+    const q=$("modeSearch").value.trim().toLowerCase(),f=$("modeFilter").value;
+    modeGrid.querySelectorAll("[data-mode],[data-open-youtube]").forEach(card=>{
+      const key=card.dataset.mode||"youtube",txt=(card.innerText||"").toLowerCase();
+      card.hidden=!((!q||txt.includes(q)||key.includes(q))&&(f==="all"||(f==="saved"&&modeFavourites.has(key))||(f==="recent"&&recentModes.includes(key))||(f==="attack"&&modeCategories[key]==="attack")||(f==="keeper"&&modeCategories[key]==="keeper")));
+      const star=card.querySelector(".mode-favourite");if(star)star.textContent=modeFavourites.has(key)?"★":"☆";
+    });
+    $("arenaStats").textContent=career.goals+" goals · "+career.saves+" saves · "+career.xp+" XP · Best "+career.bestScore;
+  }
+  modeGrid.querySelectorAll("[data-mode],[data-open-youtube]").forEach(card=>{
+    const key=card.dataset.mode||"youtube",star=document.createElement("button");star.type="button";star.className="mode-favourite";star.textContent=modeFavourites.has(key)?"★":"☆";star.setAttribute("aria-label","Toggle favourite for "+key);
+    star.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();modeFavourites.has(key)?modeFavourites.delete(key):modeFavourites.add(key);try{localStorage.setItem("eclipseModeFavourites",JSON.stringify([...modeFavourites]));}catch(_){}renderModeTools();});card.appendChild(star);
+  });
+  $("modeSearch").addEventListener("input",renderModeTools);$("modeFilter").addEventListener("change",renderModeTools);renderModeTools();
+
   function startMode(nextMode){
     const isRandomRush=nextMode==="random";
     if(isRandomRush){const choices=["penalty","freekick","longshot","goalkeeping","vsattack","crossbar","survival"];nextMode=choices[Math.floor(Math.random()*choices.length)];}
     mode=nextMode;shotTaken=false;ballAnim=null;keeperMotion=null;
+    if(!isRandomRush){recentModes=[nextMode,...recentModes.filter(x=>x!==nextMode)].slice(0,5);try{localStorage.setItem("eclipseRecentModes",JSON.stringify(recentModes));}catch(_){}renderModeTools();}
     match.active=mode==="headtohead";match.finished=false;match.clock=0;match.playerGoals=0;match.rivalGoals=0;match.rankPoints=0;match.rank="ROOKIE III";match.player={x:.5,y:.72};match.rival={x:.5,y:.28};match.ball={x:.5,y:.72};match.move="";match.sprint=false;match.hasBall=true;match.lastRivalShot=0;
     $("matchHud").classList.toggle("hidden",!match.active);$("matchControls").classList.toggle("hidden",!match.active);$("matchResult").classList.add("hidden");$("matchResult").textContent="";
     $("powerSlider").classList.toggle("hidden",match.active);$("powerSlider").disabled=match.active;$("shootBtn").classList.toggle("hidden",match.active);$("matchRank").textContent="ROOKIE III · 0 PTS";
