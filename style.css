@@ -115,3 +115,10 @@
 .youtube-channel-links{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
 .youtube-channel-links a{display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:6px 8px;border:1px solid var(--line);background:#0d1714;color:var(--lime);font-size:8px;font-weight:900;letter-spacing:.35px;text-decoration:none;overflow-wrap:anywhere}
 .youtube-channel-links a:hover,.youtube-channel-links a:focus-visible{border-color:var(--lime);text-decoration:underline}
+
+.arena-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-8px 0 16px}
+.arena-tools input,.arena-tools select{min-height:36px;min-width:0;border:1px solid var(--line);background:var(--panel);color:var(--white);padding:8px 10px;font-size:10px}
+.arena-tools input{flex:1 1 180px}.arena-tools select{flex:0 1 155px}.arena-stats{flex:1 1 100%;font-size:9px;letter-spacing:.5px;color:var(--muted);line-height:1.5}
+.mode-favourite{position:absolute;right:13px;top:38px;z-index:3;width:30px;height:30px;border:1px solid var(--line);background:#07110fdd;color:var(--lime);font-size:18px;line-height:1;border-radius:50%;display:grid;place-items:center}
+.mode-favourite:hover{border-color:var(--lime)}.mode-card[hidden]{display:none!important}
+@media(max-width:600px){.arena-tools{gap:6px}.arena-tools input{flex-basis:100%}.arena-tools select{flex:1 1 130px}.arena-stats{font-size:8px}.mode-favourite{right:9px;top:34px;width:28px;height:28px}}
