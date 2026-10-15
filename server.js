@@ -16,6 +16,27 @@ const players = new Map();
 const tokenToPlayer = new Map();
 const invites = new Map();
 const socketsByPlayer = new Map();
+const activeMatches = new Map();
+const MAX_PLAYERS = Math.max(100, Math.min(50000, Number(process.env.MAX_PLAYERS) || 5000));
+const MAX_PENDING_INVITES = 10000;
+
+const registerLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, limit: 10, standardHeaders: "draft-7", legacyHeaders: false,
+  message: { error: "Too many registration attempts. Try again later." }
+});
+const inviteLimiter = rateLimit({
+  windowMs: 60 * 1000, limit: 10, standardHeaders: "draft-7", legacyHeaders: false,
+  message: { error: "Too many invite attempts. Please wait a moment." }
+});
+const profileLimiter = rateLimit({
+  windowMs: 60 * 1000, limit: 30, standardHeaders: "draft-7", legacyHeaders: false,
+  message: { error: "Too many profile updates. Please wait a moment." }
+});
+function pruneExpiredInvites() {
+  const cutoff = Date.now() - 5 * 60 * 1000;
+  for (const [id, invite] of invites) if (invite.createdAt < cutoff) invites.delete(id);
+}
+
 
 app.disable("x-powered-by");
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
@@ -56,7 +77,7 @@ function normalizeProfile(input = {}) {
     ovr: Math.max(0, Math.min(999, n(input.ovr)))
   };
 }
-app.post("/api/register", (req, res) => {
+app.post("/api/register", registerLimiter, (req, res) => {
   const profile = normalizeProfile(req.body?.profile);
   const bearer = /^Bearer\s+([a-f0-9]{64})$/i.exec(req.get("authorization") || "");
   const existingId = bearer && tokenToPlayer.get(bearer[1]);
@@ -65,6 +86,7 @@ app.post("/api/register", (req, res) => {
     existing.profile = profile;
     return res.json({ playerId: existing.id, token: existing.token });
   }
+  if (players.size >= MAX_PLAYERS) return res.status(503).json({ error: "The server is full. Please try again later." });
   let id;
   do { id = "EA-" + crypto.randomBytes(3).toString("hex").toUpperCase() + "-" + crypto.randomBytes(3).toString("hex").toUpperCase(); } while (players.has(id));
   const token = crypto.randomBytes(32).toString("hex");
@@ -73,7 +95,7 @@ app.post("/api/register", (req, res) => {
   tokenToPlayer.set(token, id);
   res.status(201).json({ playerId: id, token });
 });
-app.put("/api/profile", auth, (req, res) => {
+app.put("/api/profile", auth, profileLimiter, (req, res) => {
   req.player.profile = normalizeProfile(req.body?.profile);
   res.json({ profile: publicProfile(req.player) });
 });
@@ -105,7 +127,9 @@ app.get("/api/profiles/:id", (req, res) => {
   if (!p) return res.status(404).json({ error: "Profile not found" });
   res.json({ profile: publicProfile(p) });
 });
-app.post("/api/invites", auth, (req, res) => {
+app.post("/api/invites", auth, inviteLimiter, (req, res) => {
+  pruneExpiredInvites();
+  if (invites.size >= MAX_PENDING_INVITES) return res.status(503).json({ error: "Too many pending invites. Try again shortly." });
   const id = cleanText(req.body?.friendId, 24).toUpperCase();
   if (!req.player.friends.has(id)) return res.status(403).json({ error: "Add this player as a friend first" });
   const target = players.get(id);
@@ -142,13 +166,20 @@ io.on("connection", socket => {
     socketsByPlayer.get(friendId)?.forEach(friendSocket => friendSocket.emit("friend:status", { playerId: id, online: true }));
   }
   socket.on("match:accept", payload => {
+    pruneExpiredInvites();
     const roomId = cleanText(payload?.roomId, 32);
     const invite = invites.get(roomId);
     if (!invite || invite.to !== id || Date.now() - invite.createdAt > 5 * 60 * 1000) return socket.emit("match:error", { message: "Invite expired or not allowed" });
+    const inviterSockets = socketsByPlayer.get(invite.from);
+    if (!inviterSockets?.size) {
+      invites.delete(roomId);
+      return socket.emit("match:error", { message: "The inviting player is no longer online" });
+    }
     socket.join(roomId);
-    socketsByPlayer.get(invite.from)?.forEach(s => s.join(roomId));
-    io.to(roomId).emit("match:ready", { roomId });
+    inviterSockets.forEach(s => s.join(roomId));
+    activeMatches.set(roomId, { players: new Set([invite.from, invite.to]), createdAt: Date.now() });
     invites.delete(roomId);
+    io.to(roomId).emit("match:ready", { roomId });
   });
   socket.on("match:decline", payload => {
     const roomId = cleanText(payload?.roomId, 32), invite = invites.get(roomId);
@@ -156,16 +187,27 @@ io.on("connection", socket => {
   });
   socket.on("match:state", payload => {
     const roomId = cleanText(payload?.roomId, 32);
-    const invite = [...invites.entries()].find(([,v]) => v.from === id || v.to === id);
-    if (!invite || !roomId || !socket.rooms.has(roomId)) return;
-    const state = payload?.state || {};
+    const match = activeMatches.get(roomId);
+    if (!match || !match.players.has(id) || !socket.rooms.has(roomId)) return;
+    if (Date.now() - match.createdAt > 2 * 60 * 60 * 1000) {
+      activeMatches.delete(roomId);
+      return;
+    }
+    const score = Number(payload?.state?.score);
+    if (!Number.isFinite(score)) return;
     socket.to(roomId).emit("match:state", { fromName: players.get(id)?.profile.name || "Friend", state: {
-      score: Math.max(0, Math.min(999, Number(state.score) || 0))
+      score: Math.max(0, Math.min(999, Math.floor(score)))
     }});
   });
   socket.on("disconnect", () => {
     socketsByPlayer.get(id)?.delete(socket);
     if (!socketsByPlayer.get(id)?.size) socketsByPlayer.delete(id);
+    for (const [roomId, match] of activeMatches) {
+      if (match.players.has(id)) {
+        activeMatches.delete(roomId);
+        io.to(roomId).emit("match:ended", { message: "A player disconnected" });
+      }
+    }
     for (const friendId of players.get(id)?.friends || []) {
       socketsByPlayer.get(friendId)?.forEach(s => s.emit("friend:status", { playerId: id, online: false }));
     }
