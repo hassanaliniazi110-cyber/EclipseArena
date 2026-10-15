@@ -27,3 +27,11 @@ Set `ALLOWED_ORIGINS` in Wispbyte's environment/startup settings to the exact we
 
 ## Important limitations
 This starter stores profiles and friends in memory, so data can be lost when the server restarts. It is not yet a persistent production database. A backend URL cannot be guessed automatically by a separate GitHub Pages site; it must be entered once in `config.js` after Wispbyte provides the actual public address.
+
+## Security and player-data notes
+- Player profiles and friend lists are stored in `eclipse-data.json` on the backend host. The file is created automatically; back it up privately and do not commit it to the public repository.
+- Set `ECLIPSE_DATA_FILE` to a persistent writable path if the host provides one. If the host deletes local files on restart/redeploy, use a managed database instead.
+- Tokens are sent to the browser once and stored there by the frontend; the backend stores only SHA-256 token hashes and rotates a token when a valid player reconnects through registration. Do not share browser tokens.
+- The YouTube area is public content and has no client-side passcode. A passcode embedded in public JavaScript cannot protect secrets.
+- Profile lookup requires an authenticated token. Match-state score values from clients are not treated as verified scores or used for ranking.
+- After updating `server.js`, upload/redeploy the backend on Wispbyte and restart it. GitHub Pages changes alone do not update the API.
