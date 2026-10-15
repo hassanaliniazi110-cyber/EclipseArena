@@ -198,3 +198,48 @@
 
 .fc-attributes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 7px;margin:10px 0 4px;font-size:9px;color:var(--muted)}.fc-attributes span{white-space:nowrap}.fc-attributes b{color:var(--lime);font-size:8px;letter-spacing:.3px}.player-card{height:auto;min-height:195px}.player-card .player-special{min-height:24px}
 .friends-panel{margin-top:22px;padding:18px;background:var(--panel);border:1px solid var(--line)}.friends-panel h3{font:800 18px 'Barlow Condensed',sans-serif;letter-spacing:.7px;margin:0 0 8px}.friends-panel>p{font-size:10px;line-height:1.6;color:var(--muted)}.friend-id-row,.friend-add-row{display:flex;align-items:center;gap:8px;margin:9px 0}.friend-id-row strong{font:800 18px 'Barlow Condensed',sans-serif;letter-spacing:1px;color:var(--lime);margin-right:auto}.friends-panel input,.friends-panel textarea{width:100%;min-width:0;padding:12px;background:#0a1411;border:1px solid var(--line);color:var(--white);border-radius:0;font-size:11px}.friends-panel textarea{display:block;margin:8px 0;resize:vertical}.friends-panel button{font-size:9px;font-weight:900;letter-spacing:.5px;padding:11px 12px;min-height:40px;white-space:nowrap}.friend-entry{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}.friend-entry strong,.friend-entry small{display:block}.friend-entry strong{font-size:11px}.friend-entry small{font-size:9px;color:var(--muted);margin-top:4px}@media(max-width:600px){.fc-attributes{font-size:8px;gap:4px}.friend-add-row{align-items:stretch}.friend-add-row button{white-space:normal;max-width:120px}.friends-panel{padding:12px}.friend-id-row{flex-wrap:wrap}}
+
+
+/* Futuristic esports typography across the existing page.
+   Typography only: preserves every section, size, position, and layout. */
+.brand,
+.brand-mark,
+h1,h2,h3,
+.hero-stat strong,.hero-index,
+.section-count,.mode-title,.mode-number,.mode-icon,
+.player-rating,.player-role,.player-name,.player-special,
+.eyebrow,.top-actions,.primary-btn,.secondary-btn,.back-btn,
+.difficulty-group button,.game-header h2,.score-box strong,
+.pitch-topline,.aim-tip,.power-label,.shoot-btn,
+.keeper-pad>span,.keeper-pad button,
+.match-hud,.match-scoreline strong,.match-controls button,
+.music-panel-heading strong,.music-label,.music-select,
+.music-play-btn,.music-stop-btn,.music-official-btn,
+.creator-links a,.youtube-panel-heading h3,
+.youtube-search-row button,.youtube-quick-searches button,
+.youtube-open-link,.youtube-section-title h3,
+.youtube-channel-name,.youtube-channel-actions button,
+.arena-tools input,.arena-tools select,.arena-stats,
+.career-hub-head h2,.career-metrics strong,.career-hub-columns h3,
+.development-player>strong,.achievement strong,
+.career-extra-actions button,.career-extra-panel h3,
+.trophy-item strong,.season-progress>div,.career-season-stats strong,
+.personal-rank>strong,.player-collect-card>strong,
+.player-collect-card>b,.friends-panel h3,.friend-id-row strong,
+.friend-add-row button,.friend-entry strong,
+.fc-attributes strong {
+  font-family:'Orbitron','Barlow Condensed',sans-serif;
+}
+.brand { letter-spacing:1px; }
+.brand small,.eyebrow,.top-actions,.section-count,.mode-number,
+.player-role,.pitch-topline,.aim-tip,.power-label,.music-label,
+.arena-stats,.career-metrics span,.personal-rank>span {
+  letter-spacing:1px;
+}
+h1 { letter-spacing:-1.5px; }
+h2,h3,.mode-title,.game-header h2,.youtube-panel-heading h3 {
+  letter-spacing:.2px;
+}
+@media(max-width:600px){
+  .brand { letter-spacing:.5px; }
+}
