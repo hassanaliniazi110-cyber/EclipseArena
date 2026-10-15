@@ -2,7 +2,7 @@
   "use strict";
   const $ = (id) => document.getElementById(id);
   const players = [
-{name:"Cristiano Ronaldo",rating:92,role:"ST",special:"Power · Finishing",unlockXP:0,glow:"rgba(255,140,66,.2)"},
+{name:"Cristiano Ronaldo",rating:999,role:"ST",special:"Power · Finishing",unlockXP:0,glow:"rgba(255,140,66,.2)"},
 {name:"Lionel Messi",rating:93,role:"RW",special:"Dribbling · Vision",unlockXP:100,glow:"rgba(75,191,255,.2)"},
 {name:"Kylian Mbappé",rating:92,role:"ST",special:"Pace · Finishing",unlockXP:150,glow:"rgba(189,123,255,.2)"},
 {name:"Erling Haaland",rating:91,role:"ST",special:"Power · Shooting",unlockXP:200,glow:"rgba(75,191,255,.2)"},
@@ -73,7 +73,7 @@ const goalkeepers = [
     const unlocked=isUnlocked(p,isKeeper),xp=career.players[p.name]||0,level=1+Math.floor(xp/100);
     const rawRating=(p.rating||60)+Math.min(4,Math.floor(xp/250));
     const rating=Math.min(99,Math.max(60,rawRating));
-    const displayRating=rating;
+    const displayRating=(p.name==="Cristiano Ronaldo"?999:(p.name==="Hassan Ali"&&(isKeeper||p.role==="GK")?300:rating));
     const lockLabel=unlocked?"LVL "+level:"🔒 "+Math.max(0,(p.unlockXP||0)-career.xp)+" XP TO UNLOCK";
     const labels=isKeeper?["DIV","HAN","KIC","REF","SPD","POS"]:["PAC","SHO","PAS","DRI","DEF","PHY"];
     const offsets=isKeeper?[1,0,-3,2,-2,1]:p.role==="ST"?[0,3,-2,-1,-4,2]:p.role==="RW"||p.role==="LW"?[3,0,-1,3,-5,-2]:p.role==="CAM"||p.role==="CM"?[-1,-1,3,1,0,0]:[0,0,0,0,0,0];
