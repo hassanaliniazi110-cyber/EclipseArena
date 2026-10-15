@@ -22,7 +22,7 @@
 {name:"Diego Maradona",rating:96,role:"CAM",special:"Legend · Dribbling",unlockXP:900,glow:"rgba(255,210,90,.2)"},
 {name:"Luís Figo",rating:99,role:"RW",special:"Legend · Crossing",unlockXP:750,glow:"rgba(255,210,90,.2)"},
 {name:"Zinedine Zidane",rating:98,role:"CAM",special:"Legend · Vision",unlockXP:1100,glow:"rgba(255,210,90,.2)"},
-{{name:"Pelé",rating:98,role:"ST",special:"Icon · Finishing & movement",unlockXP:1300,glow:"rgba(255,210,90,.2)"},
+{name:"Pelé",rating:98,role:"ST",special:"Icon · Finishing & movement",unlockXP:1300,glow:"rgba(255,210,90,.2)"},
 {name:"Ronaldo Nazário",rating:97,role:"ST",special:"Icon · Explosive pace",unlockXP:1400,glow:"rgba(255,210,90,.2)"},
 {name:"Ronaldinho",rating:97,role:"CAM",special:"Icon · Flair & skills",unlockXP:1500,glow:"rgba(255,210,90,.2)"},
 {name:"Thierry Henry",rating:96,role:"ST",special:"Icon · Pace & finishing",unlockXP:1600,glow:"rgba(255,210,90,.2)"},
@@ -32,7 +32,7 @@
 {name:"Sergio Ramos",rating:95,role:"CB",special:"Defending · Leadership",unlockXP:2000,glow:"rgba(255,210,90,.2)"},
 {name:"Virgil van Dijk",rating:95,role:"CB",special:"Strength · Interceptions",unlockXP:2100,glow:"rgba(255,210,90,.2)"},
 {name:"Karim Benzema",rating:96,role:"ST",special:"Link-up · Finishing",unlockXP:2200,glow:"rgba(255,210,90,.2)"},
-name:"Hassan Ali",rating:300,role:"GK",special:"Custom · Elite reflexes",unlockXP:1200,glow:"rgba(199,255,74,.22)"}
+{name:"Hassan Ali",rating:300,role:"GK",special:"Custom · Elite reflexes",unlockXP:1200,glow:"rgba(199,255,74,.22)"}
 ];
 const goalkeepers = [
 {name:"David Raya",rating:87,role:"GOALKEEPER",special:"Quick distribution",unlockXP:0,glow:"rgba(100,220,130,.2)"},
