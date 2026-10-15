@@ -223,9 +223,21 @@ io.on("connection", socket => {
       activeMatches.delete(roomId);
       return;
     }
-    const score = Number(payload?.state?.score);
-    if (!Number.isFinite(score)) return;
-    socket.to(roomId).emit("match:state", { fromName: players.get(id)?.profile.name || "Friend", state: { update: "received" } });
+    const state = payload?.state;
+    if (!state || !Number.isFinite(Number(state.x)) || !Number.isFinite(Number(state.y))) return;
+    const safeState = {
+      x: Math.max(0.05, Math.min(0.95, Number(state.x))),
+      y: Math.max(0.05, Math.min(0.95, Number(state.y))),
+      goals: Math.max(0, Math.min(99, Math.floor(Number(state.goals) || 0))),
+      hasBall: Boolean(state.hasBall),
+      clock: Math.max(0, Math.min(90, Number(state.clock) || 0))
+    };
+    socket.to(roomId).emit("match:state", {
+      roomId,
+      fromName: players.get(id)?.profile.name || "Friend",
+      playerId: id,
+      state: safeState
+    });
   });
   socket.on("disconnect", () => {
     socketsByPlayer.get(id)?.delete(socket);
