@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=DM+Sans:wght@400;500;600;700;800&family=Orbitron:wght@700;800;900&family=Bungee&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=DM+Sans:wght@400;500;600;700;800&family=Orbitron:wght@700;800;900&family=Chakra+Petch:wght@500;600;700&display=swap');
 
 /* Cinematic first-load intro */
 .intro-splash{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;background:#050b09;color:var(--white);animation:intro-exit .7s ease-in 2.6s forwards;pointer-events:none}
@@ -228,7 +228,7 @@ h1,h2,h3,
 .player-collect-card>b,.friends-panel h3,.friend-id-row strong,
 .friend-add-row button,.friend-entry strong,
 .fc-attributes strong {
-  font-family:'Orbitron','Barlow Condensed',sans-serif;
+  font-family:'Chakra Petch','Barlow Condensed',sans-serif;
 }
 .brand { letter-spacing:1px; }
 .brand small,.eyebrow,.top-actions,.section-count,.mode-number,
@@ -247,8 +247,7 @@ h2,h3,.mode-title,.game-header h2,.youtube-panel-heading h3 {
 
 
 
-/* Glitch Gaming / graffiti lettering: bold and sharp, with restrained digital accents.
-   Text styling only. No layout or gameplay changes. */
+/* Sharp Glitch Gaming lettering: angular and slanted, not blocky. Text styling only. */
 .intro-wordmark,
 .brand,
 h1,h2,h3,
@@ -259,24 +258,25 @@ h1,h2,h3,
 .match-scoreline strong,.youtube-panel-heading h3,
 .youtube-section-title h3,.career-hub-head h2,
 .career-hub-columns h3,.friends-panel h3 {
-  text-shadow: 1px 0 rgba(0,229,255,.38), -1px 0 rgba(255,42,109,.32);
+  text-shadow: 1px 0 rgba(0,229,255,.25), -1px 0 rgba(255,42,109,.22);
 }
 .intro-wordmark,h1,h2,.mode-title,.youtube-panel-heading h3 {
-  font-family:'Bungee','Orbitron',sans-serif;
+  font-family:'Chakra Petch','Barlow Condensed',sans-serif;font-style:italic;font-weight:700;
 }
 .intro-wordmark {
   letter-spacing:clamp(1px,.45vw,3px);
-  text-shadow:1px 0 rgba(0,229,255,.65),-1px 0 rgba(255,42,109,.55),0 0 14px #c7ff4a20;
+  text-shadow:1px 0 rgba(0,229,255,.42),-1px 0 rgba(255,42,109,.36),0 0 14px #c7ff4a20;
 }
 .intro-wordmark b {
   color:var(--lime);
-  text-shadow:1px 0 rgba(0,229,255,.65),-1px 0 rgba(255,42,109,.55),0 0 14px #c7ff4a45;
+  text-shadow:1px 0 rgba(0,229,255,.42),-1px 0 rgba(255,42,109,.36),0 0 14px #c7ff4a45;
 }
 .brand b,h1 em,h2 em {
   text-shadow:1px 0 rgba(0,229,255,.42),-1px 0 rgba(255,42,109,.38);
 }
 h1,h2,h3,.mode-title,.player-rating,.score-box strong {
-  -webkit-text-stroke:.25px currentColor;
+  -webkit-text-stroke:.1px currentColor;
+  letter-spacing:-.35px;
 }
 @keyframes subtle-glitch {
   0%,96%,100% { transform:translateX(0); }
