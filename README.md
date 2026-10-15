@@ -1,15 +1,29 @@
-# Eclipse Arena backend
+# Eclipse Arena backend — Wispbyte
 
-## Deploy once
-1. Create a new Web Service on Render and connect this repository.
-2. Render should detect `render.yaml`; confirm the service settings.
-3. Set `ALLOWED_ORIGINS` to the exact GitHub Pages origin(s) you use. Do not add URL paths.
-4. Deploy and copy the service's HTTPS URL.
-5. In `config.js`, set `backendUrl` to that HTTPS URL and commit the change. The website will load it automatically; visitors will not type it into the page.
+## Deploy on Wispbyte
+1. Open your Wispbyte client panel and create/open a **Node.js** server.
+2. Open **Files** and upload `server.js` and `package.json` from this repository. You can also use Wispbyte's GitHub integration if it is available for your server.
+3. Open **Startup** and set the startup command to `npm start` (or `node server.js` if the panel does not install dependencies from package.json automatically).
+4. Install the dependencies from `package.json`. Required packages: `express`, `cors`, `express-rate-limit`, `helmet`, and `socket.io`.
+5. Make sure the app listens on the assigned port. The server reads `process.env.PORT` and falls back to `3000`.
+6. Start the server and check Console/Logs for errors. Use the public HTTPS address provided/configured for your app, if Wispbyte exposes one. The API health check is `/health`.
 
-## Security notes
-- The browser no longer chooses the server URL; it is managed in `config.js` in the repository.
-- Keep passwords, API keys, and other secrets out of `config.js`; use the host's environment settings.
-- The API uses an origin allowlist, security headers, JSON size limits, rate limiting, input validation, and server-issued bearer tokens.
-- Only people with write access to this GitHub repository can change the public website configuration. Enable GitHub two-factor authentication and review collaborators.
-- This starter keeps profiles/friends in memory, so data is lost if the service restarts. It is a starter backend, not a production database.
+## Connect the GitHub Pages website
+Once the Wispbyte backend is running and you know its public HTTPS URL:
+1. Open `config.js` in this repository.
+2. Set `backendUrl` to that URL, with no trailing slash.
+3. Commit the change. Players will not have a backend URL field to edit; the website loads this configuration automatically.
+
+The backend URL itself is public configuration, not a password. Never put tokens or secrets in `config.js`. Only people with write access to this GitHub repository can change the website configuration, so review repository collaborators and enable two-factor authentication on your GitHub account.
+
+## Security included
+- CORS origin allowlist (`ALLOWED_ORIGINS`)
+- Helmet security headers
+- Request rate limiting and a 12 KB JSON body limit
+- Input normalization/validation
+- Server-issued bearer tokens and authenticated profile/friend actions
+
+Set `ALLOWED_ORIGINS` in Wispbyte's environment/startup settings to the exact website origin, for example `https://hassanaliniazi110-cyber.github.io` (origin only, no path).
+
+## Important limitations
+This starter stores profiles and friends in memory, so data can be lost when the server restarts. It is not yet a persistent production database. A backend URL cannot be guessed automatically by a separate GitHub Pages site; it must be entered once in `config.js` after Wispbyte provides the actual public address.
