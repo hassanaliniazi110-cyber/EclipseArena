@@ -2,6 +2,8 @@
 const express = require("express");
 const http = require("http");
 const crypto = require("crypto");
+const fs = require("fs");
+const path = require("path");
 const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
@@ -14,6 +16,25 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || "https://hassanaliniazi11
   .split(",").map(v => v.trim()).filter(Boolean);
 const players = new Map();
 const tokenToPlayer = new Map();
+const DATA_FILE = process.env.ECLIPSE_DATA_FILE || path.join(__dirname, "eclipse-data.json");
+function hashToken(token) { return crypto.createHash("sha256").update(String(token)).digest("hex"); }
+function saveData() {
+  const data = [...players.values()].map(p => ({ id: p.id, tokenHash: p.tokenHash, profile: p.profile, friends: [...p.friends] }));
+  const temp = DATA_FILE + ".tmp";
+  fs.writeFileSync(temp, JSON.stringify({ version: 1, players: data }), { mode: 0o600 });
+  fs.renameSync(temp, DATA_FILE);
+}
+function loadData() {
+  try {
+    const data = JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
+    if (data.version !== 1 || !Array.isArray(data.players)) return;
+    for (const p of data.players.slice(0, MAX_PLAYERS)) {
+      if (!validPlayerId(p.id) || !/^[a-f0-9]{64}$/i.test(p.tokenHash || "")) continue;
+      const player = { id: p.id, tokenHash: p.tokenHash, profile: normalizeProfile(p.profile), friends: new Set(Array.isArray(p.friends) ? p.friends.filter(validPlayerId).slice(0, 100) : []) };
+      players.set(player.id, player); tokenToPlayer.set(player.tokenHash, player.id);
+    }
+  } catch (e) { if (e.code !== "ENOENT") console.error("Could not load player data:", e.message); }
+}
 const invites = new Map();
 const socketsByPlayer = new Map();
 const activeMatches = new Map();
@@ -63,7 +84,7 @@ function publicProfile(p) {
 }
 function auth(req, res, next) {
   const match = /^Bearer\s+([a-f0-9]{64})$/i.exec(req.get("authorization") || "");
-  const id = match && tokenToPlayer.get(match[1]);
+  const id = match && tokenToPlayer.get(hashToken(match[1]));
   if (!id || !players.has(id)) return res.status(401).json({ error: "Authentication required. Reconnect to the server." });
   req.player = players.get(id);
   next();
@@ -80,23 +101,30 @@ function normalizeProfile(input = {}) {
 app.post("/api/register", registerLimiter, (req, res) => {
   const profile = normalizeProfile(req.body?.profile);
   const bearer = /^Bearer\s+([a-f0-9]{64})$/i.exec(req.get("authorization") || "");
-  const existingId = bearer && tokenToPlayer.get(bearer[1]);
+  const existingId = bearer && tokenToPlayer.get(hashToken(bearer[1]));
   if (existingId && players.has(existingId)) {
     const existing = players.get(existingId);
     existing.profile = profile;
-    return res.json({ playerId: existing.id, token: existing.token });
+    tokenToPlayer.delete(existing.tokenHash);
+    const rotatedToken = crypto.randomBytes(32).toString("hex");
+    existing.tokenHash = hashToken(rotatedToken);
+    tokenToPlayer.set(existing.tokenHash, existing.id);
+    saveData();
+    return res.json({ playerId: existing.id, token: rotatedToken });
   }
   if (players.size >= MAX_PLAYERS) return res.status(503).json({ error: "The server is full. Please try again later." });
   let id;
   do { id = "EA-" + crypto.randomBytes(3).toString("hex").toUpperCase() + "-" + crypto.randomBytes(3).toString("hex").toUpperCase(); } while (players.has(id));
   const token = crypto.randomBytes(32).toString("hex");
-  const player = { id, token, profile, friends: new Set() };
+  const player = { id, tokenHash: hashToken(token), profile, friends: new Set() };
   players.set(id, player);
-  tokenToPlayer.set(token, id);
+  tokenToPlayer.set(player.tokenHash, id);
+  saveData();
   res.status(201).json({ playerId: id, token });
 });
 app.put("/api/profile", auth, profileLimiter, (req, res) => {
   req.player.profile = normalizeProfile(req.body?.profile);
+  saveData();
   res.json({ profile: publicProfile(req.player) });
 });
 app.get("/api/friends", auth, (req, res) => {
@@ -112,15 +140,17 @@ app.post("/api/friends", auth, (req, res) => {
   if (req.player.friends.size >= 100) return res.status(429).json({ error: "Friend limit reached" });
   req.player.friends.add(id);
   friend.friends.add(req.player.id);
+  saveData();
   res.status(201).json({ friend: publicProfile(friend) });
 });
 app.post("/api/friends/remove", auth, (req, res) => {
   const id = cleanText(req.body?.friendId, 24).toUpperCase();
   req.player.friends.delete(id);
   players.get(id)?.friends.delete(req.player.id);
+  saveData();
   res.json({ ok: true });
 });
-app.get("/api/profiles/:id", (req, res) => {
+app.get("/api/profiles/:id", auth, (req, res) => {
   const id = cleanText(req.params.id, 24).toUpperCase();
   if (!validPlayerId(id)) return res.status(400).json({ error: "Invalid player ID" });
   const p = players.get(id);
@@ -154,7 +184,7 @@ io.use((socket, next) => {
   const id = cleanText(socket.handshake.auth?.playerId, 24).toUpperCase();
   const token = String(socket.handshake.auth?.token || "");
   const player = players.get(id);
-  if (!player || !/^[a-f0-9]{64}$/i.test(token) || player.token !== token) return next(new Error("Authentication required"));
+  if (!player || !/^[a-f0-9]{64}$/i.test(token) || player.tokenHash !== hashToken(token)) return next(new Error("Authentication required"));
   socket.data.playerId = id;
   next();
 });
@@ -195,9 +225,7 @@ io.on("connection", socket => {
     }
     const score = Number(payload?.state?.score);
     if (!Number.isFinite(score)) return;
-    socket.to(roomId).emit("match:state", { fromName: players.get(id)?.profile.name || "Friend", state: {
-      score: Math.max(0, Math.min(999, Math.floor(score)))
-    }});
+    socket.to(roomId).emit("match:state", { fromName: players.get(id)?.profile.name || "Friend", state: { update: "received" } });
   });
   socket.on("disconnect", () => {
     socketsByPlayer.get(id)?.delete(socket);
@@ -213,4 +241,5 @@ io.on("connection", socket => {
     }
   });
 });
+loadData();
 server.listen(PORT, () => console.log("Eclipse Arena API listening on " + PORT));
