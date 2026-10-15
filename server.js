@@ -58,7 +58,7 @@ function normalizeProfile(input = {}) {
 }
 app.post("/api/register", (req, res) => {
   const profile = normalizeProfile(req.body?.profile);
-  const bearer = /^Bearer\\s+([a-f0-9]{64})$/i.exec(req.get("authorization") || "");
+  const bearer = /^Bearer\s+([a-f0-9]{64})$/i.exec(req.get("authorization") || "");
   const existingId = bearer && tokenToPlayer.get(bearer[1]);
   if (existingId && players.has(existingId)) {
     const existing = players.get(existingId);
