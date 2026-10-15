@@ -30,4 +30,4 @@ s.on("match:state",({roomId,state}={})=>{const r=rooms.get(roomId);if(!r||!r.pla
 s.on("match:finish",({roomId}={})=>{if(!rooms.has(roomId)||!rooms.get(roomId).players.includes(id))return;io.to(roomId).emit("match:ended",{reason:"A player finished"});rooms.delete(roomId);});
 s.on("disconnect",()=>{const p=socketUsers.get(s.id);socketUsers.delete(s.id);if(!p)return;online.get(p)?.delete(s.id);if(!online.get(p)?.size){online.delete(p);for(const f of db.friends[p]||[])for(const sid of online.get(f)||[])io.to(sid).emit("friend:status",{playerId:p,online:false});}});
 });
-httpServer.listen(Number(process.env.PORT)||10000,"0.0.0.0",()=>console.log("Eclipse Arena backend listening"));
+httpServer.listen(Number(process.env.PORT)||11914,"0.0.0.0",()=>console.log("Eclipse Arena backend listening"));
