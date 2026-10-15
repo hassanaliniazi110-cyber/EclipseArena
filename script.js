@@ -2,63 +2,63 @@
   "use strict";
   const $ = (id) => document.getElementById(id);
   const players = [
-{name:"Cristiano Ronaldo",rating:999,role:"ST",special:"Power · Finishing",unlockXP:0,glow:"rgba(255,140,66,.2)"},
-{name:"Lionel Messi",rating:123,role:"RW",special:"Dribbling · Vision",unlockXP:0,glow:"rgba(75,191,255,.2)"},
-{name:"Kylian Mbappé",rating:122,role:"ST",special:"Pace · Finishing",unlockXP:0,glow:"rgba(189,123,255,.2)"},
-{name:"Erling Haaland",rating:121,role:"ST",special:"Power · Shooting",unlockXP:0,glow:"rgba(75,191,255,.2)"},
-{name:"Jude Bellingham",rating:120,role:"CM",special:"Passing · Stamina",unlockXP:0,glow:"rgba(189,123,255,.2)"},
-{name:"Lamine Yamal",rating:119,role:"RW",special:"Curve · Agility",unlockXP:0,glow:"rgba(199,255,74,.2)"},
-{name:"Kevin De Bruyne",rating:121,role:"CAM",special:"Vision · Passing",unlockXP:0,glow:"rgba(255,99,99,.2)"},
-{name:"Mohamed Salah",rating:120,role:"RW",special:"Finishing · Pace",unlockXP:0,glow:"rgba(255,140,66,.2)"},
-{name:"Vinícius Júnior",rating:121,role:"LW",special:"Skill moves · Pace",unlockXP:0,glow:"rgba(199,255,74,.2)"},
-{name:"Neymar Jr.",rating:119,role:"LW",special:"Flair · Control",unlockXP:0,glow:"rgba(189,123,255,.2)"},
-{name:"Harry Kane",rating:120,role:"ST",special:"Finishing · Link-up",unlockXP:0,glow:"rgba(75,191,255,.2)"},
-{name:"Bukayo Saka",rating:118,role:"RW",special:"Agility · Crossing",unlockXP:0,glow:"rgba(255,140,66,.2)"},
-{name:"Phil Foden",rating:118,role:"CAM",special:"Control · Turns",unlockXP:0,glow:"rgba(80,220,190,.2)"},
-{name:"Zayd Quadri",rating:116,role:"CAM",special:"Close control",unlockXP:0,glow:"rgba(75,191,255,.2)"},
-{name:"Ehan Ali",rating:112,role:"CM",special:"Quick reactions",unlockXP:0,glow:"rgba(189,123,255,.2)"},
-{name:"Umar Shoaib",rating:110,role:"CAM",special:"Smart passing",unlockXP:0,glow:"rgba(255,140,66,.2)"},
-{name:"Muhammad Arham",rating:122,role:"ST",special:"Finishing touch",unlockXP:0,glow:"rgba(255,99,99,.2)"},
-{name:"Diego Maradona",rating:125,role:"CAM",special:"Legend · Dribbling",unlockXP:0,glow:"rgba(255,210,90,.2)"},
-{name:"Luís Figo",rating:121,role:"RW",special:"Legend · Crossing",unlockXP:0,glow:"rgba(255,210,90,.2)"},
-{name:"Zinedine Zidane",rating:124,role:"CAM",special:"Legend · Vision",unlockXP:0,glow:"rgba(255,210,90,.2)"},
-{name:"Pelé",rating:128,role:"ST",special:"Icon · Finishing & movement",unlockXP:0,glow:"rgba(255,210,90,.2)"},
-{name:"Ronaldo Nazário",rating:127,role:"ST",special:"Icon · Explosive pace",unlockXP:0,glow:"rgba(255,210,90,.2)"},
-{name:"Ronaldinho",rating:127,role:"CAM",special:"Icon · Flair & skills",unlockXP:0,glow:"rgba(255,210,90,.2)"},
-{name:"Thierry Henry",rating:126,role:"ST",special:"Icon · Pace & finishing",unlockXP:0,glow:"rgba(255,210,90,.2)"},
-{name:"Xavi",rating:126,role:"CM",special:"Icon · Passing & control",unlockXP:0,glow:"rgba(255,210,90,.2)"},
-{name:"Andrés Iniesta",rating:126,role:"CM",special:"Icon · Close control",unlockXP:0,glow:"rgba(255,210,90,.2)"},
-{name:"Andrea Pirlo",rating:125,role:"CM",special:"Icon · Long passing",unlockXP:0,glow:"rgba(255,210,90,.2)"},
-{name:"Sergio Ramos",rating:125,role:"CB",special:"Defending · Leadership",unlockXP:0,glow:"rgba(255,210,90,.2)"},
-{name:"Virgil van Dijk",rating:125,role:"CB",special:"Strength · Interceptions",unlockXP:0,glow:"rgba(255,210,90,.2)"},
-{name:"Karim Benzema",rating:126,role:"ST",special:"Link-up · Finishing",unlockXP:0,glow:"rgba(255,210,90,.2)"},
-{name:"Hassan Ali",rating:300,role:"GK",special:"Custom · Elite reflexes",unlockXP:0,glow:"rgba(199,255,74,.22)"}
+{name:"Cristiano Ronaldo",rating:999,role:"ST",special:"Power · Finishing",unlockXP:3000,unlockWins:10,glow:"rgba(255,140,66,.2)"},
+{name:"Lionel Messi",rating:123,role:"RW",special:"Dribbling · Vision",unlockXP:700,unlockWins:3,glow:"rgba(75,191,255,.2)"},
+{name:"Kylian Mbappé",rating:122,role:"ST",special:"Pace · Finishing",unlockXP:700,unlockWins:3,glow:"rgba(189,123,255,.2)"},
+{name:"Erling Haaland",rating:121,role:"ST",special:"Power · Shooting",unlockXP:700,unlockWins:3,glow:"rgba(75,191,255,.2)"},
+{name:"Jude Bellingham",rating:120,role:"CM",special:"Passing · Stamina",unlockXP:700,unlockWins:3,glow:"rgba(189,123,255,.2)"},
+{name:"Lamine Yamal",rating:119,role:"RW",special:"Curve · Agility",unlockXP:450,unlockWins:2,glow:"rgba(199,255,74,.2)"},
+{name:"Kevin De Bruyne",rating:121,role:"CAM",special:"Vision · Passing",unlockXP:700,unlockWins:3,glow:"rgba(255,99,99,.2)"},
+{name:"Mohamed Salah",rating:120,role:"RW",special:"Finishing · Pace",unlockXP:700,unlockWins:3,glow:"rgba(255,140,66,.2)"},
+{name:"Vinícius Júnior",rating:121,role:"LW",special:"Skill moves · Pace",unlockXP:700,unlockWins:3,glow:"rgba(199,255,74,.2)"},
+{name:"Neymar Jr.",rating:119,role:"LW",special:"Flair · Control",unlockXP:450,unlockWins:2,glow:"rgba(189,123,255,.2)"},
+{name:"Harry Kane",rating:120,role:"ST",special:"Finishing · Link-up",unlockXP:700,unlockWins:3,glow:"rgba(75,191,255,.2)"},
+{name:"Bukayo Saka",rating:118,role:"RW",special:"Agility · Crossing",unlockXP:450,unlockWins:2,glow:"rgba(255,140,66,.2)"},
+{name:"Phil Foden",rating:118,role:"CAM",special:"Control · Turns",unlockXP:450,unlockWins:2,glow:"rgba(80,220,190,.2)"},
+{name:"Zayd Quadri",rating:116,role:"CAM",special:"Close control",unlockXP:450,unlockWins:2,glow:"rgba(75,191,255,.2)"},
+{name:"Ehan Ali",rating:112,role:"CM",special:"Quick reactions",unlockXP:450,unlockWins:2,glow:"rgba(189,123,255,.2)"},
+{name:"Umar Shoaib",rating:110,role:"CAM",special:"Smart passing",unlockXP:450,unlockWins:2,glow:"rgba(255,140,66,.2)"},
+{name:"Muhammad Arham",rating:122,role:"ST",special:"Finishing touch",unlockXP:0,unlockWins:0,glow:"rgba(255,99,99,.2)"},
+{name:"Diego Maradona",rating:125,role:"CAM",special:"Legend · Dribbling",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
+{name:"Luís Figo",rating:121,role:"RW",special:"Legend · Crossing",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
+{name:"Zinedine Zidane",rating:124,role:"CAM",special:"Legend · Vision",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
+{name:"Pelé",rating:128,role:"ST",special:"Icon · Finishing & movement",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
+{name:"Ronaldo Nazário",rating:127,role:"ST",special:"Icon · Explosive pace",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
+{name:"Ronaldinho",rating:127,role:"CAM",special:"Icon · Flair & skills",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
+{name:"Thierry Henry",rating:126,role:"ST",special:"Icon · Pace & finishing",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
+{name:"Xavi",rating:126,role:"CM",special:"Icon · Passing & control",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
+{name:"Andrés Iniesta",rating:126,role:"CM",special:"Icon · Close control",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
+{name:"Andrea Pirlo",rating:125,role:"CM",special:"Icon · Long passing",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
+{name:"Sergio Ramos",rating:125,role:"CB",special:"Defending · Leadership",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
+{name:"Virgil van Dijk",rating:125,role:"CB",special:"Strength · Interceptions",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
+{name:"Karim Benzema",rating:126,role:"ST",special:"Link-up · Finishing",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
+{name:"Hassan Ali",rating:300,role:"GK",special:"Custom · Elite reflexes",unlockXP:2200,unlockWins:8,glow:"rgba(199,255,74,.22)"}
 ];
 const goalkeepers = [
-{name:"David Raya",rating:117,role:"GOALKEEPER",special:"Quick distribution",unlockXP:0,glow:"rgba(100,220,130,.2)"},
-{name:"Alisson",rating:120,role:"GOALKEEPER",special:"Fast one-on-ones",unlockXP:0,glow:"rgba(75,191,255,.2)"},
-{name:"Thibaut Courtois",rating:121,role:"GOALKEEPER",special:"Huge reach",unlockXP:0,glow:"rgba(255,140,66,.2)"},
-{name:"Manuel Neuer",rating:120,role:"SWEEPER KEEPER",special:"Rushes off the line",unlockXP:0,glow:"rgba(255,210,90,.2)"},
-{name:"Ederson",rating:118,role:"PLAYMAKING KEEPER",special:"Accurate distribution",unlockXP:0,glow:"rgba(80,220,190,.2)"},
-{name:"Marc-André ter Stegen",rating:118,role:"GOALKEEPER",special:"Sharp reflexes",unlockXP:0,glow:"rgba(90,160,255,.2)"},
-{name:"Gianluigi Donnarumma",rating:121,role:"GOALKEEPER",special:"Big saves under pressure",unlockXP:0,glow:"rgba(255,110,130,.2)"},
-{name:"Emiliano Martínez",rating:118,role:"PENALTY SPECIALIST",special:"Penalty mind games",unlockXP:0,glow:"rgba(255,170,80,.2)"},
-{name:"Jan Oblak",rating:120,role:"GOALKEEPER",special:"Positioning expert",unlockXP:0,glow:"rgba(160,120,255,.2)"},
-{name:"Mike Maignan",rating:119,role:"GOALKEEPER",special:"Explosive reactions",unlockXP:0,glow:"rgba(90,210,240,.2)"},
-{name:"Gianluigi Buffon",rating:124,role:"ICON GOALKEEPER",special:"Legend · Reflexes & positioning",unlockXP:0,glow:"rgba(255,210,90,.2)"},
-{name:"Lev Yashin",rating:125,role:"ICON GOALKEEPER",special:"The Black Spider",unlockXP:0,glow:"rgba(30,30,38,.28)"},
-{name:"Hassan Ali",rating:300,role:"CUSTOM GOALKEEPER",special:"Elite reflexes & diving",unlockXP:0,glow:"rgba(199,255,74,.22)"},
-{name:"Ehan Ali",rating:110,role:"GOALKEEPER",special:"Quick reactions",unlockXP:0,glow:"rgba(189,123,255,.2)"},
-{name:"Muhammad Arham",rating:122,role:"GOALKEEPER",special:"Brave close-range saves",unlockXP:0,glow:"rgba(255,99,99,.2)"},
-{name:"Iker Casillas",rating:123,role:"ICON GOALKEEPER",special:"Lightning reflexes",unlockXP:0,glow:"rgba(255,210,90,.2)"},
-{name:"Petr Čech",rating:122,role:"ICON GOALKEEPER",special:"Commanding presence",unlockXP:0,glow:"rgba(255,210,90,.2)"},
-{name:"Oliver Kahn",rating:123,role:"ICON GOALKEEPER",special:"Fearless saves",unlockXP:0,glow:"rgba(255,140,66,.2)"},
-{name:"Peter Schmeichel",rating:122,role:"ICON GOALKEEPER",special:"Powerful reach",unlockXP:0,glow:"rgba(255,210,90,.2)"},
-{name:"Edwin van der Sar",rating:121,role:"ICON GOALKEEPER",special:"Calm positioning",unlockXP:0,glow:"rgba(75,191,255,.2)"},
-{name:"Keylor Navas",rating:119,role:"GOALKEEPER",special:"Quick reactions",unlockXP:0,glow:"rgba(80,220,190,.2)"},
-{name:"Samir Handanović",rating:118,role:"GOALKEEPER",special:"Penalty saves",unlockXP:0,glow:"rgba(189,123,255,.2)"},
-{name:"Dida",rating:120,role:"ICON GOALKEEPER",special:"Big-match saves",unlockXP:0,glow:"rgba(255,210,90,.2)"},
-{name:"Claudio Bravo",rating:117,role:"GOALKEEPER",special:"Sharp distribution",unlockXP:0,glow:"rgba(90,160,255,.2)"}
+{name:"David Raya",rating:117,role:"GOALKEEPER",special:"Quick distribution",unlockXP:0,unlockWins:0,glow:"rgba(100,220,130,.2)"},
+{name:"Alisson",rating:120,role:"GOALKEEPER",special:"Fast one-on-ones",unlockXP:700,unlockWins:3,glow:"rgba(75,191,255,.2)"},
+{name:"Thibaut Courtois",rating:121,role:"GOALKEEPER",special:"Huge reach",unlockXP:700,unlockWins:3,glow:"rgba(255,140,66,.2)"},
+{name:"Manuel Neuer",rating:120,role:"SWEEPER KEEPER",special:"Rushes off the line",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
+{name:"Ederson",rating:118,role:"PLAYMAKING KEEPER",special:"Accurate distribution",unlockXP:450,unlockWins:2,glow:"rgba(80,220,190,.2)"},
+{name:"Marc-André ter Stegen",rating:118,role:"GOALKEEPER",special:"Sharp reflexes",unlockXP:450,unlockWins:2,glow:"rgba(90,160,255,.2)"},
+{name:"Gianluigi Donnarumma",rating:121,role:"GOALKEEPER",special:"Big saves under pressure",unlockXP:700,unlockWins:3,glow:"rgba(255,110,130,.2)"},
+{name:"Emiliano Martínez",rating:118,role:"PENALTY SPECIALIST",special:"Penalty mind games",unlockXP:450,unlockWins:2,glow:"rgba(255,170,80,.2)"},
+{name:"Jan Oblak",rating:120,role:"GOALKEEPER",special:"Positioning expert",unlockXP:700,unlockWins:3,glow:"rgba(160,120,255,.2)"},
+{name:"Mike Maignan",rating:119,role:"GOALKEEPER",special:"Explosive reactions",unlockXP:450,unlockWins:2,glow:"rgba(90,210,240,.2)"},
+{name:"Gianluigi Buffon",rating:124,role:"ICON GOALKEEPER",special:"Legend · Reflexes & positioning",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
+{name:"Lev Yashin",rating:125,role:"ICON GOALKEEPER",special:"The Black Spider",unlockXP:700,unlockWins:3,glow:"rgba(30,30,38,.28)"},
+{name:"Hassan Ali",rating:300,role:"CUSTOM GOALKEEPER",special:"Elite reflexes & diving",unlockXP:2200,unlockWins:8,glow:"rgba(199,255,74,.22)"},
+{name:"Ehan Ali",rating:110,role:"GOALKEEPER",special:"Quick reactions",unlockXP:450,unlockWins:2,glow:"rgba(189,123,255,.2)"},
+{name:"Muhammad Arham",rating:122,role:"GOALKEEPER",special:"Brave close-range saves",unlockXP:700,unlockWins:3,glow:"rgba(255,99,99,.2)"},
+{name:"Iker Casillas",rating:123,role:"ICON GOALKEEPER",special:"Lightning reflexes",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
+{name:"Petr Čech",rating:122,role:"ICON GOALKEEPER",special:"Commanding presence",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
+{name:"Oliver Kahn",rating:123,role:"ICON GOALKEEPER",special:"Fearless saves",unlockXP:700,unlockWins:3,glow:"rgba(255,140,66,.2)"},
+{name:"Peter Schmeichel",rating:122,role:"ICON GOALKEEPER",special:"Powerful reach",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
+{name:"Edwin van der Sar",rating:121,role:"ICON GOALKEEPER",special:"Calm positioning",unlockXP:700,unlockWins:3,glow:"rgba(75,191,255,.2)"},
+{name:"Keylor Navas",rating:119,role:"GOALKEEPER",special:"Quick reactions",unlockXP:450,unlockWins:2,glow:"rgba(80,220,190,.2)"},
+{name:"Samir Handanović",rating:118,role:"GOALKEEPER",special:"Penalty saves",unlockXP:450,unlockWins:2,glow:"rgba(189,123,255,.2)"},
+{name:"Dida",rating:120,role:"ICON GOALKEEPER",special:"Big-match saves",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
+{name:"Claudio Bravo",rating:117,role:"GOALKEEPER",special:"Sharp distribution",unlockXP:450,unlockWins:2,glow:"rgba(90,160,255,.2)"}
 ];
   const modeNames = {penalty:"PENALTY",freekick:"FREE KICK",longshot:"LONG SHOT",goalkeeping:"GOALKEEPER",headtohead:"HEAD-TO-HEAD",vsattack:"VS ATTACK",crossbar:"CROSSBAR CHALLENGE",survival:"SURVIVAL SAVES"};
   const modeText = {
@@ -71,19 +71,20 @@ const goalkeepers = [
     crossbar:["Hit the bar.","Aim right under the crossbar and time your shot."],
     survival:["Survival saves.","Save as many shots as possible. Hassan makes an almost impossible wall."]
   };
-  let selectedPlayer = "Cristiano Ronaldo", selectedGoalkeeper = "David Raya", difficulty = "Pro", mode = "penalty";
+  let selectedPlayer = "Muhammad Arham", selectedGoalkeeper = "David Raya", difficulty = "Pro", mode = "penalty";
   let score = 0, opponentScore = 0, matchMinute = 0, matchAttacks = 0, attempt = 1, aim = {x:.5,y:.27}, power = 78, shotTaken = false, keeperDive = "center", keeperMotion = null, ballAnim = null, animationFrame = 0;
   const canvas = $("pitch"), ctx = canvas.getContext("2d");
   let cw = 900, ch = 620, lastResult = "", shotTimer = null, soundOn = false, masterVolume = 0.65, passcodeFailures=0, passcodeLockUntil=0, lastShotReplay=null, celebrationUntil=0;
   const match = {active:false,finished:false,clock:0,lastTick:0,player:{x:.5,y:.72},rival:{x:.5,y:.28},ball:{x:.5,y:.72},move:"",sprint:false,hasBall:true,playerGoals:0,rivalGoals:0,rankPoints:0,rank:"ROOKIE III",lastRivalShot:0};
 
-  function isUnlocked(p,isKeeper){return (p.unlockXP||0)<=career.xp;}
+  function isUnlocked(p,isKeeper){const starter=(!isKeeper&&p.name==="Muhammad Arham")||(isKeeper&&p.name==="David Raya");return starter||((p.unlockXP||0)<=career.xp&&(p.unlockWins||0)<=(career.tournamentWins||0));}
   function playerCard(p, selected, attr, isKeeper){
     const unlocked=isUnlocked(p,isKeeper),xp=career.players[p.name]||0,level=1+Math.floor(xp/100);
     const rawRating=(p.rating||60)+Math.min(4,Math.floor(xp/250));
     const rating=Math.min(199,Math.max(60,rawRating));
     const displayRating=(p.name==="Cristiano Ronaldo"?999:(p.name==="Hassan Ali"&&(isKeeper||p.role==="GK")?300:rating));
-    const lockLabel=unlocked?"LVL "+level:"🔒 "+Math.max(0,(p.unlockXP||0)-career.xp)+" XP TO UNLOCK";
+    const xpNeeded=Math.max(0,(p.unlockXP||0)-career.xp),winsNeeded=Math.max(0,(p.unlockWins||0)-(career.tournamentWins||0));
+    const lockLabel=unlocked?"LVL "+level:"🔒 "+xpNeeded+" XP + "+winsNeeded+" MATCH WINS TO UNLOCK";
     const labels=isKeeper?["DIV","HAN","KIC","REF","SPD","POS"]:["PAC","SHO","PAS","DRI","DEF","PHY"];
     const offsets=isKeeper?[1,0,-3,2,-2,1]:p.role==="ST"?[0,3,-2,-1,-4,2]:p.role==="RW"||p.role==="LW"?[3,0,-1,3,-5,-2]:p.role==="CAM"||p.role==="CM"?[-1,-1,3,1,0,0]:[0,0,0,0,0,0];
     const attributes=labels.map((label,i)=>'<span><b>'+label+'</b><strong>'+Math.min(199,Math.max(45,rating+offsets[i]))+'</strong></span>').join("");
