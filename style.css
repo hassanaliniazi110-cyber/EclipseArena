@@ -288,3 +288,19 @@ h1,h2,h3,
 @media(prefers-reduced-motion:reduce) {
   .intro-wordmark { animation:intro-text .5s ease-out .48s forwards; }
 }
+
+
+/* Profile photo picker and editor */
+.profile-editor{display:flex;align-items:center;gap:16px;margin:14px 0;padding:14px;border:1px solid var(--line);background:var(--panel2)}
+.profile-avatar-wrap{position:relative;flex:0 0 104px;width:104px;height:104px;overflow:hidden;border:2px solid var(--lime);border-radius:50%;background:#101b17;display:grid;place-items:center}
+.profile-photo-preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform-origin:center;display:block}
+.profile-photo-fallback{font:700 24px 'Chakra Petch',sans-serif;color:var(--lime);letter-spacing:1px}
+.profile-photo-controls{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px}
+.profile-photo-controls>strong{font-size:12px;letter-spacing:1.2px;color:var(--lime)}
+.profile-photo-controls>p{margin:0;color:var(--muted);font-size:11px;line-height:1.45}
+.profile-photo-controls>label{font-size:10px;letter-spacing:1px;color:var(--muted)}
+.profile-photo-controls input[type=range]{width:100%;accent-color:var(--lime)}
+.profile-file-input{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
+.profile-photo-buttons{display:flex;gap:7px;flex-wrap:wrap}
+.profile-photo-buttons button,.profile-photo-controls>button{font-size:10px;padding:9px 10px}
+@media(max-width:520px){.profile-editor{align-items:flex-start;gap:12px;padding:10px}.profile-avatar-wrap{flex-basis:82px;width:82px;height:82px}.profile-photo-buttons button,.profile-photo-controls>button{font-size:9px;padding:8px}}
