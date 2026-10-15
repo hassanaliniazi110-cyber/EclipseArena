@@ -49,7 +49,16 @@ const goalkeepers = [
 {name:"Lev Yashin",rating:95,role:"ICON GOALKEEPER",special:"The Black Spider",unlockXP:1000,glow:"rgba(30,30,38,.28)"},
 {name:"Hassan Ali",rating:90,role:"CUSTOM GOALKEEPER",special:"Elite reflexes & diving",unlockXP:1200,glow:"rgba(199,255,74,.22)"},
 {name:"Ehan Ali",rating:80,role:"GOALKEEPER",special:"Quick reactions",unlockXP:200,glow:"rgba(189,123,255,.2)"},
-{name:"Muhammad Arham",rating:82,role:"GOALKEEPER",special:"Brave close-range saves",unlockXP:300,glow:"rgba(255,99,99,.2)"}
+{name:"Muhammad Arham",rating:82,role:"GOALKEEPER",special:"Brave close-range saves",unlockXP:300,glow:"rgba(255,99,99,.2)"},
+{name:"Iker Casillas",rating:93,role:"ICON GOALKEEPER",special:"Lightning reflexes",unlockXP:700,glow:"rgba(255,210,90,.2)"},
+{name:"Petr Čech",rating:92,role:"ICON GOALKEEPER",special:"Commanding presence",unlockXP:750,glow:"rgba(255,210,90,.2)"},
+{name:"Oliver Kahn",rating:93,role:"ICON GOALKEEPER",special:"Fearless saves",unlockXP:850,glow:"rgba(255,140,66,.2)"},
+{name:"Peter Schmeichel",rating:92,role:"ICON GOALKEEPER",special:"Powerful reach",unlockXP:850,glow:"rgba(255,210,90,.2)"},
+{name:"Edwin van der Sar",rating:91,role:"ICON GOALKEEPER",special:"Calm positioning",unlockXP:700,glow:"rgba(75,191,255,.2)"},
+{name:"Keylor Navas",rating:89,role:"GOALKEEPER",special:"Quick reactions",unlockXP:550,glow:"rgba(80,220,190,.2)"},
+{name:"Samir Handanović",rating:88,role:"GOALKEEPER",special:"Penalty saves",unlockXP:600,glow:"rgba(189,123,255,.2)"},
+{name:"Dida",rating:90,role:"ICON GOALKEEPER",special:"Big-match saves",unlockXP:750,glow:"rgba(255,210,90,.2)"},
+{name:"Claudio Bravo",rating:87,role:"GOALKEEPER",special:"Sharp distribution",unlockXP:500,glow:"rgba(90,160,255,.2)"}
 ];
   const modeNames = {penalty:"PENALTY",freekick:"FREE KICK",longshot:"LONG SHOT",goalkeeping:"GOALKEEPER",headtohead:"HEAD-TO-HEAD",vsattack:"VS ATTACK",crossbar:"CROSSBAR CHALLENGE",survival:"SURVIVAL SAVES"};
   const modeText = {
