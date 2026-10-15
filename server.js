@@ -58,6 +58,13 @@ function normalizeProfile(input = {}) {
 }
 app.post("/api/register", (req, res) => {
   const profile = normalizeProfile(req.body?.profile);
+  const bearer = /^Bearer\\s+([a-f0-9]{64})$/i.exec(req.get("authorization") || "");
+  const existingId = bearer && tokenToPlayer.get(bearer[1]);
+  if (existingId && players.has(existingId)) {
+    const existing = players.get(existingId);
+    existing.profile = profile;
+    return res.json({ playerId: existing.id, token: existing.token });
+  }
   let id;
   do { id = "EA-" + crypto.randomBytes(3).toString("hex").toUpperCase() + "-" + crypto.randomBytes(3).toString("hex").toUpperCase(); } while (players.has(id));
   const token = crypto.randomBytes(32).toString("hex");
