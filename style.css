@@ -247,7 +247,16 @@ h2,h3,.mode-title,.game-header h2,.youtube-panel-heading h3 {
 
 
 
-/* Sharp Glitch Gaming lettering: angular and slanted, not blocky. Text styling only. */
+
+/* Vampire Wars display lettering. Add "Vampire Wars.ttf" to the repository root
+   for the exact font to load; fallback fonts keep the page readable meanwhile. */
+@font-face {
+  font-family: 'Vampire Wars';
+  src: url('./Vampire%20Wars.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
 .intro-wordmark,
 .brand,
 h1,h2,h3,
@@ -258,25 +267,17 @@ h1,h2,h3,
 .match-scoreline strong,.youtube-panel-heading h3,
 .youtube-section-title h3,.career-hub-head h2,
 .career-hub-columns h3,.friends-panel h3 {
-  text-shadow: 1px 0 rgba(0,229,255,.25), -1px 0 rgba(255,42,109,.22);
-}
-.intro-wordmark,h1,h2,.mode-title,.youtube-panel-heading h3 {
-  font-family:'Chakra Petch','Barlow Condensed',sans-serif;font-style:italic;font-weight:700;
+  font-family:'Vampire Wars','Chakra Petch','Barlow Condensed',sans-serif;
+  text-shadow:1px 0 rgba(0,229,255,.25),-1px 0 rgba(255,42,109,.22);
 }
 .intro-wordmark {
-  letter-spacing:clamp(1px,.45vw,3px);
+  letter-spacing:clamp(1px,.35vw,2.5px);
   text-shadow:1px 0 rgba(0,229,255,.42),-1px 0 rgba(255,42,109,.36),0 0 14px #c7ff4a20;
+  animation:intro-text .5s ease-out .48s forwards, subtle-glitch 4s steps(1,end) 1.4s 1;
 }
 .intro-wordmark b {
   color:var(--lime);
   text-shadow:1px 0 rgba(0,229,255,.42),-1px 0 rgba(255,42,109,.36),0 0 14px #c7ff4a45;
-}
-.brand b,h1 em,h2 em {
-  text-shadow:1px 0 rgba(0,229,255,.42),-1px 0 rgba(255,42,109,.38);
-}
-h1,h2,h3,.mode-title,.player-rating,.score-box strong {
-  -webkit-text-stroke:.1px currentColor;
-  letter-spacing:-.35px;
 }
 @keyframes subtle-glitch {
   0%,96%,100% { transform:translateX(0); }
@@ -284,7 +285,6 @@ h1,h2,h3,.mode-title,.player-rating,.score-box strong {
   98% { transform:translateX(-1px); }
   99% { transform:translateX(0); }
 }
-.intro-wordmark { animation:intro-text .5s ease-out .48s forwards, subtle-glitch 4s steps(1,end) 1.4s 1; }
 @media(prefers-reduced-motion:reduce) {
   .intro-wordmark { animation:intro-text .5s ease-out .48s forwards; }
 }
