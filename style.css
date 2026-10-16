@@ -319,7 +319,7 @@ h1,h2,h3,
 }
 :root { --lime: #62ff00; }
 body, body * {
-  font-family: 'FoughtKnight', 'Rajdhani', 'Barlow Condensed', sans-serif !important;
+  font-family: 'FoughtKnight', sans-serif !important;
 }
 h1, h2, h3, .brand, .brand b, .eyebrow, .intro-wordmark, .intro-caption,
 .section-count, .primary-btn, .mode-card, .hero-stat, .hero-index {
@@ -331,5 +331,5 @@ h1, h2, h3, .brand, .brand b, .eyebrow, .intro-wordmark, .intro-caption,
 
 /* Keep FoughtKnight as the final font rule so later CSS cannot override it. */
 :root { --lime: #62ff00; }
-body, body * { font-family: 'FoughtKnight', 'Rajdhani', 'Barlow Condensed', sans-serif !important; }
+body, body * { font-family: 'FoughtKnight', sans-serif !important; }
 h1, h2, h3, .brand, .brand b, .eyebrow, .intro-wordmark, .intro-caption, .section-count, .primary-btn, .mode-card, .hero-stat, .hero-index { font-weight: 700; letter-spacing: .035em; text-transform: uppercase; }
