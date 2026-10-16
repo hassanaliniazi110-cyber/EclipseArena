@@ -1,32 +1,25 @@
 /* ECLIPSE ARENA — FOUGHT KNIGHT TYPOGRAPHY
-   Place the licensed Fought Knight font file in this same folder as:
-   FoughtKnight.woff2
+   Font file in this repository root: foughtknight.ttf
 */
 @font-face {
   font-family: "Fought Knight";
-  src: url("./FoughtKnight.woff2") format("woff2");
+  src: url("./foughtknight.ttf?v=1") format("truetype");
   font-style: normal;
-  font-weight: 400 900;
+  font-weight: 400;
   font-display: swap;
 }
 
-/* Apply after style.css so this font rule takes priority. */
+/* Apply Fought Knight throughout the game after the main stylesheet. */
 html,
 body,
+body * {
+  font-family: "Fought Knight", "Barlow Condensed", sans-serif;
+}
+
+/* Keep native emoji and icon-like symbols readable if the font lacks a glyph. */
 button,
 input,
 select,
-textarea,
-.brand,
-.brand-mark,
-h1,
-h2,
-h3,
-.mode-title,
-.player-rating,
-.game-header,
-.primary-btn,
-.secondary-btn,
-.back-btn {
+textarea {
   font-family: "Fought Knight", "Barlow Condensed", sans-serif;
 }
