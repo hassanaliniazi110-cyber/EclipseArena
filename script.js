@@ -679,20 +679,70 @@ const goalkeepers = [
     $("gameScreen").classList.add("hidden");
     $("homeScreen").classList.add("hidden");
     const screen=$("youtubeScreen"),gate=$("youtubeAccessGate");
+    const requestForm=$("youtubeAccessRequestForm"),ownerPanel=$("youtubeOwnerRequests");
     screen.classList.remove("hidden","youtube-authorized");
+    requestForm?.classList.add("hidden");ownerPanel?.classList.add("hidden");
     gate.textContent="Checking your permission with the Eclipse Arena server…";
     window.scrollTo({top:0,behavior:"smooth"});
     try{
       if(connectPromise)await connectPromise;
       const access=await api("/api/youtube/access");
-      if(!access.allowed)throw new Error("YouTube Area permission has not been granted for this player.");
-      screen.classList.add("youtube-authorized");
-      gate.textContent="Access verified by the Eclipse Arena server.";
-      renderYouTubeChannels();
+      if(access.isAdmin){ownerPanel?.classList.remove("hidden");await refreshYouTubeRequests();}
+      if(access.allowed){
+        screen.classList.add("youtube-authorized");
+        gate.textContent="Access verified by the Eclipse Arena server.";
+        renderYouTubeChannels();
+      }else{
+        gate.textContent=access.requestStatus==="pending"?"Your request is waiting for the owner to review it.":"You need the owner's approval to use the YouTube Area.";
+        if(access.requestStatus!=="pending")requestForm?.classList.remove("hidden");
+        const status=$("youtubeRequestStatus");
+        if(status)status.textContent=access.requestStatus==="declined"?"Your last request was declined. You can send a new request.":"";
+      }
     }catch(error){
-      gate.textContent=error.message||"Access denied. Connect to the Eclipse Arena server and ask the owner for permission.";
+      gate.textContent=error.message||"Could not check access. Please connect to the Eclipse Arena server.";
+      requestForm?.classList.add("hidden");
     }
   }
+  async function refreshYouTubeRequests(){
+    const list=$("youtubeOwnerRequestList");if(!list)return;
+    try{
+      const data=await api("/api/youtube/requests");
+      list.replaceChildren();
+      if(!data.requests?.length){const empty=document.createElement("p");empty.textContent="No pending requests.";list.appendChild(empty);return;}
+      for(const request of data.requests){
+        const card=document.createElement("article");card.className="youtube-owner-request";
+        const title=document.createElement("strong");title.textContent=request.name+" · "+request.playerId;card.appendChild(title);
+        const message=document.createElement("p");message.textContent=request.message||"No message.";card.appendChild(message);
+        const date=document.createElement("small");date.textContent=new Date(request.createdAt).toLocaleString();card.appendChild(date);
+        const actions=document.createElement("div");actions.className="youtube-owner-request-actions";
+        for(const [decision,label] of [["accept","ACCEPT"],["decline","DECLINE"]]){
+          const button=document.createElement("button");button.type="button";button.dataset.decision=decision;button.textContent=label;
+          button.addEventListener("click",async()=>{
+            button.disabled=true;
+            try{await api("/api/youtube/requests/"+encodeURIComponent(request.id)+"/decision",{method:"POST",body:JSON.stringify({decision})});await refreshYouTubeRequests();if(decision==="accept")setYouTubeOwnerNotice("Access approved for "+request.playerId+".");}
+            catch(error){button.disabled=false;setYouTubeOwnerNotice(error.message);}
+          });actions.appendChild(button);
+        }
+        card.appendChild(actions);list.appendChild(card);
+      }
+    }catch(error){list.textContent="Could not load requests: "+error.message;}
+  }
+  function setYouTubeOwnerNotice(message){
+    const gate=$("youtubeAccessGate");if(gate)gate.textContent=message;
+  }
+  $("youtubeAccessRequestForm")?.addEventListener("submit",async event=>{
+    event.preventDefault();
+    const status=$("youtubeRequestStatus"),button=event.currentTarget.querySelector('button[type="submit"]');
+    button.disabled=true;if(status)status.textContent="Sending your request…";
+    try{
+      const result=await api("/api/youtube/requests",{method:"POST",body:JSON.stringify({message:$("youtubeAccessMessage").value})});
+      if(status)status.textContent=result.message||"Request sent.";
+      $("youtubeAccessRequestForm").classList.add("hidden");
+      $("youtubeAccessGate").textContent="Your access request has been sent. You’ll be able to enter after the owner accepts.";
+    }catch(error){if(status)status.textContent=error.message;}
+    finally{button.disabled=false;}
+  });
+  $("youtubeRefreshRequests")?.addEventListener("click",refreshYouTubeRequests);
   function closeYouTubeArea(){
     $("youtubeScreen").classList.add("hidden");
     $("homeScreen").classList.remove("hidden");
