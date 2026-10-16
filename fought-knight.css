@@ -1,23 +1,31 @@
-/* ECLIPSE ARENA — GEOMETRIC ESPORTS TYPOGRAPHY
-   Alternative: Oxanium, a futuristic squared display font.
+/* ECLIPSE ARENA — CINEMATIC ESPORTS TYPOGRAPHY
+   Detailed, layered font pairing: Orbitron display + Rajdhani interface.
 */
-@import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&display=swap');
 
 :root {
-  --arena-display-font: "Oxanium", "Orbitron", sans-serif;
+  --arena-display-font: "Orbitron", sans-serif;
+  --arena-ui-font: "Rajdhani", "Barlow Condensed", sans-serif;
 }
 
+/* Interface text stays readable; display areas get the angular esports face. */
 html,
-body,
-body * {
-  font-family: var(--arena-display-font);
+body {
+  font-family: var(--arena-ui-font);
 }
 
 button,
 input,
 select,
-textarea {
-  font-family: var(--arena-display-font);
+textarea,
+p,
+.mode-desc,
+.hero-text,
+.control-text,
+.music-status,
+.youtube-help {
+  font-family: var(--arena-ui-font);
+  font-weight: 600;
 }
 
 h1,
@@ -25,14 +33,58 @@ h2,
 h3,
 .brand,
 .brand-mark,
+.intro-wordmark,
+.intro-emblem,
 .mode-title,
 .player-rating,
-.game-header,
+.game-header h2,
+.section-count,
+.eyebrow,
 .primary-btn,
 .secondary-btn,
 .back-btn,
-.eyebrow,
-.section-count {
-  font-weight: 700;
-  letter-spacing: 0.025em;
+.score-box strong,
+.hero-stat strong {
+  font-family: var(--arena-display-font);
+  font-weight: 800;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+/* More dimensional title styling without changing the game's layout. */
+h1 {
+  text-shadow: 0 0 24px rgba(199, 255, 74, 0.10), 2px 2px 0 rgba(199, 255, 74, 0.08);
+}
+
+h2,
+.game-header h2 {
+  text-shadow: 0 0 16px rgba(199, 255, 74, 0.08);
+}
+
+.mode-title,
+.primary-btn,
+.secondary-btn,
+.back-btn {
+  letter-spacing: 0.07em;
+}
+
+.primary-btn {
+  box-shadow: 0 0 0 1px rgba(199, 255, 74, 0.22), 0 7px 22px rgba(199, 255, 74, 0.10);
+}
+
+.mode-card {
+  background-image: linear-gradient(135deg, rgba(199,255,74,.035), transparent 48%), linear-gradient(145deg,#15231d,#0b1512);
+}
+
+.mode-card:hover,
+.mode-card.active {
+  box-shadow: 0 0 0 1px rgba(199,255,74,.12), 0 12px 28px rgba(0,0,0,.22), inset 0 0 26px rgba(199,255,74,.035);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mode-card,
+  .primary-btn,
+  .secondary-btn {
+    transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease, filter .2s ease;
+  }
 }
