@@ -1,10 +1,10 @@
-/* ECLIPSE ARENA — FUTURISTIC DISPLAY TYPOGRAPHY
-   Alternative font: Chakra Petch, with angular, technical letterforms.
+/* ECLIPSE ARENA — BOLD, CONDENSED DISPLAY FONT
+   Alternative: Teko, a tall, punchy sports-style typeface.
 */
-@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&display=swap');
 
 :root {
-  --arena-display-font: "Chakra Petch", "Rajdhani", "Barlow Condensed", sans-serif;
+  --arena-display-font: "Teko", "Barlow Condensed", sans-serif;
 }
 
 html,
@@ -33,6 +33,6 @@ h3,
 .back-btn,
 .eyebrow,
 .section-count {
-  font-weight: 700;
-  letter-spacing: 0.035em;
+  font-weight: 600;
+  letter-spacing: 0.045em;
 }
