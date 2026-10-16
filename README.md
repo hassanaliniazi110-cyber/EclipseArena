@@ -32,6 +32,8 @@ This starter stores profiles and friends in memory, so data can be lost when the
 - Player profiles and friend lists are stored in `eclipse-data.json` on the backend host. The file is created automatically; back it up privately and do not commit it to the public repository.
 - Set `ECLIPSE_DATA_FILE` to a persistent writable path if the host provides one. If the host deletes local files on restart/redeploy, use a managed database instead.
 - Tokens are sent to the browser once and stored there by the frontend; the backend stores only SHA-256 token hashes and rotates a token when a valid player reconnects through registration. Do not share browser tokens.
-- The YouTube area is public content and has no client-side passcode. A passcode embedded in public JavaScript cannot protect secrets.
+- YouTube Area access is checked by the backend at `/api/youtube/access`; it requires a valid player bearer token and a player ID listed in the Wispbyte environment variable `YOUTUBE_ALLOWED_PLAYER_IDS`.
+- To grant access, add the exact player ID(s) to `YOUTUBE_ALLOWED_PLAYER_IDS` in Wispbyte environment/startup settings, separated by commas, then restart/redeploy the backend. Remove an ID from that variable to revoke access. Do not place the list or any admin secret in frontend files.
+- This controls access to the YouTube Area inside Eclipse Arena; it does not make public YouTube videos private or stop people opening YouTube directly.
 - Profile lookup requires an authenticated token. Match-state score values from clients are not treated as verified scores or used for ranking.
 - After updating `server.js`, upload/redeploy the backend on Wispbyte and restart it. GitHub Pages changes alone do not update the API.
