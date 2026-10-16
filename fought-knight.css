@@ -1,7 +1,6 @@
 /* ECLIPSE ARENA — CINEMATIC ESPORTS TYPOGRAPHY
-   Orbitron display headlines + Rajdhani interface text.
-   This stylesheet is loaded after style.css and deliberately uses !important
-   for font-family so the main stylesheet cannot override the font pairing.
+   Orbitron for bold display titles; Rajdhani for readable game interface.
+   This file is linked after style.css in index.html.
 */
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&display=swap');
 
@@ -10,6 +9,7 @@
   --arena-ui-font: "Rajdhani", "Barlow Condensed", sans-serif;
 }
 
+/* Interface font across the full app */
 html,
 body,
 .app-shell,
@@ -19,6 +19,7 @@ body,
   font-family: var(--arena-ui-font) !important;
 }
 
+/* Angular display font for logos, titles, scores and important controls */
 h1,
 h2,
 h3,
@@ -42,13 +43,14 @@ h3,
   text-transform: uppercase;
 }
 
+/* Add depth while preserving the existing black-and-lime visual theme */
 h1 {
-  text-shadow: 0 0 24px rgba(199, 255, 74, 0.18), 2px 2px 0 rgba(199, 255, 74, 0.12);
+  text-shadow: 0 0 26px rgba(199, 255, 74, 0.18), 2px 2px 0 rgba(199, 255, 74, 0.12);
 }
 
 h2,
 .game-header h2 {
-  text-shadow: 0 0 16px rgba(199, 255, 74, 0.14);
+  text-shadow: 0 0 18px rgba(199, 255, 74, 0.14);
 }
 
 .mode-title,
