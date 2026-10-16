@@ -39,6 +39,10 @@ const invites = new Map();
 const socketsByPlayer = new Map();
 const activeMatches = new Map();
 const MAX_PLAYERS = Math.max(100, Math.min(50000, Number(process.env.MAX_PLAYERS) || 5000));
+// Access is granted only to server-listed player IDs. Never put this list in frontend code.
+const youtubeAllowedPlayers = new Set((process.env.YOUTUBE_ALLOWED_PLAYER_IDS || "")
+  .split(",").map(value => value.trim().toUpperCase())
+  .filter(value => /^EA-[A-Z0-9]{3,8}-[A-Z0-9]{3,8}$/.test(value)));
 const MAX_PENDING_INVITES = 10000;
 
 const registerLimiter = rateLimit({
@@ -72,6 +76,11 @@ app.use(cors({
 app.use(express.json({ limit: "12kb", strict: true }));
 app.use(rateLimit({ windowMs: 60 * 1000, limit: 90, standardHeaders: "draft-7", legacyHeaders: false }));
 app.get("/health", (_req, res) => res.json({ ok: true, service: "Eclipse Arena API" }));
+app.get("/api/youtube/access", auth, (req, res) => {
+  const allowed = youtubeAllowedPlayers.has(req.player.id);
+  if (!allowed) return res.status(403).json({ allowed: false, error: "YouTube Area permission has not been granted for this player." });
+  return res.json({ allowed: true });
+});
 
 function cleanText(value, max = 24) {
   return String(value ?? "").replace(/[<>\u0000-\u001f]/g, "").trim().slice(0, max);
