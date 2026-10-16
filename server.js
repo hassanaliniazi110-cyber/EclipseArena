@@ -103,6 +103,12 @@ app.get("/api/youtube/access", auth, (req, res) => {
   const playerId = req.player.id;
   const latest = [...youtubeAccessData.requests].reverse().find(r => r.playerId === playerId);
   const isAdmin = youtubeAdminPlayers.has(playerId);
+  // Temporary troubleshooting log: reports only the current player ID, admin count, and match result.
+  console.log("[YouTube admin check]", {
+    currentPlayerId: playerId,
+    configuredAdminCount: youtubeAdminPlayers.size,
+    isAdmin
+  });
   // Safe diagnostics for the signed-in player; never disclose the configured owner-ID list.
   return res.json({
     allowed: youtubeIsApproved(playerId),
