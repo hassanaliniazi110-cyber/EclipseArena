@@ -362,6 +362,7 @@ const goalkeepers = [
   function renderFriends(){const list=$("friendsList");if(!list)return;list.innerHTML=savedFriends.length?savedFriends.map(f=>{const p=f.profile||f;return '<div class="friend-entry"><div><strong>'+String(f.id).replace(/[<>&"]/g,"")+'</strong><small>'+(p.name?String(p.name).replace(/[<>&"]/g,"")+' · '+(Number(p.xp)||0)+' XP · '+(f.online?"ONLINE":(onlineCfg.base?"OFFLINE":"PROFILE NOT SYNCED")):'ID saved · waiting for profile')+'</small></div><div class="friend-entry-actions"><button type="button" data-invite-friend="'+String(f.id).replace(/"/g,"&quot;")+'">⚽ INVITE</button><button type="button" data-remove-friend="'+String(f.id).replace(/"/g,"&quot;")+'">REMOVE</button></div></div>';}).join(""):'<p class="career-hub-hint">No friends added yet.</p>';list.querySelectorAll("[data-remove-friend]").forEach(b=>b.addEventListener("click",async()=>{const id=b.dataset.removeFriend;if(onlineCfg.base){try{await api("/api/friends/remove",{method:"POST",body:JSON.stringify({friendId:id})});}catch(_){}}const i=savedFriends.findIndex(f=>f.id===id);if(i>=0)savedFriends.splice(i,1);try{localStorage.setItem("eclipseFriends",JSON.stringify(savedFriends));}catch(_){}renderFriends();}));list.querySelectorAll("[data-invite-friend]").forEach(b=>b.addEventListener("click",async()=>{if(!onlineCfg.base){setFriendStatus("Connect to your deployed server to invite friends online.");return;}try{const d=await api("/api/invites",{method:"POST",body:JSON.stringify({friendId:b.dataset.inviteFriend})});setFriendStatus("Match invitation sent · room "+d.roomId+". Keep the game open while your friend accepts.");onlineCfg.roomId=d.roomId;}catch(e){setFriendStatus("Could not invite friend: "+e.message);}}));}
   if($("myPlayerId"))$("myPlayerId").textContent=playerId;
   const onlineCfg={base:(()=>{try{return String(window.ECLIPSE_CONFIG?.backendUrl||"").trim().replace(/\/$/,"");}catch(_){return "";}})(),token:(()=>{try{return localStorage.getItem("eclipseDeviceToken")||"";}catch(_){return "";}})(),socket:null,roomId:null,onlineMatch:false,lastStateAt:0};
+  let connectPromise=null;
   function setServerStatus(message){const el=$("serverStatus");if(el)el.textContent=message;} function setFriendStatus(message){const el=$("friendStatus");if(el)el.textContent=message;}
   function api(path,opts={}){if(!onlineCfg.base)return Promise.reject(new Error("Online server is not configured yet."));const headers={"Content-Type":"application/json",...(opts.headers||{})};if(onlineCfg.token)headers.Authorization="Bearer "+onlineCfg.token;return fetch(onlineCfg.base+path,{...opts,headers}).then(async r=>{const d=await r.json().catch(()=>({error:"Invalid server response"}));if(!r.ok)throw new Error(d.error||"Server error "+r.status);return d;});}
   const nicknameInput=$("nicknameInput");
@@ -390,7 +391,7 @@ const goalkeepers = [
   if($("addFriendBtn"))$("addFriendBtn").addEventListener("click",async()=>{const id=$("friendIdInput").value.trim().toUpperCase(),own=localStorage.getItem("eclipsePlayerId")||playerId;if(!/^EA-[A-Z0-9]{3,8}-[A-Z0-9]{3,8}$/.test(id)){setFriendStatus("Enter a valid EA player ID.");return;}if(id===own){setFriendStatus("That is your own ID.");return;}if(savedFriends.some(f=>f.id===id)){setFriendStatus("That friend is already on your list.");return;}if(onlineCfg.base){try{const d=await api("/api/friends",{method:"POST",body:JSON.stringify({friendId:id})});savedFriends.push(d.friend);localStorage.setItem("eclipseFriends",JSON.stringify(savedFriends));setFriendStatus("Friend added on the online server.");renderFriends();await refreshServerFriends();return;}catch(e){setFriendStatus("Online add failed: "+e.message);return;}}savedFriends.push({id,profile:null});try{localStorage.setItem("eclipseFriends",JSON.stringify(savedFriends));}catch(_){}setFriendStatus("Saved locally only. Connect to a server to add online friends.");renderFriends();});
   if($("compareFriendBtn"))$("compareFriendBtn").addEventListener("click",async()=>{if(onlineCfg.base&&onlineCfg.token){const id=$("friendIdInput").value.trim().toUpperCase()||$("friendCodeInput").value.trim().toUpperCase();if(id.startsWith("EA-")){try{const d=await api("/api/profiles/"+encodeURIComponent(id)),p=d.profile;setFriendStatus("ONLINE COMPARISON · You: "+career.xp+" XP, "+career.goals+" goals, "+career.saves+" saves. "+p.name+": "+p.xp+" XP, "+p.goals+" goals, "+p.saves+" saves.");return;}catch(e){setFriendStatus(e.message);return;}}}try{const raw=decodeURIComponent(escape(atob($("friendCodeInput").value.trim()))),p=JSON.parse(raw);if(!p.id||p.id===playerId)throw new Error("bad");let f=savedFriends.find(x=>x.id===p.id);if(!f){f={id:p.id,profile:p};savedFriends.push(f);}else f.profile=p;try{localStorage.setItem("eclipseFriends",JSON.stringify(savedFriends));}catch(_){}setFriendStatus("Progress comparison · You: "+career.xp+" XP, "+career.goals+" goals, "+career.saves+" saves, "+career.tournamentWins+" wins. Friend: "+(p.xp||0)+" XP, "+(p.goals||0)+" goals, "+(p.saves||0)+" saves, "+(p.wins||0)+" wins.");renderFriends();}catch(_){setFriendStatus("That profile code is invalid. Ask your friend to create and send their profile share code."); }});
   renderFriends();
-  if(onlineCfg.base)connectOnline();else setServerStatus("Offline mode · backend URL is managed in repository configuration.");
+  if(onlineCfg.base)connectPromise=connectOnline();else setServerStatus("Offline mode · backend URL is managed in repository configuration.");
   renderCareerHub();renderPlayers();
 
   function startMode(nextMode){
@@ -672,15 +673,25 @@ const goalkeepers = [
   ];
   const defaultPreferred = youtubeChannels.filter(c=>c.preferred).map(c=>c.name);
   let preferredChannels = (()=>{try{const saved=JSON.parse(localStorage.getItem("eclipseYoutubePreferred")||"null");return Array.isArray(saved)?[...new Set([...defaultPreferred,...saved])]:defaultPreferred.slice();}catch(_){return defaultPreferred.slice();}})();
-  function openYouTubeArea(){
-    // This is public content, so do not pretend a client-side passcode protects it.
+  async function openYouTubeArea(){
     match.active=false;
     cancelAnimationFrame(animationFrame);
     $("gameScreen").classList.add("hidden");
     $("homeScreen").classList.add("hidden");
-    $("youtubeScreen").classList.remove("hidden");
-    renderYouTubeChannels();
+    const screen=$("youtubeScreen"),gate=$("youtubeAccessGate");
+    screen.classList.remove("hidden","youtube-authorized");
+    gate.textContent="Checking your permission with the Eclipse Arena server…";
     window.scrollTo({top:0,behavior:"smooth"});
+    try{
+      if(connectPromise)await connectPromise;
+      const access=await api("/api/youtube/access");
+      if(!access.allowed)throw new Error("YouTube Area permission has not been granted for this player.");
+      screen.classList.add("youtube-authorized");
+      gate.textContent="Access verified by the Eclipse Arena server.";
+      renderYouTubeChannels();
+    }catch(error){
+      gate.textContent=error.message||"Access denied. Connect to the Eclipse Arena server and ask the owner for permission.";
+    }
   }
   function closeYouTubeArea(){
     $("youtubeScreen").classList.add("hidden");
