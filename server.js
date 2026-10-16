@@ -11,7 +11,7 @@ const { Server } = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = Number(process.env.PORT) || 11914;
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || "https://hassanaliniazi110-cyber.github.io")
   .split(",").map(v => v.trim()).filter(Boolean);
 const players = new Map();
