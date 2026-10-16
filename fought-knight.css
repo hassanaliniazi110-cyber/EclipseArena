@@ -84,3 +84,9 @@ h2,
   letter-spacing: clamp(1px, .55vw, 4px) !important;
   text-transform: uppercase !important;
 }
+
+
+/* Server-verified YouTube Area access gate */
+.youtube-screen:not(.youtube-authorized) .youtube-panel{display:none!important}
+.youtube-access-gate{margin:clamp(18px,4vw,42px) auto;padding:clamp(22px,4vw,36px);max-width:760px;border:1px solid rgba(199,255,74,.42);border-radius:18px;background:linear-gradient(135deg,rgba(199,255,74,.09),rgba(8,18,16,.96) 55%,rgba(29,44,34,.8));color:#eaffd0;font:600 clamp(14px,2vw,18px)/1.6 "Rajdhani",sans-serif;letter-spacing:.04em;text-align:center;box-shadow:0 0 32px rgba(199,255,74,.08),inset 0 1px rgba(255,255,255,.04)}
+.youtube-screen.youtube-authorized .youtube-access-gate{display:none}
