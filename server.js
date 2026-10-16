@@ -43,6 +43,25 @@ const MAX_PLAYERS = Math.max(100, Math.min(50000, Number(process.env.MAX_PLAYERS
 const youtubeAllowedPlayers = new Set((process.env.YOUTUBE_ALLOWED_PLAYER_IDS || "")
   .split(",").map(value => value.trim().toUpperCase())
   .filter(value => /^EA-[A-Z0-9]{3,8}-[A-Z0-9]{3,8}$/.test(value)));
+const youtubeAdminPlayers = new Set((process.env.YOUTUBE_ADMIN_PLAYER_IDS || "")
+  .split(",").map(value => value.trim().toUpperCase())
+  .filter(value => /^EA-[A-Z0-9]{3,8}-[A-Z0-9]{3,8}$/.test(value)));
+const YOUTUBE_ACCESS_FILE = process.env.YOUTUBE_ACCESS_FILE || path.join(__dirname, "eclipse-youtube-access.json");
+let youtubeAccessData = { requests: [], approved: [] };
+function loadYoutubeAccess() {
+  try {
+    const saved = JSON.parse(fs.readFileSync(YOUTUBE_ACCESS_FILE, "utf8"));
+    if (saved && Array.isArray(saved.requests) && Array.isArray(saved.approved)) {
+      youtubeAccessData = { requests: saved.requests.filter(r => r && validPlayerId(r.playerId) && typeof r.status === "string").slice(-1000), approved: saved.approved.filter(validPlayerId) };
+    }
+  } catch (e) { if (e.code !== "ENOENT") console.error("Could not load YouTube access data:", e.message); }
+}
+function saveYoutubeAccess() {
+  const temp = YOUTUBE_ACCESS_FILE + ".tmp";
+  fs.writeFileSync(temp, JSON.stringify(youtubeAccessData), { mode: 0o600 });
+  fs.renameSync(temp, YOUTUBE_ACCESS_FILE);
+}
+function youtubeIsApproved(id) { return youtubeAllowedPlayers.has(id) || youtubeAccessData.approved.includes(id); }
 const MAX_PENDING_INVITES = 10000;
 
 const registerLimiter = rateLimit({
@@ -77,9 +96,36 @@ app.use(express.json({ limit: "12kb", strict: true }));
 app.use(rateLimit({ windowMs: 60 * 1000, limit: 90, standardHeaders: "draft-7", legacyHeaders: false }));
 app.get("/health", (_req, res) => res.json({ ok: true, service: "Eclipse Arena API" }));
 app.get("/api/youtube/access", auth, (req, res) => {
-  const allowed = youtubeAllowedPlayers.has(req.player.id);
-  if (!allowed) return res.status(403).json({ allowed: false, error: "YouTube Area permission has not been granted for this player." });
-  return res.json({ allowed: true });
+  const playerId = req.player.id;
+  const latest = [...youtubeAccessData.requests].reverse().find(r => r.playerId === playerId);
+  return res.json({ allowed: youtubeIsApproved(playerId), isAdmin: youtubeAdminPlayers.has(playerId), requestStatus: latest?.status || "none" });
+});
+app.post("/api/youtube/requests", auth, inviteLimiter, (req, res) => {
+  const playerId = req.player.id;
+  if (youtubeIsApproved(playerId)) return res.json({ status: "approved", message: "You already have access." });
+  const message = cleanText(req.body?.message || "Please approve my access to the YouTube Area.", 240);
+  const existing = [...youtubeAccessData.requests].reverse().find(r => r.playerId === playerId && r.status === "pending");
+  if (existing) return res.json({ status: "pending", message: "Your request is already waiting for the owner." });
+  youtubeAccessData.requests.push({ id: crypto.randomBytes(8).toString("hex"), playerId, name: req.player.profile.name, message, status: "pending", createdAt: new Date().toISOString() });
+  youtubeAccessData.requests = youtubeAccessData.requests.slice(-1000);
+  saveYoutubeAccess();
+  res.status(201).json({ status: "pending", message: "Your request was sent to the owner." });
+});
+app.get("/api/youtube/requests", auth, (req, res) => {
+  if (!youtubeAdminPlayers.has(req.player.id)) return res.status(403).json({ error: "Only the configured Eclipse Arena owner can review requests." });
+  res.json({ requests: youtubeAccessData.requests.filter(r => r.status === "pending") });
+});
+app.post("/api/youtube/requests/:requestId/decision", auth, (req, res) => {
+  if (!youtubeAdminPlayers.has(req.player.id)) return res.status(403).json({ error: "Only the configured Eclipse Arena owner can decide requests." });
+  const request = youtubeAccessData.requests.find(r => r.id === req.params.requestId && r.status === "pending");
+  if (!request) return res.status(404).json({ error: "Request not found or already handled." });
+  const decision = req.body?.decision;
+  if (decision !== "accept" && decision !== "decline") return res.status(400).json({ error: "Decision must be accept or decline." });
+  request.status = decision === "accept" ? "approved" : "declined";
+  if (decision === "accept" && !youtubeAccessData.approved.includes(request.playerId)) youtubeAccessData.approved.push(request.playerId);
+  if (decision === "decline") youtubeAccessData.approved = youtubeAccessData.approved.filter(id => id !== request.playerId);
+  saveYoutubeAccess();
+  res.json({ ok: true, status: request.status, playerId: request.playerId });
 });
 
 function cleanText(value, max = 24) {
@@ -263,4 +309,5 @@ io.on("connection", socket => {
   });
 });
 loadData();
+loadYoutubeAccess();
 server.listen(PORT, () => console.log("Eclipse Arena API listening on " + PORT));
