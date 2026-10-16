@@ -72,3 +72,15 @@ h2,
 .mode-card.active {
   box-shadow: 0 0 0 1px rgba(199,255,74,.15), 0 12px 28px rgba(0,0,0,.22), inset 0 0 26px rgba(199,255,74,.05);
 }
+
+
+/* INTRO WORDMARK: keep ECLIPSE and ARENA in one identical typeface.
+   The colour distinction remains; only the font styling is unified. */
+.intro-splash .intro-wordmark,
+.intro-splash .intro-wordmark b {
+  font-family: "Orbitron", sans-serif !important;
+  font-style: normal !important;
+  font-weight: 900 !important;
+  letter-spacing: clamp(1px, .55vw, 4px) !important;
+  text-transform: uppercase !important;
+}
