@@ -1,10 +1,10 @@
-/* ECLIPSE ARENA — BOLD, CONDENSED DISPLAY FONT
-   Alternative: Teko, a tall, punchy sports-style typeface.
+/* ECLIPSE ARENA — GEOMETRIC ESPORTS TYPOGRAPHY
+   Alternative: Oxanium, a futuristic squared display font.
 */
-@import url('https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --arena-display-font: "Teko", "Barlow Condensed", sans-serif;
+  --arena-display-font: "Oxanium", "Orbitron", sans-serif;
 }
 
 html,
@@ -33,6 +33,6 @@ h3,
 .back-btn,
 .eyebrow,
 .section-count {
-  font-weight: 600;
-  letter-spacing: 0.045em;
+  font-weight: 700;
+  letter-spacing: 0.025em;
 }
