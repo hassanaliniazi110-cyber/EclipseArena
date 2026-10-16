@@ -1,0 +1,38 @@
+/* ECLIPSE ARENA — FUTURISTIC DISPLAY TYPOGRAPHY
+   Alternative font: Chakra Petch, with angular, technical letterforms.
+*/
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&display=swap');
+
+:root {
+  --arena-display-font: "Chakra Petch", "Rajdhani", "Barlow Condensed", sans-serif;
+}
+
+html,
+body,
+body * {
+  font-family: var(--arena-display-font);
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: var(--arena-display-font);
+}
+
+h1,
+h2,
+h3,
+.brand,
+.brand-mark,
+.mode-title,
+.player-rating,
+.game-header,
+.primary-btn,
+.secondary-btn,
+.back-btn,
+.eyebrow,
+.section-count {
+  font-weight: 700;
+  letter-spacing: 0.035em;
+}
