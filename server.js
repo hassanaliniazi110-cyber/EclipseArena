@@ -43,8 +43,12 @@ const MAX_PLAYERS = Math.max(100, Math.min(50000, Number(process.env.MAX_PLAYERS
 const youtubeAllowedPlayers = new Set((process.env.YOUTUBE_ALLOWED_PLAYER_IDS || "")
   .split(",").map(value => value.trim().toUpperCase())
   .filter(value => /^EA-[A-Z0-9]{3,8}-[A-Z0-9]{3,8}$/.test(value)));
-const youtubeAdminPlayers = new Set((process.env.YOUTUBE_ADMIN_PLAYER_IDS || "")
-  .split(",").map(value => value.trim().toUpperCase())
+// Accept one or several owner IDs. Commas, semicolons, and newlines are supported
+// so Wispbyte environment-variable formatting cannot silently break the owner list.
+const youtubeAdminPlayerIdConfig =
+  process.env.YOUTUBE_ADMIN_PLAYER_IDS || process.env.YOUTUBE_ADMIN_PLAYER_ID || "";
+const youtubeAdminPlayers = new Set(youtubeAdminPlayerIdConfig
+  .split(/[,;\\n\\r]+/).map(value => value.trim().toUpperCase())
   .filter(value => /^EA-[A-Z0-9]{3,8}-[A-Z0-9]{3,8}$/.test(value)));
 const YOUTUBE_ACCESS_FILE = process.env.YOUTUBE_ACCESS_FILE || path.join(__dirname, "eclipse-youtube-access.json");
 let youtubeAccessData = { requests: [], approved: [] };
@@ -98,7 +102,19 @@ app.get("/health", (_req, res) => res.json({ ok: true, service: "Eclipse Arena A
 app.get("/api/youtube/access", auth, (req, res) => {
   const playerId = req.player.id;
   const latest = [...youtubeAccessData.requests].reverse().find(r => r.playerId === playerId);
-  return res.json({ allowed: youtubeIsApproved(playerId), isAdmin: youtubeAdminPlayers.has(playerId), requestStatus: latest?.status || "none" });
+  const isAdmin = youtubeAdminPlayers.has(playerId);
+  // Safe diagnostics for the signed-in player; never disclose the configured owner-ID list.
+  return res.json({
+    allowed: youtubeIsApproved(playerId),
+    isAdmin,
+    requestStatus: latest?.status || "none",
+    diagnostics: {
+      currentPlayerId: playerId,
+      adminIdConfigured: youtubeAdminPlayers.size > 0,
+      configuredAdminCount: youtubeAdminPlayers.size,
+      currentPlayerIsAdmin: isAdmin
+    }
+  });
 });
 app.post("/api/youtube/requests", auth, inviteLimiter, (req, res) => {
   const playerId = req.player.id;
