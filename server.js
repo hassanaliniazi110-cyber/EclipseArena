@@ -48,7 +48,7 @@ const youtubeAllowedPlayers = new Set((process.env.YOUTUBE_ALLOWED_PLAYER_IDS ||
 const youtubeAdminPlayerIdConfig =
   process.env.YOUTUBE_ADMIN_PLAYER_IDS || process.env.YOUTUBE_ADMIN_PLAYER_ID || "";
 const youtubeAdminPlayers = new Set(youtubeAdminPlayerIdConfig
-  .split(/[,;\\n\\r]+/).map(value => value.trim().toUpperCase())
+  .split(/[,;\n\r]+/).map(value => value.trim().toUpperCase())
   .filter(value => /^EA-[A-Z0-9]{3,8}-[A-Z0-9]{3,8}$/.test(value)));
 const YOUTUBE_ACCESS_FILE = process.env.YOUTUBE_ACCESS_FILE || path.join(__dirname, "eclipse-youtube-access.json");
 let youtubeAccessData = { requests: [], approved: [] };
