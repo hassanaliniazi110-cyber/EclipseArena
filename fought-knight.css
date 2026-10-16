@@ -1,25 +1,39 @@
-/* ECLIPSE ARENA — FOUGHT KNIGHT TYPOGRAPHY
-   Font file in this repository root: foughtknight.ttf
+/* ECLIPSE ARENA — SHARP, FUTURISTIC DISPLAY TYPOGRAPHY
+   Uses Rajdhani from Google Fonts as a close, web-safe alternative
+   to Fought Knight's sharp angular display style.
 */
-@font-face {
-  font-family: "Fought Knight";
-  src: url("./foughtknight.ttf?v=1") format("truetype");
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap');
+
+:root {
+  --arena-display-font: "Rajdhani", "Barlow Condensed", sans-serif;
 }
 
-/* Apply Fought Knight throughout the game after the main stylesheet. */
 html,
 body,
 body * {
-  font-family: "Fought Knight", "Barlow Condensed", sans-serif;
+  font-family: var(--arena-display-font);
 }
 
-/* Keep native emoji and icon-like symbols readable if the font lacks a glyph. */
 button,
 input,
 select,
 textarea {
-  font-family: "Fought Knight", "Barlow Condensed", sans-serif;
+  font-family: var(--arena-display-font);
+}
+
+h1,
+h2,
+h3,
+.brand,
+.brand-mark,
+.mode-title,
+.player-rating,
+.game-header,
+.primary-btn,
+.secondary-btn,
+.back-btn,
+.eyebrow,
+.section-count {
+  font-weight: 700;
+  letter-spacing: 0.035em;
 }
