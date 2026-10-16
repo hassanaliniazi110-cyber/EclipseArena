@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=DM+Sans:wght@400;500;600;700;800&family=Orbitron:wght@700;800;900&family=Chakra+Petch:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Barlow+Condensed:wght@500;600;700;800;900&family=DM+Sans:wght@400;500;600;700;800&family=Orbitron:wght@700;800;900&family=Chakra+Petch:wght@500;600;700&display=swap');
 
 /* Cinematic first-load intro */
 .intro-splash{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;background:#050b09;color:var(--white);animation:intro-exit .7s ease-in 2.6s forwards;pointer-events:none}
@@ -304,3 +304,12 @@ h1,h2,h3,
 .profile-photo-buttons{display:flex;gap:7px;flex-wrap:wrap}
 .profile-photo-buttons button,.profile-photo-controls>button{font-size:10px;padding:9px 10px}
 @media(max-width:520px){.profile-editor{align-items:flex-start;gap:12px;padding:10px}.profile-avatar-wrap{flex-basis:82px;width:82px;height:82px}.profile-photo-buttons button,.profile-photo-controls>button{font-size:9px;padding:8px}}
+
+
+/* Neon brush-lettering theme inspired by the supplied BREAK reference */
+body, body * { font-family: 'Permanent Marker', cursive !important; }
+:root { --lime: #62ff00; }
+body { color: #f2f7f2; }
+.brand, .brand b, .eyebrow, h1, h2, h3, .intro-wordmark, .intro-caption, .section-count, .primary-btn, .mode-card, .hero-stat, .hero-index { color: var(--lime); }
+.primary-btn { background: var(--lime); color: #07110f; }
+.intro-emblem { background: var(--lime); color: #07110f; }
