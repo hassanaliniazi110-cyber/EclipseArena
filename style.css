@@ -306,10 +306,24 @@ h1,h2,h3,
 @media(max-width:520px){.profile-editor{align-items:flex-start;gap:12px;padding:10px}.profile-avatar-wrap{flex-basis:82px;width:82px;height:82px}.profile-photo-buttons button,.profile-photo-controls>button{font-size:9px;padding:8px}}
 
 
-/* Sharp, modern sans-serif display typography with neon lime accents */
-body, body * { font-family: 'Rajdhani', 'Barlow Condensed', sans-serif !important; }
+
+
+/* FoughtKnight typography with the existing neon-lime palette.
+   Add FoughtKnight.ttf to the repository root for the exact font to load. */
+@font-face {
+  font-family: 'FoughtKnight';
+  src: url('./FoughtKnight.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+}
 :root { --lime: #62ff00; }
-body { color: #f2f7f2; }
-h1, h2, h3, .brand, .brand b, .eyebrow, .intro-wordmark, .intro-caption, .section-count, .primary-btn, .mode-card, .hero-stat, .hero-index { font-weight: 700; letter-spacing: .04em; }
+body, body * {
+  font-family: 'FoughtKnight', 'Rajdhani', 'Barlow Condensed', sans-serif !important;
+}
+h1, h2, h3, .brand, .brand b, .eyebrow, .intro-wordmark, .intro-caption,
+.section-count, .primary-btn, .mode-card, .hero-stat, .hero-index {
+  letter-spacing: .035em;
+}
 .primary-btn { background: var(--lime); color: #07110f; }
 .intro-emblem { background: var(--lime); color: #07110f; }
