@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#07110f">
   <title>ECLIPSE ARENA | Football</title>
   <link rel="stylesheet" href="style.css?v=foughtknight-fix-2">
-  <link rel="stylesheet" href="fought-knight.css?v=11">
+  <link rel="stylesheet" href="fought-knight.css?v=12">
   <script src="config.js?v=1"></script>
-  <script src="script.js?v=youtube-server-access-1" defer></script>
+  <script src="script.js?v=youtube-request-approval-1" defer></script>
 </head>
 <body>
   <div class="intro-splash" role="status" aria-label="Entering Eclipse Arena">
@@ -163,6 +163,17 @@
           <div><p class="eyebrow">ECLIPSE ARENA</p><h2>YOUTUBE <em>AREA</em></h2></div>
         </div>
         <div id="youtubeAccessGate" class="youtube-access-gate" role="status" aria-live="polite">Checking your permission with the Eclipse Arena server…</div>
+        <form id="youtubeAccessRequestForm" class="youtube-access-request hidden">
+          <p class="eyebrow">REQUEST ACCESS</p><h3>Ask the owner to unlock this area.</h3>
+          <label class="music-label" for="youtubeAccessMessage">MESSAGE TO THE OWNER</label>
+          <textarea id="youtubeAccessMessage" maxlength="240" placeholder="Hi! Please can I access the YouTube Area?"></textarea>
+          <button class="music-play-btn" type="submit">SEND ACCESS REQUEST</button>
+          <p id="youtubeRequestStatus" class="music-status" aria-live="polite"></p>
+        </form>
+        <section id="youtubeOwnerRequests" class="youtube-owner-requests hidden">
+          <div class="youtube-section-title"><h3>OWNER · ACCESS REQUESTS</h3><button id="youtubeRefreshRequests" type="button">REFRESH</button></div>
+          <div id="youtubeOwnerRequestList"></div>
+        </section>
         <section class="youtube-panel">
           <div class="youtube-panel-heading"><span class="music-note">▶</span><div><p class="eyebrow">EXPLORE THE WORLD</p><h3>Find your next <em>watch.</em></h3></div></div>
           <p class="youtube-help">Browse FC Mobile, Roblox, Minecraft, football and other channels. Save favourites, open channels on YouTube, or play supported playlists inside the game.</p>
