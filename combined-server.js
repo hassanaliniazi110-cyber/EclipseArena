@@ -765,6 +765,6 @@ return app;
 
 }
 
-combinedApp.use(createEclipseRouter(sharedServer));
 combinedApp.use("/sonicstriker", createSonicStrikerRouter(sharedServer));
+combinedApp.use(createEclipseRouter(sharedServer));
 sharedServer.listen(PORT, () => console.log("Combined ECLIPSE ARENA + SonicStriker backend listening on " + PORT));
