@@ -1,9 +1,35 @@
 "use strict";
+
+// Load .env values when present, without overriding environment variables set by the host.
+// Wispbyte's dashboard environment variables take priority over values in a local .env file.
+const fs = require("fs");
+const path = require("path");
+function loadDotEnv(filePath = path.join(__dirname, ".env")) {
+  try {
+    const content = fs.readFileSync(filePath, "utf8");
+    for (const rawLine of content.split(/\r?\n/)) {
+      const line = rawLine.trim();
+      if (!line || line.startsWith("#")) continue;
+      const separator = line.indexOf("=");
+      if (separator <= 0) continue;
+      const key = line.slice(0, separator).trim();
+      let value = line.slice(separator + 1).trim();
+      if ((value.startsWith('"') && value.endsWith('"')) ||
+          (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1);
+      }
+      if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(key) && process.env[key] === undefined) {
+        process.env[key] = value;
+      }
+    }
+  } catch (error) {
+    if (error.code !== "ENOENT") console.error("Could not read .env:", error.message);
+  }
+}
+loadDotEnv();
 const express = require("express");
 const http = require("http");
 const crypto = require("crypto");
-const fs = require("fs");
-const path = require("path");
 const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
