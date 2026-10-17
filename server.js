@@ -91,7 +91,7 @@ function saveYoutubeAccess() {
   fs.writeFileSync(temp, JSON.stringify(youtubeAccessData), { mode: 0o600 });
   fs.renameSync(temp, YOUTUBE_ACCESS_FILE);
 }
-function youtubeIsApproved(id) { return youtubeAdminPlayers.has(id) || youtubeAccessData.approved.includes(id); }
+function youtubeIsApproved(id) { return youtubeAccessData.approved.includes(id); }
 const MAX_PENDING_INVITES = 10000;
 
 const registerLimiter = rateLimit({
@@ -138,7 +138,7 @@ app.get("/api/youtube/access", auth, (req, res) => {
   // Safe diagnostics for the signed-in player; never disclose the configured owner-ID list.
   const allowed = youtubeIsApproved(playerId);
   // A non-owner approval is a one-entry pass: consume it on entry so it cannot authorize a later visit.
-  if (allowed && !isAdmin && youtubeAccessData.approved.includes(playerId)) {
+  if (allowed && youtubeAccessData.approved.includes(playerId)) {
     youtubeAccessData.approved = youtubeAccessData.approved.filter(id => id !== playerId);
     saveYoutubeAccess();
   }
@@ -156,7 +156,6 @@ app.get("/api/youtube/access", auth, (req, res) => {
 });
 app.post("/api/youtube/leave", auth, (req, res) => {
   const playerId = req.player.id;
-  if (youtubeAdminPlayers.has(playerId)) return res.json({ ok: true, owner: true });
   const wasApproved = youtubeAccessData.approved.includes(playerId);
   youtubeAccessData.approved = youtubeAccessData.approved.filter(id => id !== playerId);
   if (wasApproved) saveYoutubeAccess();
