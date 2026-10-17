@@ -4,7 +4,6 @@
 // Both games run on one HTTP port but keep separate in-memory accounts, files, and Socket.IO paths.
 const express = require("express");
 const http = require("http");
-const PORT = Number(process.env.PORT) || 11914;
 const combinedApp = express();
 const sharedServer = http.createServer(combinedApp);
 
@@ -767,4 +766,5 @@ return app;
 
 combinedApp.use("/sonicstriker", createSonicStrikerRouter(sharedServer));
 combinedApp.use(createEclipseRouter(sharedServer));
+const PORT = Number(process.env.PORT) || 11914;
 sharedServer.listen(PORT, () => console.log("Combined ECLIPSE ARENA + SonicStriker backend listening on " + PORT));
