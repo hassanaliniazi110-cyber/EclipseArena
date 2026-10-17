@@ -269,3 +269,27 @@ h2,h3,.mode-title,.game-header h2,.youtube-panel-heading h3 {
 
 
 /* FoughtKnight typography and lime accent are managed in fought-knight.css. */
+
+
+/* Lock the game viewport horizontally while preserving normal vertical scrolling. */
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+  overscroll-behavior-x: none;
+}
+body {
+  touch-action: pan-y pinch-zoom;
+}
+.app-shell,
+main,
+.screen {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+}
+@supports not (overflow: clip) {
+  html, body, .app-shell, main, .screen {
+    overflow-x: hidden;
+  }
+}
