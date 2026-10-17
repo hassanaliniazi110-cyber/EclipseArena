@@ -744,7 +744,9 @@ const goalkeepers = [
   });
   $("youtubeRefreshRequests")?.addEventListener("click",refreshYouTubeRequests);
   function closeYouTubeArea(){
+    if(onlineCfg.base&&onlineCfg.token){api("/api/youtube/leave",{method:"POST"}).catch(()=>{});}
     $("youtubeScreen").classList.add("hidden");
+    $("youtubeScreen").classList.remove("youtube-authorized");
     $("homeScreen").classList.remove("hidden");
     window.scrollTo({top:0,behavior:"smooth"});
   }
