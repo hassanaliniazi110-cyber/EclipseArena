@@ -91,7 +91,7 @@ function saveYoutubeAccess() {
   fs.writeFileSync(temp, JSON.stringify(youtubeAccessData), { mode: 0o600 });
   fs.renameSync(temp, YOUTUBE_ACCESS_FILE);
 }
-function youtubeIsApproved(id) { return youtubeAllowedPlayers.has(id) || youtubeAccessData.approved.includes(id); }
+function youtubeIsApproved(id) { return youtubeAdminPlayers.has(id) || youtubeAccessData.approved.includes(id); }
 const MAX_PENDING_INVITES = 10000;
 
 const registerLimiter = rateLimit({
@@ -148,6 +148,15 @@ app.get("/api/youtube/access", auth, (req, res) => {
     }
   });
 });
+app.post("/api/youtube/leave", auth, (req, res) => {
+  const playerId = req.player.id;
+  if (youtubeAdminPlayers.has(playerId)) return res.json({ ok: true, owner: true });
+  const wasApproved = youtubeAccessData.approved.includes(playerId);
+  youtubeAccessData.approved = youtubeAccessData.approved.filter(id => id !== playerId);
+  if (wasApproved) saveYoutubeAccess();
+  res.json({ ok: true, permissionRevoked: wasApproved });
+});
+
 app.post("/api/youtube/requests", auth, inviteLimiter, (req, res) => {
   const playerId = req.player.id;
   if (youtubeIsApproved(playerId)) return res.json({ status: "approved", message: "You already have access." });
