@@ -72,7 +72,7 @@ const youtubeAllowedPlayers = new Set((process.env.YOUTUBE_ALLOWED_PLAYER_IDS ||
 // Accept one or several owner IDs. Commas, semicolons, and newlines are supported
 // so Wispbyte environment-variable formatting cannot silently break the owner list.
 const youtubeAdminPlayerIdConfig =
-  process.env.YOUTUBE_ADMIN_PLAYER_IDS || process.env.YOUTUBE_ADMIN_PLAYER_ID || "";
+  process.env.YOUTUBE_ADMIN_PLAYER_IDS || process.env.YOUTUBE_ADMIN_PLAYER_ID || "EA-090369-C55E69";
 const youtubeAdminPlayers = new Set(youtubeAdminPlayerIdConfig
   .split(/[,;\n\r]+/).map(value => value.trim().toUpperCase())
   .filter(value => /^EA-[A-Z0-9]{3,8}-[A-Z0-9]{3,8}$/.test(value)));
