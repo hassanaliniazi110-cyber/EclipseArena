@@ -24,9 +24,18 @@
       <div class="top-actions"><span class="live-dot"></span><span class="online-label">ARENA LIVE</span><button id="soundBtn" class="icon-btn" aria-label="Toggle sound">♪</button></div>
     </header>
 
-    <main>
+    <aside id="arenaSidebar" class="arena-sidebar" aria-label="Eclipse Arena navigation">
+      <p class="sidebar-kicker">ARENA MENU</p>
+      <button type="button" class="sidebar-link active" data-view="home"><span>⌂</span><b>Home</b></button>
+      <button type="button" class="sidebar-link" data-view="modes"><span>⚡</span><b>Game Modes</b></button>
+      <button type="button" class="sidebar-link" data-view="players"><span>✦</span><b>Players</b></button>
+      <button type="button" class="sidebar-link" data-view="goalkeepers"><span>🧤</span><b>Goalkeepers</b></button>
+      <button type="button" class="sidebar-link" data-view="youtube"><span>▶</span><b>YouTube Area</b></button>
+      <div class="sidebar-foot"><i></i><span>READY TO PLAY</span></div>
+    </aside>
+    <main class="arena-main">
       <section id="homeScreen" class="screen home-screen">
-        <div class="hero">
+        <div class="hero nav-home-content">
           <div class="hero-copy">
             <p class="eyebrow"><span></span> YOUR PITCH. YOUR MOMENT.</p>
             <h1>OWN THE<br><em>GAME.</em></h1>
@@ -42,7 +51,7 @@
           <div class="hero-index">01 <span>/ 04</span></div>
         </div>
 
-        <section class="mode-section">
+        <section class="mode-section nav-modes-content">
           <div class="section-heading"><div><p class="eyebrow">CHOOSE YOUR CHALLENGE</p><h2>Pick your <em>mode.</em></h2></div><span class="section-count">08 MODES + YOUTUBE</span></div>
           <div class="mode-grid">
             <button class="mode-card penalty" data-mode="penalty"><span class="mode-number">01</span><span class="mode-icon">◎</span><span class="mode-title">PENALTY</span><span class="mode-desc">Stay cool. Find the corner.</span><span class="mode-arrow">↗</span></button>
@@ -57,10 +66,10 @@
           </div>
         </section>
 
-        <section class="roster-section">
+        <section class="roster-section nav-players-content">
           <div class="section-heading"><div><p class="eyebrow">BUILD YOUR SQUAD</p><h2>Choose your <em>player.</em></h2></div><span class="section-count">SELECT ONE</span></div>
-          <div id="playerGrid" class="player-grid"></div>
-          <div class="goalkeeper-pick">
+          <div id="playerGrid" class="player-grid nav-player-cards"></div>
+          <div class="goalkeeper-pick nav-goalkeeper-cards">
             <div class="section-heading keeper-heading"><div><p class="eyebrow">LAST LINE OF DEFENCE</p><h2>Choose your <em>goalkeeper.</em></h2></div><span class="section-count">SELECT ONE</span></div>
             <div id="goalkeeperGrid" class="player-grid goalie-selection-grid"></div>
           </div>
