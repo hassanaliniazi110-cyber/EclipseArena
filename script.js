@@ -307,8 +307,20 @@ const goalkeepers = [
     $("arenaStats").textContent=career.goals+" goals · "+career.saves+" saves · "+career.xp+" XP · Best "+career.bestScore;
   }
   modeGrid.querySelectorAll("[data-mode],[data-open-youtube]").forEach(card=>{
-    const key=card.dataset.mode||"youtube",star=document.createElement("button");star.type="button";star.className="mode-favourite";star.textContent=modeFavourites.has(key)?"★":"☆";star.setAttribute("aria-label","Toggle favourite for "+key);
-    star.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();modeFavourites.has(key)?modeFavourites.delete(key):modeFavourites.add(key);try{localStorage.setItem("eclipseModeFavourites",JSON.stringify([...modeFavourites]));}catch(_){}renderModeTools();});card.appendChild(star);
+    // Mode cards are already buttons, so the favourite control must not be another nested button.
+    const key=card.dataset.mode||"youtube",star=document.createElement("span");
+    star.className="mode-favourite";star.textContent=modeFavourites.has(key)?"★":"☆";
+    star.setAttribute("role","button");star.setAttribute("tabindex","0");
+    star.setAttribute("aria-label","Toggle favourite for "+key);
+    const toggleFavourite=e=>{
+      e.preventDefault();e.stopPropagation();
+      modeFavourites.has(key)?modeFavourites.delete(key):modeFavourites.add(key);
+      try{localStorage.setItem("eclipseModeFavourites",JSON.stringify([...modeFavourites]));}catch(_){}
+      renderModeTools();
+    };
+    star.addEventListener("click",toggleFavourite);
+    star.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){toggleFavourite(e);}});
+    card.appendChild(star);
   });
   if($("modeSearch"))$("modeSearch").addEventListener("input",renderModeTools);if($("modeFilter"))$("modeFilter").addEventListener("change",renderModeTools);renderModeTools();
 
