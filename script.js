@@ -541,7 +541,7 @@ const goalkeepers = [
   document.querySelectorAll("[data-view]").forEach(button=>button.addEventListener("click",()=>setArenaView(button.dataset.view)));
   setArenaView("home");
   $("playNowBtn").addEventListener("click",()=>{setArenaView("modes");toast("Choose a challenge to begin")});
-  $("backBtn").addEventListener("click",()=>{match.active=false;cancelAnimationFrame(animationFrame);$("matchHud").classList.add("hidden");$("matchControls").classList.add("hidden");$("gameScreen").classList.add("hidden");$("homeScreen").classList.remove("hidden");ballAnim=null;cancelAnimationFrame(animationFrame);window.scrollTo({top:0,behavior:"smooth"})});
+  $("backBtn").addEventListener("click",()=>{match.active=false;cancelAnimationFrame(animationFrame);$("matchHud").classList.add("hidden");$("matchControls").classList.add("hidden");$("gameScreen").classList.add("hidden");$("homeScreen").classList.remove("hidden");setArenaView("home");ballAnim=null;cancelAnimationFrame(animationFrame);window.scrollTo({top:0,behavior:"auto"})});
   $("shootBtn").addEventListener("click",()=>{if(mode==="goalkeeping"||mode==="survival")dive();else shoot()});$("nextBtn").addEventListener("click",nextAttempt);
   $("powerSlider").addEventListener("input",e=>{power=Number(e.target.value);$("powerReadout").textContent=power+"%"});
   document.querySelectorAll("[data-dive]").forEach(b=>b.addEventListener("click",()=>{keeperDive=b.dataset.dive;document.querySelectorAll("[data-dive]").forEach(x=>x.style.borderColor=x===b?"#c7ff4a":"");$("feedback").textContent="Dive selected: "+keeperDive.toUpperCase()+". Press save when ready."}));
@@ -768,7 +768,8 @@ const goalkeepers = [
     $("youtubeScreen").classList.add("hidden");
     $("youtubeScreen").classList.remove("youtube-authorized");
     $("homeScreen").classList.remove("hidden");
-    window.scrollTo({top:0,behavior:"smooth"});
+    setArenaView("home");
+    window.scrollTo({top:0,behavior:"auto"});
   }
   function setYouTubePlaybackStatus(message,url){
     const status=$("youtubeAreaStatus");status.textContent=message;
