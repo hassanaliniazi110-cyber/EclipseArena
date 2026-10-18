@@ -32,7 +32,10 @@
 {name:"Sergio Ramos",rating:125,role:"CB",special:"Defending · Leadership",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
 {name:"Virgil van Dijk",rating:125,role:"CB",special:"Strength · Interceptions",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
 {name:"Karim Benzema",rating:126,role:"ST",special:"Link-up · Finishing",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
-{name:"Hassan Ali",rating:300,role:"GK",special:"Custom · Elite reflexes",unlockXP:2200,unlockWins:8,glow:"rgba(199,255,74,.22)"}
+{name:"Hassan Ali",rating:300,role:"GK",special:"Custom · Elite reflexes",unlockXP:2200,unlockWins:8,glow:"rgba(199,255,74,.22)"},
+{name:"Federico Valverde",rating:121,role:"CM",special:"Stamina · Long shots",unlockXP:450,unlockWins:2,glow:"rgba(80,220,190,.2)"},
+{name:"Rodri",rating:122,role:"CDM",special:"Positioning · Passing",unlockXP:700,unlockWins:3,glow:"rgba(75,191,255,.2)"},
+{name:"Endrick",rating:116,role:"ST",special:"Explosive pace · Finishing",unlockXP:450,unlockWins:2,glow:"rgba(255,140,66,.2)"}
 ];
 const goalkeepers = [
 {name:"David Raya",rating:117,role:"GOALKEEPER",special:"Quick distribution",unlockXP:0,unlockWins:0,glow:"rgba(100,220,130,.2)"},
@@ -58,7 +61,10 @@ const goalkeepers = [
 {name:"Keylor Navas",rating:119,role:"GOALKEEPER",special:"Quick reactions",unlockXP:450,unlockWins:2,glow:"rgba(80,220,190,.2)"},
 {name:"Samir Handanović",rating:118,role:"GOALKEEPER",special:"Penalty saves",unlockXP:450,unlockWins:2,glow:"rgba(189,123,255,.2)"},
 {name:"Dida",rating:120,role:"ICON GOALKEEPER",special:"Big-match saves",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
-{name:"Claudio Bravo",rating:117,role:"GOALKEEPER",special:"Sharp distribution",unlockXP:450,unlockWins:2,glow:"rgba(90,160,255,.2)"}
+{name:"Claudio Bravo",rating:117,role:"GOALKEEPER",special:"Sharp distribution",unlockXP:450,unlockWins:2,glow:"rgba(90,160,255,.2)"},
+{name:"Yann Sommer",rating:118,role:"GOALKEEPER",special:"Reflexes · Positioning",unlockXP:450,unlockWins:2,glow:"rgba(90,160,255,.2)"},
+{name:"André Onana",rating:117,role:"PLAYMAKING KEEPER",special:"Distribution · Reactions",unlockXP:450,unlockWins:2,glow:"rgba(80,220,190,.2)"},
+{name:"Giorgi Mamardashvili",rating:119,role:"GOALKEEPER",special:"Reach · Close-range saves",unlockXP:450,unlockWins:2,glow:"rgba(189,123,255,.2)"}
 ];
   const modeNames = {penalty:"PENALTY",freekick:"FREE KICK",longshot:"LONG SHOT",goalkeeping:"GOALKEEPER",headtohead:"HEAD-TO-HEAD",vsattack:"VS ATTACK",crossbar:"CROSSBAR CHALLENGE",survival:"SURVIVAL SAVES"};
   const modeText = {
@@ -520,7 +526,21 @@ const goalkeepers = [
   });
   $("youtubeBackBtn").addEventListener("click",closeYouTubeArea);
   document.querySelectorAll("[data-difficulty]").forEach(b=>b.addEventListener("click",()=>{difficulty=b.dataset.difficulty;document.querySelectorAll("[data-difficulty]").forEach(x=>x.classList.toggle("selected",x===b));}));
-  $("playNowBtn").addEventListener("click",()=>{document.querySelector(".mode-section").scrollIntoView({behavior:"smooth",block:"start"});toast("Choose a challenge to begin")});
+
+  // Sidebar navigation: switch sections without making users scroll through the home page.
+  function setArenaView(view){
+    const home=$("homeScreen"),game=$("gameScreen"),youtube=$("youtubeScreen");
+    document.querySelectorAll("[data-view]").forEach(button=>button.classList.toggle("active",button.dataset.view===view));
+    home.classList.remove("view-home","view-modes","view-players","view-goalkeepers");
+    if(view==="youtube"){openYouTubeArea();return;}
+    if(view==="home"||view==="modes"||view==="players"||view==="goalkeepers"){
+      youtube.classList.add("hidden");game.classList.add("hidden");home.classList.remove("hidden");home.classList.add("view-"+view);
+      window.scrollTo({top:0,behavior:"auto"});
+    }
+  }
+  document.querySelectorAll("[data-view]").forEach(button=>button.addEventListener("click",()=>setArenaView(button.dataset.view)));
+  setArenaView("home");
+  $("playNowBtn").addEventListener("click",()=>{setArenaView("modes");toast("Choose a challenge to begin")});
   $("backBtn").addEventListener("click",()=>{match.active=false;cancelAnimationFrame(animationFrame);$("matchHud").classList.add("hidden");$("matchControls").classList.add("hidden");$("gameScreen").classList.add("hidden");$("homeScreen").classList.remove("hidden");ballAnim=null;cancelAnimationFrame(animationFrame);window.scrollTo({top:0,behavior:"smooth"})});
   $("shootBtn").addEventListener("click",()=>{if(mode==="goalkeeping"||mode==="survival")dive();else shoot()});$("nextBtn").addEventListener("click",nextAttempt);
   $("powerSlider").addEventListener("input",e=>{power=Number(e.target.value);$("powerReadout").textContent=power+"%"});
