@@ -477,19 +477,41 @@ const goalkeepers = [
     const curveStrength=mode==="freekick"?.12:selectedPlayer==="Lamine Yamal"?.085:selectedPlayer==="Lionel Messi"?.065:selectedPlayer==="Zayd Quadri"?.045:.018;
     const curve=(aim.x<.5?1:-1)*curveStrength*(power/78);
     lastShotReplay={fromX,fromY,toX,toY,curve,lift:.16,duration:500,mode,aim:{...aim},power,player:selectedPlayer};
-    ballAnim={...lastShotReplay,start:performance.now()};keeperMotion={side:aim.x<.43?-1:aim.x>.57?1:(Math.random()<.5?-1:1),start:performance.now(),duration:500};drawPitch();
+    ballAnim={...lastShotReplay,start:performance.now()};
+    // The keeper reacts toward the actual shot, not a random direction.
+    const shotSide=aim.x<.43?-1:aim.x>.57?1:0;
+    keeperMotion={side:shotSide,start:performance.now(),duration:500};
+    drawPitch();
+
     const centerBias=Math.abs(aim.x-.5);
-    const keeperIsHassan=selectedGoalkeeper==="Hassan Ali";
-    const baseScoreChance=difficulty==="Rookie"?.88:difficulty==="Pro"?.58:.24;
-    const placementBonus=Math.max(0,.12-centerBias*.20)+(power>90?.025:0)+(selectedPlayer==="Cristiano Ronaldo"?.02:0);
-    const goal=aim.y<.36&&aim.x>.18&&aim.x<.82;
-    const crossbarHit=mode==="crossbar"&&aim.y>=.055&&aim.y<=.15&&aim.x>=.34&&aim.x<=.66;
     const keeperRating=(goalkeepers.find(g=>g.name===selectedGoalkeeper)||goalkeepers[0]).rating;
-    const keeperSkill=keeperIsHassan?.34:Math.max(.04,Math.min(.24,(keeperRating-82)*.009));
-    const scoreChance=Math.max(.08,Math.min(.96,baseScoreChance+placementBonus-keeperSkill+(centerBias>.34?.10:0)));
-    const hassanAlmostImpossible=selectedGoalkeeper==="Hassan Ali";
-    const scored=hassanAlmostImpossible?(Math.random()<0.00001&&(mode==="crossbar"?crossbarHit:goal)):(mode==="crossbar"?(crossbarHit&&Math.random()<(difficulty==="Rookie"?.75:difficulty==="Pro"?.45:.18)):(goal&&Math.random()<scoreChance));
-    setTimeout(()=>{if(mode==="freekick"&&aim.x>.465&&aim.x<.535&&aim.y<.30){finishAttempt(false,"The wall blocks it! Aim wider around the wall.");}else if(mode==="crossbar"&&!crossbarHit){finishAttempt(false,"MISS! Aim just beneath the crossbar.");}else if(scored){finishAttempt(true,mode==="crossbar"?"CROSSBAR CHALLENGE COMPLETE! Perfect timing!":power>90?"WHAT A STRIKE! Top corner!":"GOAL! Perfect placement.");}else{finishAttempt(false,goal?"SAVED BY "+selectedGoalkeeper.toUpperCase()+"! Try another corner.":"Wide! Aim inside the bigger goal frame.");}drawPitch();},510);
+    const isKeeperMode=mode==="goalkeeping"||mode==="survival";
+    // Aim at the visible goal area. Wider corners are harder for the keeper to reach.
+    const inGoal=aim.y<.29&&aim.x>.18&&aim.x<.82;
+    const crossbarHit=mode==="crossbar"&&aim.y>=.055&&aim.y<=.15&&aim.x>=.34&&aim.x<=.66;
+    const keeperCenterX=shotSide===-1?.34:shotSide===1?.66:.5;
+    const horizontalDistance=Math.abs(aim.x-keeperCenterX);
+    const reachable=horizontalDistance<=(difficulty==="Rookie"?.115:.085);
+    const keeperSkill=Math.max(.12,Math.min(.48,(keeperRating-70)*.006));
+    const placementBonus=centerBias>.28?.18:centerBias>.17?.10:0;
+    const powerBonus=power>85?.06:0;
+    const baseScoreChance=difficulty==="Rookie"?.94:difficulty==="Pro"?.86:.74;
+    const saveChance=reachable?Math.max(.08,Math.min(.64,keeperSkill-(placementBonus+powerBonus))):0;
+    const scored=isKeeperMode?false:(mode==="crossbar"?(crossbarHit&&Math.random()<.8):(inGoal&&Math.random()>(baseScoreChance===0?0:saveChance)));
+    setTimeout(()=>{
+      if(isKeeperMode){
+        finishAttempt(false,"Take control of the goalkeeper and choose the correct dive.");
+      }else if(mode==="freekick"&&aim.x>.465&&aim.x<.535&&aim.y<.30){
+        finishAttempt(false,"The wall blocks it! Aim wider around the wall.");
+      }else if(mode==="crossbar"&&!crossbarHit){
+        finishAttempt(false,"MISS! Aim just beneath the crossbar.");
+      }else if(scored){
+        finishAttempt(true,mode==="crossbar"?"CROSSBAR CHALLENGE COMPLETE! Perfect timing!":power>90?"WHAT A STRIKE! Top corner!":"GOAL! Great placement.");
+      }else{
+        finishAttempt(false,inGoal?"SAVED BY "+selectedGoalkeeper.toUpperCase()+"! The keeper reached the shot.":"Wide! Aim inside the goal frame.");
+      }
+      drawPitch();
+    },510);
   }
   function dive(){
     if(shotTaken)return;
