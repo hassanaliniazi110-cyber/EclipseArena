@@ -551,7 +551,7 @@ const goalkeepers = [
   let musicContext=null,musicMaster=null,musicTimer=null,musicStep=0,musicStyle="hiphop",musicPlaying=false;
   // Official recordings load inside the soundtrack panel; no navigation away from the game.
   const officialSongs={
-    speed:"vrY1THC_NQE", dreamers:"IwzkfMmNMpM", waka:"pRpeEdMmmQ0", jujalarimfunk:"c3nQwE4WCwc",
+    speed:"vrY1THC_NQE", dreamers:"IwzkfMmNMpM", waka:"pRpeEdMmmQ0", jujalarimfunk:"qxcKlN2VwL4",
     nights:"UtF6Jej8yb4", believer:"7wtfhZwyrcc", seven:"0J2QdDbelmY",
     sunflower:"ApXoWvfEYVU", dynamite:"gdZLi9oWNZg", desire:"Uc8LehnnjJk",
     montagemtomada:"Qsk6bMvGj_o", montagemcoral:"P1EwJbIZWnQ",
