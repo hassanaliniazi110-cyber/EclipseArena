@@ -539,21 +539,8 @@ const goalkeepers = [
   $("youtubeBackBtn").addEventListener("click",closeYouTubeArea);
   document.querySelectorAll("[data-difficulty]").forEach(b=>b.addEventListener("click",()=>{difficulty=b.dataset.difficulty;document.querySelectorAll("[data-difficulty]").forEach(x=>x.classList.toggle("selected",x===b));}));
 
-  // Sidebar navigation: switch sections without making users scroll through the home page.
-  function setArenaView(view){
-    const home=$("homeScreen"),game=$("gameScreen"),youtube=$("youtubeScreen");
-    document.querySelectorAll("[data-view]").forEach(button=>button.classList.toggle("active",button.dataset.view===view));
-    home.classList.remove("view-home","view-modes","view-players","view-goalkeepers");
-    if(view==="youtube"){openYouTubeArea();return;}
-    if(view==="home"||view==="modes"||view==="players"||view==="goalkeepers"){
-      youtube.classList.add("hidden");game.classList.add("hidden");home.classList.remove("hidden");home.classList.add("view-"+view);
-      window.scrollTo({top:0,behavior:"auto"});
-    }
-  }
-  document.querySelectorAll("[data-view]").forEach(button=>button.addEventListener("click",()=>setArenaView(button.dataset.view)));
-  setArenaView("home");
-  $("playNowBtn").addEventListener("click",()=>{setArenaView("modes");toast("Choose a challenge to begin")});
-  $("backBtn").addEventListener("click",()=>{match.active=false;cancelAnimationFrame(animationFrame);$("matchHud").classList.add("hidden");$("matchControls").classList.add("hidden");$("gameScreen").classList.add("hidden");$("homeScreen").classList.remove("hidden");setArenaView("home");ballAnim=null;cancelAnimationFrame(animationFrame);window.scrollTo({top:0,behavior:"auto"})});
+  $("playNowBtn").addEventListener("click",()=>{document.querySelector(".mode-section")?.scrollIntoView({behavior:"smooth",block:"start"});toast("Choose a challenge to begin")});
+  $("backBtn").addEventListener("click",()=>{match.active=false;cancelAnimationFrame(animationFrame);$("matchHud").classList.add("hidden");$("matchControls").classList.add("hidden");$("gameScreen").classList.add("hidden");$("homeScreen").classList.remove("hidden");ballAnim=null;cancelAnimationFrame(animationFrame);window.scrollTo({top:0,behavior:"auto"})});
   $("shootBtn").addEventListener("click",()=>{if(mode==="goalkeeping"||mode==="survival")dive();else shoot()});$("nextBtn").addEventListener("click",nextAttempt);
   $("powerSlider").addEventListener("input",e=>{power=Number(e.target.value);$("powerReadout").textContent=power+"%"});
   document.querySelectorAll("[data-dive]").forEach(b=>b.addEventListener("click",()=>{keeperDive=b.dataset.dive;document.querySelectorAll("[data-dive]").forEach(x=>x.style.borderColor=x===b?"#c7ff4a":"");$("feedback").textContent="Dive selected: "+keeperDive.toUpperCase()+". Press save when ready."}));
