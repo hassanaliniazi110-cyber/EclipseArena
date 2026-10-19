@@ -480,6 +480,7 @@ const goalkeepers = [
     ballAnim={...lastShotReplay,start:performance.now()};
     // The keeper reacts toward the actual shot, not a random direction.
     const shotSide=aim.x<.43?-1:aim.x>.57?1:0;
+    // Hassan reads the shot perfectly and commits to its actual direction.
     keeperMotion={side:shotSide,start:performance.now(),duration:500};
     drawPitch();
 
@@ -497,7 +498,9 @@ const goalkeepers = [
     const powerBonus=power>85?.06:0;
     const difficultyAdjustment=difficulty==="Rookie"?-.12:difficulty==="Legend"?.08:0;
     const saveChance=reachable?Math.max(.05,Math.min(.55,keeperSkill+ difficultyAdjustment-placementBonus-powerBonus)):0;
-    const scored=isKeeperMode?false:(mode==="crossbar"?(crossbarHit&&Math.random()<.8):(inGoal&&Math.random()>saveChance));
+    const hassanWall=selectedGoalkeeper==="Hassan Ali";
+    // Hassan is unbeatable: no valid shot can score against him.
+    const scored=isKeeperMode?false:(mode==="crossbar"?(crossbarHit&&Math.random()<.8):(!hassanWall&&inGoal&&Math.random()>saveChance));
     setTimeout(()=>{
       if(isKeeperMode){
         finishAttempt(false,"Take control of the goalkeeper and choose the correct dive.");
@@ -517,11 +520,14 @@ const goalkeepers = [
     if(shotTaken)return;
     const targetSide=["left","center","right"][Math.floor(Math.random()*3)];
     aim={x:targetSide==="left"?.28:targetSide==="right"?.72:.5,y:.055+Math.random()*.08};
+    const isHassan=selectedGoalkeeper==="Hassan Ali";
+    // Hassan automatically reads and dives toward every incoming shot.
+    if(isHassan)keeperDive=targetSide;
     const matchedDive=targetSide===keeperDive;
     const keeperRating=(goalkeepers.find(g=>g.name===selectedGoalkeeper)||goalkeepers[0]).rating;
-    const reactionBonus=selectedGoalkeeper==="Hassan Ali"?.22:Math.max(0,(keeperRating-85)*.008);
-    const save=matchedDive?Math.random()<Math.min(.99,.72+reactionBonus):Math.random()<Math.min(.78,.08+reactionBonus+(difficulty==="Rookie"?.12:0));
-    ballAnim={fromX:cw*.5,fromY:ch*.28,toX:aim.x*cw,toY:aim.y*ch,start:performance.now(),duration:430};keeperMotion={side:keeperDive==="left"?-1:keeperDive==="right"?1:0,start:performance.now(),duration:430};drawPitch();
+    const reactionBonus=isHassan?1:Math.max(0,(keeperRating-85)*.008);
+    const save=isHassan?true:(matchedDive?Math.random()<Math.min(.99,.72+reactionBonus):Math.random()<Math.min(.78,.08+reactionBonus+(difficulty==="Rookie"?.12:0)));
+    ballAnim={fromX:cw*.5,fromY:ch*.28,toX:aim.x*cw,toY:aim.y*ch,start:performance.now(),duration:430};keeperMotion={side:isHassan?(targetSide==="left"?-1:targetSide==="right"?1:0):(keeperDive==="left"?-1:keeperDive==="right"?1:0),start:performance.now(),duration:430};drawPitch();
     setTimeout(()=>{finishAttempt(save,save?"INCREDIBLE SAVE! "+selectedGoalkeeper+" reads the shot!":"GOAL CONCEDED. Read the direction next time.");drawPitch()},450);
   }
   function nextAttempt(){
