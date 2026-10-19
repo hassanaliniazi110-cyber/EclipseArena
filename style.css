@@ -293,28 +293,3 @@ main,
     overflow-x: hidden;
   }
 }
-
-
-/* Fixed navigation rail: section selection replaces long scrolling. */
-.app-shell{overflow:visible}
-.arena-sidebar{position:fixed;z-index:1000;top:104px;left:max(14px,calc((100vw - 1440px)/2 + 18px));width:166px;display:flex;flex-direction:column;gap:7px;padding:15px 10px;background:linear-gradient(160deg,rgba(15,27,22,.97),rgba(7,15,12,.97));border:1px solid rgba(199,255,74,.22);box-shadow:0 18px 50px #0007;backdrop-filter:blur(16px);border-radius:13px}
-.sidebar-kicker{margin:2px 9px 8px;color:var(--muted);font:800 9px 'Orbitron',sans-serif;letter-spacing:1.7px}
-.sidebar-link{display:flex;align-items:center;gap:10px;width:100%;min-height:43px;padding:10px 11px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--muted);text-align:left;transition:background .18s,border-color .18s,color .18s}
-.sidebar-link span{width:20px;text-align:center;font-size:17px;color:var(--lime)}
-.sidebar-link b{font:800 10px 'Orbitron',sans-serif;letter-spacing:.2px}
-.sidebar-link:hover,.sidebar-link.active{color:var(--white);border-color:rgba(199,255,74,.35);background:linear-gradient(90deg,rgba(199,255,74,.15),rgba(199,255,74,.035))}
-.sidebar-link.active{box-shadow:inset 3px 0 var(--lime)}
-.sidebar-foot{display:flex;align-items:center;gap:7px;margin:15px 7px 3px;padding-top:12px;border-top:1px solid var(--line);color:var(--muted);font:700 8px 'Orbitron',sans-serif;letter-spacing:.6px}
-.sidebar-foot i{width:6px;height:6px;border-radius:50%;background:var(--lime);box-shadow:0 0 10px var(--lime)}
-.arena-main{margin-left:184px;min-width:0}
-#homeScreen.view-home .nav-modes-content,#homeScreen.view-home .nav-players-content{display:none!important}
-#homeScreen.view-modes .nav-home-content,#homeScreen.view-modes .nav-players-content{display:none!important}
-#homeScreen.view-players .nav-home-content,#homeScreen.view-players .nav-modes-content{display:none!important}
-#homeScreen.view-goalkeepers .nav-home-content,#homeScreen.view-goalkeepers .nav-modes-content{display:none!important}
-#homeScreen.view-goalkeepers .nav-player-cards,#homeScreen.view-goalkeepers .setup-row{display:none!important}
-#homeScreen.view-goalkeepers .nav-players-content .section-heading:first-child{display:none!important}
-#homeScreen.view-players .nav-goalkeeper-cards{display:none!important}
-#homeScreen.view-players .nav-players-content .keeper-heading,#homeScreen.view-players .nav-players-content .goalkeeper-pick{display:none!important}
-#homeScreen.view-players .nav-players-content .setup-row{margin-top:18px}
-@media(max-width:850px){.arena-sidebar{left:8px;width:132px;padding:10px 7px;top:92px}.sidebar-link{gap:7px;padding:9px 7px}.sidebar-link b{font-size:9px}.arena-main{margin-left:143px}.sidebar-kicker{font-size:8px;margin-left:6px}}
-@media(max-width:560px){.app-shell{padding-left:10px;padding-right:10px}.topbar{margin-left:0}.arena-sidebar{top:auto;bottom:10px;left:8px;right:8px;width:auto;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;padding:7px;border-radius:12px}.sidebar-kicker,.sidebar-foot{display:none}.sidebar-link{flex-direction:column;justify-content:center;gap:4px;min-height:52px;padding:5px 2px}.sidebar-link span{font-size:16px}.sidebar-link b{font-size:7px;letter-spacing:0;text-align:center}.sidebar-link.active{box-shadow:inset 0 2px var(--lime)}.arena-main{margin-left:0;padding-bottom:75px}.mode-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.player-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
