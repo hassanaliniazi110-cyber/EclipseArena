@@ -38,8 +38,13 @@ const { Server } = require("socket.io");
 const app = express();
 const server = http.createServer(app);
 const PORT = Number(process.env.PORT) || 11914;
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || "https://hassanaliniazi110-cyber.github.io")
+const defaultOrigins = [
+  "https://hassanaliniazi110-cyber.github.io",
+  "https://eclipsearena.apexstrikers.workers.dev"
+];
+const configuredOrigins = (process.env.ALLOWED_ORIGINS || "")
   .split(",").map(v => v.trim()).filter(Boolean);
+const allowedOrigins = [...new Set([...defaultOrigins, ...configuredOrigins])];
 const players = new Map();
 const tokenToPlayer = new Map();
 const DATA_FILE = process.env.ECLIPSE_DATA_FILE || path.join(__dirname, "eclipse-data.json");
