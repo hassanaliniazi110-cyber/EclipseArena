@@ -495,9 +495,9 @@ const goalkeepers = [
     const keeperSkill=Math.max(.12,Math.min(.48,(keeperRating-70)*.006));
     const placementBonus=centerBias>.28?.18:centerBias>.17?.10:0;
     const powerBonus=power>85?.06:0;
-    const baseScoreChance=difficulty==="Rookie"?.94:difficulty==="Pro"?.86:.74;
-    const saveChance=reachable?Math.max(.08,Math.min(.64,keeperSkill-(placementBonus+powerBonus))):0;
-    const scored=isKeeperMode?false:(mode==="crossbar"?(crossbarHit&&Math.random()<.8):(inGoal&&Math.random()>(baseScoreChance===0?0:saveChance)));
+    const difficultyAdjustment=difficulty==="Rookie"?-.12:difficulty==="Legend"?.08:0;
+    const saveChance=reachable?Math.max(.05,Math.min(.55,keeperSkill+ difficultyAdjustment-placementBonus-powerBonus)):0;
+    const scored=isKeeperMode?false:(mode==="crossbar"?(crossbarHit&&Math.random()<.8):(inGoal&&Math.random()>saveChance));
     setTimeout(()=>{
       if(isKeeperMode){
         finishAttempt(false,"Take control of the goalkeeper and choose the correct dive.");
