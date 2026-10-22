@@ -301,3 +301,11 @@ main,
 
 /* Apex Strikers electric cyan accent theme */
 :root { --lime: #00E5FF !important; }
+
+
+/* Apex Strikers palette: cyan UI, solar-orange action, gold legendary rewards */
+:root{--cyan:#00E5FF;--gold:#D4AF37;--solar-orange:#FF9500;--legendary:#D4AF37;}
+.longshot .mode-icon{color:var(--solar-orange)}
+.match-action-pad button[data-action="shoot"]{background:var(--solar-orange);border-color:var(--solar-orange);color:#171006}
+.player-collect-card{border-color:rgba(212,175,55,.42);background-image:linear-gradient(135deg,rgba(212,175,55,.09),transparent 58%)}
+.player-collect-card small{color:#D4AF37}
