@@ -103,3 +103,11 @@ h2,
 
 /* Electric cyan accent theme */
 :root { --lime: #00E5FF !important; }
+
+
+/* Apex Strikers three-accent palette */
+:root{--arena-cyan:#00E5FF;--arena-gold:#D4AF37;--arena-orange:#FF9500;}
+/* Legendary reward cards use gold; cyan remains the main UI accent. */
+.player-collect-card{border-color:rgba(212,175,55,.55);box-shadow:0 0 18px rgba(212,175,55,.08),inset 0 0 18px rgba(212,175,55,.04);background-image:linear-gradient(135deg,rgba(212,175,55,.09),transparent 58%)}
+.youtube-access-gate,.youtube-access-request,.youtube-owner-requests{border-color:rgba(0,229,255,.42)}
+.youtube-owner-request button{background:#00E5FF;border-color:#00E5FF}
