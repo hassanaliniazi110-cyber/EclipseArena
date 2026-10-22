@@ -17,7 +17,7 @@
 {name:"Phil Foden",rating:118,role:"CAM",special:"Control · Turns",unlockXP:450,unlockWins:2,glow:"rgba(80,220,190,.2)"},
 {name:"Zayd Quadri",rating:116,role:"CAM",special:"Close control",unlockXP:450,unlockWins:2,glow:"rgba(75,191,255,.2)"},
 {name:"Ehan Ali",rating:112,role:"CM",special:"Quick reactions",unlockXP:450,unlockWins:2,glow:"rgba(189,123,255,.2)"},
-{name:"Umar Shoaib",rating:110,role:"CAM",special:"Smart passing",unlockXP:450,unlockWins:2,glow:"rgba(255,140,66,.2)"},
+{name:"Umar Shoaib",rating:123,role:"ST",special:"Long shooter · Finisher",stats:{PAC:118,SHO:124,PAS:117,DRI:118,DEF:116,PHY:118},unlockXP:450,unlockWins:2,glow:"rgba(255,140,66,.2)"},
 {name:"Muhammad Arham",rating:122,role:"ST",special:"Finishing touch",unlockXP:0,unlockWins:0,glow:"rgba(255,99,99,.2)"},
 {name:"Diego Maradona",rating:125,role:"CAM",special:"Legend · Dribbling",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
 {name:"Luís Figo",rating:121,role:"RW",special:"Legend · Crossing",unlockXP:700,unlockWins:3,glow:"rgba(255,210,90,.2)"},
@@ -93,7 +93,7 @@ const goalkeepers = [
     const lockLabel=unlocked?"LVL "+level:"🔒 "+xpNeeded+" XP + "+winsNeeded+" MATCH WINS TO UNLOCK";
     const labels=isKeeper?["DIV","HAN","KIC","REF","SPD","POS"]:["PAC","SHO","PAS","DRI","DEF","PHY"];
     const offsets=isKeeper?[1,0,-3,2,-2,1]:p.role==="ST"?[0,3,-2,-1,-4,2]:p.role==="RW"||p.role==="LW"?[3,0,-1,3,-5,-2]:p.role==="CAM"||p.role==="CM"?[-1,-1,3,1,0,0]:[0,0,0,0,0,0];
-    const attributes=labels.map((label,i)=>'<span><b>'+label+'</b><strong>'+Math.min(199,Math.max(45,rating+offsets[i]))+'</strong></span>').join("");
+    const attributes=labels.map((label,i)=>'<span><b>'+label+'</b><strong>'+(p.stats&&p.stats[label]!=null?p.stats[label]:Math.min(199,Math.max(45,rating+offsets[i])))+'</strong></span>').join("");
     return '<button class="player-card '+(p.name===selected?'selected ':'')+(!unlocked?'player-locked':'')+'" '+(unlocked?'':'disabled aria-label="Locked player '+p.name+'" ')+attr+'="'+p.name.replace(/"/g,"&quot;")+'" style="--player-glow:'+p.glow+'"><div class="player-rating">'+displayRating+'</div><div class="player-role">'+p.role+' · OVR</div><div class="player-name">'+p.name+'</div><div class="player-special">'+(unlocked?p.special:lockLabel)+'</div><div class="fc-attributes">'+attributes+'</div><div class="ovr-meter"><i><span style="width:'+Math.min(100,rating)+'%"></span></i></div></button>';
   }
   function renderPlayers(){
@@ -147,7 +147,7 @@ const goalkeepers = [
     };
     const p=known[name]||{number:isKeeper?1:7,hair:"#211b18",skin:"#c99572",shorts:"#182331",trim:"#f2f4f2",style:"short"};
     // Recognisable club/national-team kit palettes for the real players.
-    // Custom EclipseArena players keep their own signature colours.
+    // Custom ApexStrikers players keep their own signature colours.
     const realKits = {
       "Cristiano Ronaldo":{shirt:"#f5d52f",shorts:"#17469b",trim:"#173d86"},
       "Erling Haaland":{shirt:"#6caddf",shorts:"#ffffff",trim:"#172b4d"},
@@ -219,7 +219,7 @@ const goalkeepers = [
     [[.24,.7],[.36,.62],[.64,.62],[.76,.7]].forEach((p,i)=>dot(p[0],p[1],"#c7ff4a",i===0?"7":""));[[.24,.3],[.36,.38],[.64,.38],[.76,.3]].forEach((p,i)=>dot(p[0],p[1],"#ed6570",i===0?"9":""));
     dot(match.rival.x,match.rival.y,"#ff8c42","9",Math.max(10,w*.017));dot(match.player.x,match.player.y,"#f5f7ef",selectedPlayer==="Lionel Messi"?"10":"7",Math.max(11,w*.019));
     ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(match.ball.x*w,match.ball.y*h,Math.max(4,w*.0075),0,Math.PI*2);ctx.fill();ctx.strokeStyle="#111";ctx.lineWidth=1;ctx.stroke();
-    ctx.fillStyle="rgba(5,15,10,.78)";ctx.fillRect(w*.32,h*.012,w*.36,h*.045);ctx.fillStyle="#fff";ctx.font="800 "+Math.max(10,w*.016)+"px sans-serif";ctx.textAlign="center";ctx.fillText("ECLIPSE ARENA · 5v5",w*.5,h*.043);
+    ctx.fillStyle="rgba(5,15,10,.78)";ctx.fillRect(w*.32,h*.012,w*.36,h*.045);ctx.fillStyle="#fff";ctx.font="800 "+Math.max(10,w*.016)+"px sans-serif";ctx.textAlign="center";ctx.fillText("APEX STRIKERS · 5v5",w*.5,h*.043);
     if(match.finished){ctx.fillStyle="rgba(0,0,0,.76)";ctx.fillRect(w*.15,h*.36,w*.7,h*.28);ctx.fillStyle="#c7ff4a";ctx.font="900 "+Math.max(20,w*.04)+"px sans-serif";ctx.fillText(match.playerGoals>match.rivalGoals?"VICTORY":match.playerGoals===match.rivalGoals?"DRAW":"FULL TIME",w*.5,h*.46);ctx.fillStyle="#fff";ctx.font="800 "+Math.max(14,w*.025)+"px sans-serif";ctx.fillText(match.playerGoals+"  -  "+match.rivalGoals,w*.5,h*.55)}
   }
   function drawPitch(){
@@ -729,7 +729,7 @@ const goalkeepers = [
     const requestForm=$("youtubeAccessRequestForm"),ownerPanel=$("youtubeOwnerRequests");
     screen.classList.remove("hidden","youtube-authorized");
     requestForm?.classList.add("hidden");ownerPanel?.classList.add("hidden");
-    gate.textContent="Checking your permission with the Eclipse Arena server…";
+    gate.textContent="Checking your permission with the Apex Strikers server…";
     window.scrollTo({top:0,behavior:"smooth"});
     try{
       if(connectPromise)await connectPromise;
@@ -737,7 +737,7 @@ const goalkeepers = [
       if(access.isAdmin){ownerPanel?.classList.remove("hidden");await refreshYouTubeRequests();}
       if(access.allowed){
         screen.classList.add("youtube-authorized");
-        gate.textContent="Access verified by the Eclipse Arena server.";
+        gate.textContent="Access verified by the Apex Strikers server.";
         renderYouTubeChannels();
       }else{
         gate.textContent=access.requestStatus==="pending"?"Your request is waiting for the owner to review it.":"You need the owner's approval to use the YouTube Area.";
@@ -746,7 +746,7 @@ const goalkeepers = [
         if(status)status.textContent=access.requestStatus==="declined"?"Your last request was declined. You can send a new request.":"";
       }
     }catch(error){
-      gate.textContent=error.message||"Could not check access. Please connect to the Eclipse Arena server.";
+      gate.textContent=error.message||"Could not check access. Please connect to the Apex Strikers server.";
       requestForm?.classList.add("hidden");
     }
   }
@@ -807,11 +807,11 @@ const goalkeepers = [
     const player=$("youtubeAreaPlayer");
     if(channel.videoId){
       player.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(channel.videoId)+"?rel=0";
-      setYouTubePlaybackStatus("Loading a video from "+channel.name+" inside Eclipse Arena. YouTube may block embedding for some videos.","https://www.youtube.com/watch?v="+channel.videoId);
+      setYouTubePlaybackStatus("Loading a video from "+channel.name+" inside Apex Strikers. YouTube may block embedding for some videos.","https://www.youtube.com/watch?v="+channel.videoId);
       $("youtubeVideoUrl").value="https://www.youtube.com/watch?v="+channel.videoId;
     }else if(channel.playlist){
       player.src="https://www.youtube-nocookie.com/embed/videoseries?list="+encodeURIComponent(channel.playlist)+"&rel=0";
-      setYouTubePlaybackStatus("Loading "+channel.name+" uploads playlist inside Eclipse Arena. YouTube determines whether the playlist can be embedded here.","https://www.youtube.com/playlist?list="+channel.playlist);
+      setYouTubePlaybackStatus("Loading "+channel.name+" uploads playlist inside Apex Strikers. YouTube determines whether the playlist can be embedded here.","https://www.youtube.com/playlist?list="+channel.playlist);
       $("youtubeVideoUrl").value="https://www.youtube.com/playlist?list="+channel.playlist;
     }else{
       player.src="about:blank";
@@ -836,7 +836,7 @@ const goalkeepers = [
     actions.append(play,fav);
     const links=document.createElement("div");links.className="youtube-channel-links";
     const channelLink=document.createElement("a");
-    channelLink.setAttribute("aria-label",(channel.playlist||channel.videoId)?"Play "+channel.name+" videos inside Eclipse Arena":"Open "+channel.name+" YouTube channel");
+    channelLink.setAttribute("aria-label",(channel.playlist||channel.videoId)?"Play "+channel.name+" videos inside Apex Strikers":"Open "+channel.name+" YouTube channel");
     if(channel.playlist||channel.videoId){
       channelLink.href="#youtubeAreaPlayer";
       channelLink.textContent="PLAY VIDEOS HERE";
@@ -913,10 +913,10 @@ const goalkeepers = [
       if(matchedChannel&&(matchedChannel.playlist||matchedChannel.videoId)){
         if(matchedChannel.playlist){
           player.src="https://www.youtube-nocookie.com/embed/videoseries?list="+encodeURIComponent(matchedChannel.playlist)+"&rel=0";
-          status.textContent="Loading "+matchedChannel.name+"'s channel uploads playlist inside Eclipse Arena. YouTube may restrict embedded playback.";
+          status.textContent="Loading "+matchedChannel.name+"'s channel uploads playlist inside Apex Strikers. YouTube may restrict embedded playback.";
         }else{
           player.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(matchedChannel.videoId)+"?rel=0";
-          status.textContent="This channel has a video configured, so that video is loading inside Eclipse Arena.";
+          status.textContent="This channel has a video configured, so that video is loading inside Apex Strikers.";
         }
       }else{
         player.src="about:blank";
