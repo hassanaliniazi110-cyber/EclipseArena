@@ -309,3 +309,32 @@ main,
 .match-action-pad button[data-action="shoot"]{background:var(--solar-orange);border-color:var(--solar-orange);color:#171006}
 .player-collect-card{border-color:rgba(212,175,55,.42);background-image:linear-gradient(135deg,rgba(212,175,55,.09),transparent 58%)}
 .player-collect-card small{color:#D4AF37}
+
+
+/* Apex Strikers: expand Solar Orange accents beyond shooting */
+:root{--solar-orange:#FF9500;--solar-orange-soft:rgba(255,149,0,.16);--solar-orange-glow:rgba(255,149,0,.32)}
+button.primary,button.primary-btn,.btn-primary,.primary-button,
+button.start-match,button.challenge-btn,.match-start-btn{
+  border-color:var(--solar-orange);
+}
+button.primary:hover,button.primary-btn:hover,.btn-primary:hover,.primary-button:hover,
+button.start-match:hover,button.challenge-btn:hover,.match-start-btn:hover{
+  box-shadow:0 0 16px var(--solar-orange-glow);
+}
+button:active,.btn:active,.mode-card:active,.mode-button:active{
+  border-color:var(--solar-orange);
+}
+.progress-fill,.xp-bar-fill,.shot-power-fill,.power-meter-fill{
+  background:linear-gradient(90deg,#FFB340,#FF9500);
+}
+.active .nav-icon,.nav-item.active .nav-icon,.tab.active,.tab-button.active{
+  box-shadow:inset 0 -2px 0 var(--solar-orange);
+}
+.longshot .mode-icon,.match-action-pad button[data-action="shoot"]{
+  color:#171006;
+}
+.match-action-pad button[data-action="shoot"]{
+  background:linear-gradient(135deg,#FFB340,#FF9500);
+  border-color:#FF9500;
+  box-shadow:0 0 12px rgba(255,149,0,.2);
+}
