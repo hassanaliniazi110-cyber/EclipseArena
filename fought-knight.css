@@ -45,12 +45,12 @@ h3,
 
 /* Add depth while preserving the existing black-and-lime visual theme */
 h1 {
-  text-shadow: 0 0 26px rgba(255,77,36, 0.18), 2px 2px 0 rgba(255,77,36, 0.12);
+  text-shadow: 0 0 26px rgba(0,229,255, 0.18), 2px 2px 0 rgba(0,229,255, 0.12);
 }
 
 h2,
 .game-header h2 {
-  text-shadow: 0 0 18px rgba(255,77,36, 0.14);
+  text-shadow: 0 0 18px rgba(0,229,255, 0.14);
 }
 
 .mode-title,
@@ -61,16 +61,16 @@ h2,
 }
 
 .primary-btn {
-  box-shadow: 0 0 0 1px rgba(255,77,36, 0.28), 0 7px 22px rgba(255,77,36, 0.15);
+  box-shadow: 0 0 0 1px rgba(0,229,255, 0.28), 0 7px 22px rgba(0,229,255, 0.15);
 }
 
 .mode-card {
-  background-image: linear-gradient(135deg, rgba(255,77,36,.055), transparent 48%), linear-gradient(145deg,#15231d,#0b1512);
+  background-image: linear-gradient(135deg, rgba(0,229,255,.055), transparent 48%), linear-gradient(145deg,#15231d,#0b1512);
 }
 
 .mode-card:hover,
 .mode-card.active {
-  box-shadow: 0 0 0 1px rgba(255,77,36,.15), 0 12px 28px rgba(0,0,0,.22), inset 0 0 26px rgba(255,77,36,.05);
+  box-shadow: 0 0 0 1px rgba(0,229,255,.15), 0 12px 28px rgba(0,0,0,.22), inset 0 0 26px rgba(0,229,255,.05);
 }
 
 
@@ -88,14 +88,18 @@ h2,
 
 /* Server-verified YouTube Area access gate */
 .youtube-screen:not(.youtube-authorized) .youtube-panel{display:none!important}
-.youtube-access-gate{margin:clamp(18px,4vw,42px) auto;padding:clamp(22px,4vw,36px);max-width:760px;border:1px solid rgba(255,77,36,.42);border-radius:18px;background:linear-gradient(135deg,rgba(255,77,36,.09),rgba(8,18,16,.96) 55%,rgba(29,44,34,.8));color:#ffe0d7;font:600 clamp(14px,2vw,18px)/1.6 "Rajdhani",sans-serif;letter-spacing:.04em;text-align:center;box-shadow:0 0 32px rgba(255,77,36,.08),inset 0 1px rgba(255,255,255,.04)}
+.youtube-access-gate{margin:clamp(18px,4vw,42px) auto;padding:clamp(22px,4vw,36px);max-width:760px;border:1px solid rgba(0,229,255,.42);border-radius:18px;background:linear-gradient(135deg,rgba(0,229,255,.09),rgba(8,18,16,.96) 55%,rgba(29,44,34,.8));color:#ffe0d7;font:600 clamp(14px,2vw,18px)/1.6 "Rajdhani",sans-serif;letter-spacing:.04em;text-align:center;box-shadow:0 0 32px rgba(0,229,255,.08),inset 0 1px rgba(255,255,255,.04)}
 .youtube-screen.youtube-authorized .youtube-access-gate{display:none}
 
 /* Owner-approved YouTube Area requests */
-.youtube-access-request,.youtube-owner-requests{margin:18px 0;padding:20px;border:1px solid rgba(255,77,36,.35);border-radius:16px;background:rgba(10,18,8,.92)}
-.youtube-access-request h3{margin:6px 0 14px;color:#f5f7ef}.youtube-access-request textarea{display:block;width:100%;min-height:84px;margin:10px 0;padding:12px;border:1px solid rgba(255,77,36,.35);border-radius:10px;background:#10150d;color:#fff;font:inherit;resize:vertical}
-.youtube-owner-requests .youtube-section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.youtube-owner-request{margin-top:12px;padding:14px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:rgba(255,255,255,.03)}.youtube-owner-request p{overflow-wrap:anywhere}.youtube-owner-request-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}.youtube-owner-request button,.youtube-owner-requests #youtubeRefreshRequests{padding:9px 12px;border:1px solid rgba(255,77,36,.45);border-radius:9px;background:#ff4d24;color:#111;font-weight:800}.youtube-owner-request button[data-decision="decline"]{background:transparent;color:#f5f7ef;border-color:rgba(255,255,255,.3)}
+.youtube-access-request,.youtube-owner-requests{margin:18px 0;padding:20px;border:1px solid rgba(0,229,255,.35);border-radius:16px;background:rgba(10,18,8,.92)}
+.youtube-access-request h3{margin:6px 0 14px;color:#f5f7ef}.youtube-access-request textarea{display:block;width:100%;min-height:84px;margin:10px 0;padding:12px;border:1px solid rgba(0,229,255,.35);border-radius:10px;background:#10150d;color:#fff;font:inherit;resize:vertical}
+.youtube-owner-requests .youtube-section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.youtube-owner-request{margin-top:12px;padding:14px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:rgba(255,255,255,.03)}.youtube-owner-request p{overflow-wrap:anywhere}.youtube-owner-request-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}.youtube-owner-request button,.youtube-owner-requests #youtubeRefreshRequests{padding:9px 12px;border:1px solid rgba(0,229,255,.45);border-radius:9px;background:#00E5FF;color:#111;font-weight:800}.youtube-owner-request button[data-decision="decline"]{background:transparent;color:#f5f7ef;border-color:rgba(255,255,255,.3)}
 
 
 /* Red-orange theme override */
-:root { --lime: #ff4d24 !important; }
+:root { --lime: #00E5FF !important; }
+
+
+/* Electric cyan accent theme */
+:root { --lime: #00E5FF !important; }
