@@ -636,3 +636,22 @@ body,body *{--lime:#c7ff4a;--orange:#c7ff4a;--electric-cyan:#c7ff4a;--cyan:#c7ff
 .player-stats .bar,.player-stat .bar,.stat-bar-fill,.player-stat-fill,.stat-fill,.attribute-fill,.player-card .fill,.player-collect-card .fill{background:#c7ff4a!important;background-image:none!important}
 .player-card,.player-collect-card{border-color:rgba(199,255,74,.48)!important}
 svg line,svg polyline,.chart-line,.stat-line,.player-chart-line{stroke:#c7ff4a!important}
+
+
+/* HARD OVERRIDE v3 — lime green (#C7FF4A) + black only for lines, stats, and player accents. */
+:root{--lime:#c7ff4a!important;--orange:#c7ff4a!important;--solar-orange:#c7ff4a!important;--electric-cyan:#c7ff4a!important;--cyan:#c7ff4a!important;--blue:#c7ff4a!important;--arena-cyan:#c7ff4a!important;--arena-orange:#c7ff4a!important;--arena-gold:#c7ff4a!important;--line:rgba(199,255,74,.4)!important;--card-glow:rgba(199,255,74,.12)!important;--player-glow:rgba(199,255,74,.12)!important}
+body,body *{--orange:#c7ff4a;--solar-orange:#c7ff4a;--electric-cyan:#c7ff4a;--cyan:#c7ff4a;--blue:#c7ff4a;--neon-blue:#c7ff4a;--arena-cyan:#c7ff4a;--arena-orange:#c7ff4a}
+.mode-card,.mode-card:nth-child(n){--card-glow:rgba(199,255,74,.12)!important;border-color:rgba(199,255,74,.45)!important}
+.freekick,.longshot,.goalie,.penalty{--card-glow:rgba(199,255,74,.12)!important}
+.player-card,.player-collect-card,.goalie-selection-grid .player-card{--player-glow:rgba(199,255,74,.12)!important;border-color:rgba(199,255,74,.5)!important}
+.player-card:after,.player-card:before,.player-collect-card:before,.player-collect-card:after{background:rgba(199,255,74,.1)!important;box-shadow:none!important}
+.player-rating,.player-role,.player-special,.player-card .fc-attributes,.player-card .fc-attributes b,.player-card .fc-attributes strong,.fc-attributes,.fc-attributes b,.fc-attributes strong,.player-stats,.player-stats *,.player-stat,.player-stat *,.stat-bar,.stat-bar *,.player-attribute,.player-attribute *,.stat-value,.stat-label,.player-card .stats,.player-card .stats *,.player-card .stat,.player-card .stat *,.player-collect-card .stats,.player-collect-card .stats *,.player-collect-card .stat,.player-collect-card .stat *{color:#c7ff4a!important;border-color:rgba(199,255,74,.55)!important;accent-color:#c7ff4a!important}
+.player-card [style*="blue"],.player-card [style*="cyan"],.player-card [style*="orange"],.player-card [style*="255, 140"],.player-card [style*="75,191"]{color:#c7ff4a!important;border-color:#c7ff4a!important}
+.player-stats .bar,.player-stat .bar,.stat-bar-fill,.player-stat-fill,.stat-fill,.attribute-fill,.player-card .fill,.player-collect-card .fill,.fc-attributes i,.fc-attributes em,.fc-attributes span:before,.fc-attributes span:after{background:#c7ff4a!important;background-image:none!important;border-color:#c7ff4a!important}
+svg line,svg polyline,.chart-line,.stat-line,.player-chart-line,.player-stats svg path,.player-stats svg circle{stroke:#c7ff4a!important;fill:none}
+#pitch{border-color:#c7ff4a!important}
+.hero-stadium,.hero-stadium:before,.hero-stadium:after,.hero-art:before,.hero-art:after,.orbit,.orbit-one,.orbit-two{border-color:rgba(199,255,74,.6)!important}
+.hero-stadium{background:repeating-linear-gradient(0deg,rgba(199,255,74,.065) 0 1px,transparent 1px 28px),linear-gradient(180deg,#11170d,#050705)!important}
+.hero-art:before{background:repeating-linear-gradient(90deg,transparent 0 55px,rgba(199,255,74,.12) 56px 57px)!important}
+.topbar,.hero,.mode-section,.roster-section,footer{border-color:rgba(199,255,74,.38)!important}
+.primary-btn,.difficulty-group button.selected,.progress-fill,.xp-bar-fill,.shot-power-fill,.power-meter-fill,.season-progress>i span{background:#c7ff4a!important;border-color:#c7ff4a!important}
