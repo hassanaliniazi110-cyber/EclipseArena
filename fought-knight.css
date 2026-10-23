@@ -161,3 +161,17 @@ h2,
 .live-dot{background:var(--arena-orange);box-shadow:0 0 12px var(--arena-orange-glow)}
 .toast{border:1px solid var(--arena-orange);box-shadow:0 0 18px var(--arena-orange-glow)}
 /* Keep cyan for focus and general interface; use orange only for emphasis. */
+
+
+/* FINAL OVERRIDE — all intro and player accents use lime green on black. */
+:root{--arena-cyan:#c7ff4a;--arena-gold:#c7ff4a;--arena-orange:#c7ff4a;--arena-orange-bright:#dcff80;--arena-orange-glow:rgba(199,255,74,.25)}
+.intro-splash,.intro-splash *{--arena-cyan:#c7ff4a;--arena-orange:#c7ff4a;color:inherit}
+.intro-splash{background:#050705!important}
+.intro-splash:before{background:radial-gradient(ellipse at 50% 48%,rgba(199,255,74,.16),transparent 38%)!important}
+.intro-orbit,.intro-orbit-a,.intro-orbit-b{border-color:rgba(199,255,74,.55)!important}
+.intro-emblem{background:#c7ff4a!important;color:#050705!important;box-shadow:0 0 45px #c7ff4a55,0 0 90px #c7ff4a22!important}
+.intro-wordmark{color:#f4f8ef!important;text-shadow:0 0 18px #c7ff4a22!important}
+.intro-wordmark b{color:#c7ff4a!important}
+.intro-progress span{background:#c7ff4a!important}
+.player-rating,.player-collect-card small,.player-collect-card>small{color:#c7ff4a!important}
+.player-collect-card{border-color:rgba(199,255,74,.5)!important;background-image:linear-gradient(145deg,rgba(199,255,74,.07),#080a07 65%)!important}
