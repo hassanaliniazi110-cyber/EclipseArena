@@ -495,3 +495,38 @@ footer{border-top:1px solid rgba(255,149,0,.28)!important}
 .music-select:focus{border-color:var(--electric-cyan)!important;box-shadow:0 0 0 2px rgba(0,229,255,.16)!important}
 .touch-dot{background:var(--electric-cyan)!important;box-shadow:0 0 12px rgba(0,229,255,.6)!important}
 .aim-tip,.pitch-topline span:last-child{color:var(--electric-cyan)!important}
+
+
+/* RESTORE ORIGINAL LIME-GREEN APEX ARENA PALETTE */
+:root{--solar-orange:#c7ff4a;--solar-orange-bright:#dcff80;--electric-cyan:#c7ff4a}
+.brand b,.hero h1 em,.hero h2 em,.hero .eyebrow,.hero-stat strong,.hero-index,
+.section-heading h2 em,.game-header h2 em{color:#c7ff4a!important}
+.brand-mark{background:#c7ff4a!important;box-shadow:0 0 22px rgba(199,255,74,.3)!important}
+.topbar{border-bottom:2px solid rgba(199,255,74,.5)!important;box-shadow:none!important}
+.hero:before{background:radial-gradient(ellipse at 24% 50%,rgba(199,255,74,.18),transparent 48%)!important}
+.hero-art{background:radial-gradient(ellipse at 28% 32%,rgba(199,255,74,.25),transparent 42%),linear-gradient(180deg,rgba(199,255,74,.05),rgba(0,0,0,.3))!important}
+.hero-art .orbit-one,.hero-art .orbit-two{border-color:rgba(199,255,74,.65)!important}
+.sun-glow{background:rgba(199,255,74,.25)!important;box-shadow:0 0 55px rgba(199,255,74,.25)!important}
+.primary-btn,#shootBtn,.shoot-btn,.match-action-pad button[data-action="shoot"]{background:#c7ff4a!important;color:#101608!important;border-color:#c7ff4a!important;box-shadow:0 0 18px rgba(199,255,74,.18)!important}
+.primary-btn:hover{background:#dcff80!important}
+.mode-card:nth-child(odd),.mode-card:nth-child(even){border-color:rgba(199,255,74,.4)!important}
+.mode-card:nth-child(odd) .mode-icon,.mode-card:nth-child(odd) .mode-arrow,
+.mode-card:nth-child(even) .mode-icon,.mode-card:nth-child(even) .mode-arrow{color:#c7ff4a!important}
+.mode-card:hover,.mode-card.active,.mode-card:nth-child(even):hover,.mode-card:nth-child(even).active{border-color:#c7ff4a!important;box-shadow:0 0 18px rgba(199,255,74,.14)!important}
+.mode-card:nth-child(odd):before{background:rgba(199,255,74,.1)!important}
+.mode-section .section-heading .eyebrow,.roster-section .section-heading .eyebrow,.setup-row label{color:#c7ff4a!important}
+.difficulty-group button.selected{background:#c7ff4a!important;border-color:#c7ff4a!important;color:#101608!important}
+.match-action-pad button[data-action="tackle"],.keeper-pad button,.back-btn,.secondary-btn,.music-stop-btn{border-color:rgba(199,255,74,.55)!important;color:#c7ff4a!important}
+.game-feedback{border-left-color:#c7ff4a!important;background:rgba(199,255,74,.08)!important}
+.progress-fill,.xp-bar-fill,.shot-power-fill,.power-meter-fill,#powerSlider{accent-color:#c7ff4a!important}
+.progress-fill,.xp-bar-fill,.shot-power-fill,.power-meter-fill{background:#c7ff4a!important}
+.music-panel,.career-hub,.friends-panel{border-color:rgba(199,255,74,.4)!important}
+.music-panel-heading .eyebrow,.youtube-section-title h3{color:#c7ff4a!important}
+.music-play-btn,.music-official-btn{background:#c7ff4a!important;color:#101608!important;border-color:#c7ff4a!important}
+.music-quick-song-btn{background:rgba(199,255,74,.12)!important;border-color:#c7ff4a!important}
+.music-quick-song-btn:hover,.music-quick-song-btn:focus-visible{background:rgba(199,255,74,.22)!important}
+.music-select:focus,button:focus-visible,input:focus-visible{outline-color:#c7ff4a!important;border-color:#c7ff4a!important}
+.player-card{border-top-color:rgba(199,255,74,.5)!important}
+footer{border-top:1px solid rgba(199,255,74,.25)!important}
+.hero-index span,.hero .hero-text,.aim-tip,.pitch-topline span:last-child{color:rgba(199,255,74,.85)!important}
+.touch-dot{background:#c7ff4a!important;box-shadow:0 0 10px rgba(199,255,74,.45)!important}
