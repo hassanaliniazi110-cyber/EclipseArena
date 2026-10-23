@@ -595,3 +595,30 @@ html,body{background:#050705!important}
 .top-actions .live-dot,.live-dot,.arena-live-dot,.live-indicator,.status-live-dot{background:#c7ff4a!important;border-color:#c7ff4a!important;box-shadow:0 0 10px rgba(199,255,74,.55)!important}
 .top-actions .live-label,.top-actions .live-status,.arena-live,.live-indicator-label{color:#c7ff4a!important}
 .music-panel-heading svg,.music-panel-heading i,.music-note svg,.music-note i{color:#c7ff4a!important;stroke:#c7ff4a!important;fill:#c7ff4a!important}
+
+
+/* FINAL HOMOGENEOUS PALETTE: lime green + black only, including intro, hero floor, and players. */
+:root{--lime:#c7ff4a;--arena-cyan:#c7ff4a;--arena-orange:#c7ff4a;--arena-orange-bright:#dcff80;--arena-orange-glow:rgba(199,255,74,.25);--orange:#c7ff4a;--electric-cyan:#c7ff4a;--cyan:#c7ff4a;--gold:#c7ff4a;--legendary:#c7ff4a}
+.intro-splash{background:#050705!important;color:#f4f8ef!important}
+.intro-splash:before{background:radial-gradient(ellipse at 50% 48%,rgba(199,255,74,.16),transparent 38%),linear-gradient(135deg,transparent 48%,rgba(199,255,74,.035) 49%,transparent 50%)!important}
+.intro-orbit,.intro-orbit-a,.intro-orbit-b{border-color:rgba(199,255,74,.55)!important;box-shadow:0 0 14px rgba(199,255,74,.08)!important}
+.intro-emblem{background:#c7ff4a!important;color:#050705!important;box-shadow:0 0 45px #c7ff4a55,0 0 90px #c7ff4a22!important}
+.intro-wordmark,.intro-wordmark b{color:#f4f8ef!important;text-shadow:0 0 18px #c7ff4a22!important}
+.intro-wordmark b{color:#c7ff4a!important}
+.intro-progress{background:#20251b!important}
+.intro-progress span{background:#c7ff4a!important}
+.hero:before{background:radial-gradient(ellipse at 24% 50%,rgba(199,255,74,.16),transparent 48%)!important}
+.hero-art{background:radial-gradient(ellipse at 28% 32%,rgba(199,255,74,.19),transparent 42%),linear-gradient(180deg,rgba(199,255,74,.025),rgba(0,0,0,.45))!important}
+.hero-art:before{background:repeating-linear-gradient(90deg,transparent 0 55px,rgba(199,255,74,.09) 56px 57px)!important}
+.hero-art .orbit,.hero-art .orbit-one,.hero-art .orbit-two{border-color:rgba(199,255,74,.55)!important}
+.hero-ball{box-shadow:20px 35px 65px #0009,0 0 40px rgba(199,255,74,.18)!important}
+.hero-stadium{border-color:rgba(199,255,74,.65)!important;background:repeating-linear-gradient(0deg,rgba(199,255,74,.055) 0 1px,transparent 1px 28px),linear-gradient(180deg,#172510,#050705)!important}
+.mode-card,.mode-card:nth-child(n),.player-card,.player-collect-card{border-color:rgba(199,255,74,.42)!important;background:linear-gradient(145deg,#11170d,#070907 72%)!important;background-image:linear-gradient(145deg,#11170d,#070907 72%)!important}
+.mode-card:before,.player-card:after{background:rgba(199,255,74,.09)!important}
+.mode-card .mode-icon,.mode-card .mode-arrow,.mode-card:nth-child(n) .mode-icon,.mode-card:nth-child(n) .mode-arrow{color:#c7ff4a!important}
+.mode-card:hover,.mode-card.active,.player-card.selected,.player-collect-card.card-unlocked{border-color:#c7ff4a!important;box-shadow:0 0 16px rgba(199,255,74,.12)!important}
+.player-card:before,.player-rating,.player-collect-card small,.player-collect-card>small,.player-collect-card.card-unlocked small{color:#c7ff4a!important}
+.player-collect-card,.player-collect-card.card-unlocked{background-image:linear-gradient(145deg,rgba(199,255,74,.07),#080a07 65%)!important}
+.freekick,.longshot,.goalie{--card-glow:rgba(199,255,74,.1)!important}
+.freekick .mode-icon,.longshot .mode-icon,.goalie .mode-icon{color:#c7ff4a!important}
+.hero h1 em,.hero h2 em,.hero .eyebrow,.hero-stat strong,.hero-index,.mode-section .section-heading .eyebrow,.roster-section .section-heading .eyebrow,.setup-row label{color:#c7ff4a!important}
