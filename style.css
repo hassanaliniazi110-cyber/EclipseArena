@@ -530,3 +530,38 @@ footer{border-top:1px solid rgba(255,149,0,.28)!important}
 footer{border-top:1px solid rgba(199,255,74,.25)!important}
 .hero-index span,.hero .hero-text,.aim-tip,.pitch-topline span:last-child{color:rgba(199,255,74,.85)!important}
 .touch-dot{background:#c7ff4a!important;box-shadow:0 0 10px rgba(199,255,74,.45)!important}
+
+
+/* FINAL OVERRIDE: remove remaining orange accents and use lime green consistently. */
+:root{--solar-orange:#c7ff4a;--solar-orange-bright:#dcff80;--electric-cyan:#c7ff4a}
+*,*::before,*::after{--solar-orange:#c7ff4a;--solar-orange-bright:#dcff80;--electric-cyan:#c7ff4a}
+.brand-mark,.primary-btn,.primary-btn:hover,#shootBtn,.shoot-btn,
+.match-action-pad button[data-action="shoot"],.difficulty-group button.selected,
+.progress-fill,.xp-bar-fill,.shot-power-fill,.power-meter-fill,
+.music-play-btn,.music-official-btn,.music-quick-song-btn:hover,
+.sun-glow{background:#c7ff4a!important;border-color:#c7ff4a!important;color:#101608!important}
+.brand b,.hero h1 em,.hero h2 em,.hero .eyebrow,.hero-stat strong,.hero-index,
+.section-heading h2 em,.game-header h2 em,.mode-section .section-heading .eyebrow,
+.roster-section .section-heading .eyebrow,.setup-row label,.music-panel-heading .eyebrow,
+.youtube-section-title h3,.mode-card .mode-icon,.mode-card .mode-arrow,
+.aim-tip,.pitch-topline span:last-child,.secondary-btn,.back-btn,.music-stop-btn{
+  color:#c7ff4a!important
+}
+.topbar,footer,.music-panel,.career-hub,.friends-panel,.player-card,
+.mode-card,.mode-card:nth-child(odd),.mode-card:nth-child(even),
+.match-action-pad button[data-action="tackle"],.keeper-pad button,
+.secondary-btn,.back-btn,.music-stop-btn,.music-quick-song-btn{
+  border-color:rgba(199,255,74,.5)!important
+}
+.hero:before,.hero-art,.hero-art:before,.hero-art .orbit-one,.hero-art .orbit-two,
+.mode-card:nth-child(odd):before,.game-feedback{
+  border-color:rgba(199,255,74,.5)!important
+}
+.hero:before{background:radial-gradient(ellipse at 24% 50%,rgba(199,255,74,.18),transparent 48%)!important}
+.hero-art{background:radial-gradient(ellipse at 28% 32%,rgba(199,255,74,.25),transparent 42%),linear-gradient(180deg,rgba(199,255,74,.05),rgba(0,0,0,.3))!important}
+.hero-art:before{background:repeating-linear-gradient(90deg,transparent 0 55px,rgba(199,255,74,.1) 56px 57px)!important}
+.sun-glow{box-shadow:0 0 55px rgba(199,255,74,.25)!important}
+.mode-card:hover,.mode-card.active{border-color:#c7ff4a!important;box-shadow:0 0 18px rgba(199,255,74,.14)!important}
+.game-feedback{border-left-color:#c7ff4a!important;background:rgba(199,255,74,.08)!important}
+.music-select:focus,button:focus-visible,input:focus-visible{outline-color:#c7ff4a!important;border-color:#c7ff4a!important;box-shadow:0 0 0 1px rgba(199,255,74,.15)!important}
+.touch-dot{background:#c7ff4a!important;box-shadow:0 0 10px rgba(199,255,74,.45)!important}
