@@ -338,3 +338,10 @@ button:active,.btn:active,.mode-card:active,.mode-button:active{
   border-color:#FF9500;
   box-shadow:0 0 12px rgba(255,149,0,.2);
 }
+
+
+/* Quick-play controls for Hassan's two requested Montagem tracks. */
+.music-quick-songs{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:2px 0 4px}
+.music-quick-song-btn{min-width:0;min-height:42px;padding:10px 8px;border:1px solid rgba(255,149,0,.72);background:linear-gradient(135deg,rgba(255,149,0,.18),rgba(0,229,255,.08));color:var(--white);font-size:10px;font-weight:900;letter-spacing:.45px;line-height:1.3}
+.music-quick-song-btn:hover,.music-quick-song-btn:focus-visible{border-color:#FF9500;background:rgba(255,149,0,.22);box-shadow:0 0 14px rgba(255,149,0,.2)}
+@media(max-width:420px){.music-quick-songs{grid-template-columns:1fr}.music-quick-song-btn{min-height:38px}}
