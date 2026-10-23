@@ -573,3 +573,25 @@ footer{border-top:1px solid rgba(199,255,74,.25)!important}
 .top-actions .live-dot,.live-dot,.arena-live-dot,.live-indicator,.status-live-dot{background:#c7ff4a!important;border-color:#c7ff4a!important;box-shadow:0 0 10px rgba(199,255,74,.55)!important}
 .top-actions .live-label,.top-actions .live-status,.arena-live,.live-indicator-label{color:#c7ff4a!important}
 .music-panel-heading strong,.music-panel-heading .eyebrow,.music-label,.music-play-btn,.music-stop-btn,.music-official-btn,.music-quick-song-btn{accent-color:#c7ff4a}
+
+
+/* STRICT TWO-COLOR PALETTE: black + lime green only. */
+:root{
+  --lime:#c7ff4a;
+  --solar-orange:#c7ff4a;
+  --solar-orange-bright:#dcff80;
+  --electric-cyan:#c7ff4a;
+  --cyan:#c7ff4a;
+  --line:rgba(199,255,74,.38);
+  --lime-glow:rgba(199,255,74,.25);
+}
+html,body{background:#050705!important}
+.music-panel,.music-embed-wrap,.music-embed-wrap iframe{border-color:rgba(199,255,74,.4)!important}
+.music-note{color:#c7ff4a!important;border-color:#c7ff4a!important;background:#080b06!important}
+.music-panel-heading strong,.music-panel-heading .eyebrow,.music-label{color:#c7ff4a!important}
+.music-play-btn,.music-official-btn,.music-quick-song-btn{background:#080b06!important;color:#c7ff4a!important;border-color:#c7ff4a!important}
+.music-stop-btn{background:#080b06!important;color:#c7ff4a!important;border-color:#c7ff4a!important}
+.music-quick-song-btn:hover,.music-quick-song-btn:focus-visible{background:rgba(199,255,74,.12)!important;box-shadow:0 0 12px rgba(199,255,74,.18)!important}
+.top-actions .live-dot,.live-dot,.arena-live-dot,.live-indicator,.status-live-dot{background:#c7ff4a!important;border-color:#c7ff4a!important;box-shadow:0 0 10px rgba(199,255,74,.55)!important}
+.top-actions .live-label,.top-actions .live-status,.arena-live,.live-indicator-label{color:#c7ff4a!important}
+.music-panel-heading svg,.music-panel-heading i,.music-note svg,.music-note i{color:#c7ff4a!important;stroke:#c7ff4a!important;fill:#c7ff4a!important}
