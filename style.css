@@ -345,3 +345,89 @@ button:active,.btn:active,.mode-card:active,.mode-button:active{
 .music-quick-song-btn{min-width:0;min-height:42px;padding:10px 8px;border:1px solid rgba(255,149,0,.72);background:linear-gradient(135deg,rgba(255,149,0,.18),rgba(0,229,255,.08));color:var(--white);font-size:10px;font-weight:900;letter-spacing:.45px;line-height:1.3}
 .music-quick-song-btn:hover,.music-quick-song-btn:focus-visible{border-color:#FF9500;background:rgba(255,149,0,.22);box-shadow:0 0 14px rgba(255,149,0,.2)}
 @media(max-width:420px){.music-quick-songs{grid-template-columns:1fr}.music-quick-song-btn{min-height:38px}}
+
+
+/* APEX STRIKERS — balanced Electric Cyan + Solar Orange across the main screen. */
+:root{
+  --solar-orange:#FF9500;
+  --solar-orange-bright:#FFB340;
+  --solar-orange-soft:rgba(255,149,0,.16);
+  --solar-orange-line:rgba(255,149,0,.55);
+  --electric-cyan:#00E5FF;
+}
+/* Main header and brand: make both signature colours obvious at first glance. */
+.topbar{border-bottom:1px solid rgba(255,149,0,.45);box-shadow:0 1px 0 rgba(0,229,255,.18)}
+.brand b{color:var(--solar-orange)!important}
+.brand-mark{
+  background:linear-gradient(135deg,var(--electric-cyan) 0 49%,var(--solar-orange) 51% 100%)!important;
+  box-shadow:0 0 18px rgba(0,229,255,.22),0 0 24px rgba(255,149,0,.22);
+}
+.top-actions .live-dot{background:var(--solar-orange)!important;box-shadow:0 0 12px rgba(255,149,0,.65)!important}
+/* Main hero: visible orange light, cyan/orange orbit rings, and a mixed-color CTA. */
+.hero{border-bottom:1px solid rgba(255,149,0,.38)}
+.hero:before{
+  background:
+    radial-gradient(ellipse at 20% 50%,rgba(255,149,0,.13),transparent 42%),
+    radial-gradient(ellipse at 76% 52%,rgba(0,229,255,.16),transparent 48%),
+    linear-gradient(110deg,rgba(255,149,0,.045),transparent 48%,rgba(0,229,255,.05))!important;
+}
+.hero h1 em,.hero h2 em{color:var(--solar-orange)!important;text-shadow:0 0 24px rgba(255,149,0,.2)}
+.hero .eyebrow{color:var(--solar-orange)!important}
+.hero-art{
+  background:
+    radial-gradient(ellipse at 28% 30%,rgba(255,149,0,.24),transparent 34%),
+    radial-gradient(ellipse at 70% 43%,rgba(0,229,255,.2),transparent 42%),
+    linear-gradient(180deg,rgba(255,149,0,.04),rgba(0,0,0,.28))!important;
+}
+.hero-art:before{background:repeating-linear-gradient(90deg,transparent 0 54px,rgba(0,229,255,.075) 55px 56px,transparent 57px 110px,rgba(255,149,0,.09) 111px 112px)!important}
+.sun-glow{background:rgba(255,149,0,.25)!important;box-shadow:0 0 55px rgba(255,149,0,.24),0 0 90px rgba(0,229,255,.12)!important}
+.orbit-one{border-color:rgba(255,149,0,.72)!important}
+.orbit-two{border-color:rgba(0,229,255,.55)!important}
+.hero-ball{box-shadow:20px 35px 65px #0009,0 0 32px rgba(0,229,255,.25),0 0 48px rgba(255,149,0,.2)!important}
+.hero-stadium{
+  border-color:rgba(255,149,0,.6)!important;
+  background:repeating-linear-gradient(0deg,rgba(0,229,255,.09) 0 1px,transparent 1px 28px),linear-gradient(180deg,rgba(255,149,0,.18),#0a1710)!important;
+}
+.hero-stat strong,.hero-index{color:var(--solar-orange)!important}
+.primary-btn{
+  background:linear-gradient(110deg,var(--electric-cyan) 0 48%,var(--solar-orange) 52% 100%)!important;
+  color:#07110f!important;border:1px solid rgba(255,255,255,.22)!important;
+  box-shadow:0 0 18px rgba(0,229,255,.12),0 0 22px rgba(255,149,0,.15);
+}
+.primary-btn:hover{box-shadow:0 0 20px rgba(0,229,255,.2),0 0 28px rgba(255,149,0,.28)!important}
+/* Main mode cards alternate cyan and orange accents instead of hiding orange in one mode. */
+.mode-section,.roster-section{border-bottom-color:rgba(255,149,0,.3)!important}
+.mode-section .section-heading .eyebrow,.roster-section .section-heading .eyebrow{color:var(--solar-orange)!important}
+.mode-card{border-color:rgba(0,229,255,.23)!important;background:linear-gradient(145deg,rgba(0,229,255,.055),#0b1512 54%,rgba(255,149,0,.075))!important}
+.mode-card:nth-child(4n+1),.mode-card:nth-child(4n+3){border-color:rgba(255,149,0,.48)!important}
+.mode-card:nth-child(4n+1) .mode-icon,.mode-card:nth-child(4n+1) .mode-arrow,
+.mode-card:nth-child(4n+3) .mode-icon,.mode-card:nth-child(4n+3) .mode-arrow{color:var(--solar-orange)!important}
+.mode-card:nth-child(4n+2) .mode-icon,.mode-card:nth-child(4n+2) .mode-arrow,
+.mode-card:nth-child(4n) .mode-icon,.mode-card:nth-child(4n) .mode-arrow{color:var(--electric-cyan)!important}
+.mode-card:nth-child(4n+1):before,.mode-card:nth-child(4n+3):before{background:rgba(255,149,0,.19)!important}
+.mode-card:hover,.mode-card.active{border-color:var(--solar-orange)!important;box-shadow:0 0 18px rgba(255,149,0,.13),0 0 16px rgba(0,229,255,.08)}
+/* Give the roster, setup controls, and interactive focus states the same balanced palette. */
+.player-card{border-top-color:rgba(255,149,0,.48)!important}
+.setup-row label{color:var(--solar-orange)!important}
+.difficulty-group button.selected{background:linear-gradient(100deg,var(--electric-cyan),var(--solar-orange))!important;border-color:var(--solar-orange)!important;color:#07110f!important}
+button:focus-visible,input:focus-visible{outline-color:var(--solar-orange)!important}
+footer{border-top:1px solid rgba(0,229,255,.16)}
+/* Match controls: cyan stays the cool accent; orange is clearly visible on key actions. */
+.back-btn,.secondary-btn{border-color:rgba(255,149,0,.42)}
+#shootBtn,.shoot-btn{background:linear-gradient(110deg,var(--electric-cyan),var(--solar-orange))!important;color:#07110f!important}
+.match-action-pad button[data-action="shoot"]{background:linear-gradient(110deg,var(--electric-cyan),var(--solar-orange))!important;border-color:var(--solar-orange)!important;color:#07110f!important}
+.match-action-pad button[data-action="tackle"],.keeper-pad button{border-color:rgba(255,149,0,.6)!important}
+.game-feedback{border-left-color:var(--solar-orange)!important;background:linear-gradient(90deg,rgba(255,149,0,.11),rgba(0,229,255,.055))!important}
+#powerSlider{accent-color:var(--solar-orange)!important}
+.music-panel,.career-hub,.friends-panel{border-color:rgba(255,149,0,.38)!important}
+.music-panel-heading .eyebrow,.youtube-section-title h3{color:var(--solar-orange)!important}
+.music-play-btn,.music-official-btn{background:linear-gradient(100deg,var(--electric-cyan),var(--solar-orange))!important;color:#07110f!important;border-color:var(--solar-orange)!important}
+.music-select:focus{border-color:var(--solar-orange)!important;box-shadow:0 0 0 1px rgba(255,149,0,.18)}
+/* Keep gold dedicated to legendary cards; cyan + orange are the general interface pair. */
+.player-collect-card.card-unlocked{border-color:rgba(212,175,55,.72)!important}
+@media(max-width:600px){
+  .hero-art{background:
+    radial-gradient(ellipse at 25% 30%,rgba(255,149,0,.23),transparent 38%),
+    radial-gradient(ellipse at 75% 42%,rgba(0,229,255,.22),transparent 45%),
+    linear-gradient(180deg,rgba(255,149,0,.04),rgba(0,0,0,.3))!important}
+}
