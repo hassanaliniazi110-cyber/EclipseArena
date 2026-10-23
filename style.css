@@ -431,3 +431,40 @@ footer{border-top:1px solid rgba(0,229,255,.16)}
     radial-gradient(ellipse at 75% 42%,rgba(0,229,255,.22),transparent 45%),
     linear-gradient(180deg,rgba(255,149,0,.04),rgba(0,0,0,.3))!important}
 }
+
+/* FINAL PALETTE CORRECTION: separate solid colors, never blend cyan and orange together. */
+:root{--solar-orange:#FF9500;--solar-orange-bright:#FFB340;--electric-cyan:#00E5FF}
+.brand b,.hero h1 em,.hero h2 em,.hero .eyebrow,.hero-stat strong,.hero-index{color:var(--solar-orange)!important}
+.brand-mark{background:var(--solar-orange)!important;box-shadow:0 0 22px rgba(255,149,0,.3)!important}
+.topbar{border-bottom:2px solid rgba(255,149,0,.62)!important;box-shadow:none!important}
+.hero:before{background:radial-gradient(ellipse at 24% 50%,rgba(255,149,0,.2),transparent 48%)!important}
+.hero-art{background:radial-gradient(ellipse at 28% 32%,rgba(255,149,0,.3),transparent 42%),linear-gradient(180deg,rgba(255,149,0,.06),rgba(0,0,0,.3))!important}
+.hero-art:before{background:repeating-linear-gradient(90deg,transparent 0 55px,rgba(255,149,0,.11) 56px 57px)!important}
+.sun-glow{background:rgba(255,149,0,.3)!important;box-shadow:0 0 55px rgba(255,149,0,.3)!important}
+.orbit-one,.orbit-two{border-color:rgba(255,149,0,.7)!important}
+.hero-stadium{border-color:rgba(255,149,0,.75)!important;background:linear-gradient(180deg,rgba(255,149,0,.2),#0a1710)!important}
+.hero-ball{box-shadow:20px 35px 65px #0009,0 0 40px rgba(255,149,0,.24)!important}
+.primary-btn{background:var(--solar-orange)!important;color:#171006!important;border:1px solid var(--solar-orange)!important;box-shadow:0 0 22px rgba(255,149,0,.2)!important}
+.primary-btn:hover{background:var(--solar-orange-bright)!important;box-shadow:0 0 26px rgba(255,149,0,.3)!important}
+.mode-card{background:#0b1512!important}
+.mode-card:nth-child(odd){border-color:rgba(255,149,0,.62)!important}
+.mode-card:nth-child(odd) .mode-icon,.mode-card:nth-child(odd) .mode-arrow{color:var(--solar-orange)!important}
+.mode-card:nth-child(even){border-color:rgba(0,229,255,.42)!important}
+.mode-card:nth-child(even) .mode-icon,.mode-card:nth-child(even) .mode-arrow{color:var(--electric-cyan)!important}
+.mode-card:nth-child(odd):before{background:rgba(255,149,0,.14)!important}
+.mode-card:hover,.mode-card.active{border-color:var(--solar-orange)!important;box-shadow:0 0 18px rgba(255,149,0,.16)!important}
+.mode-section .section-heading .eyebrow,.roster-section .section-heading .eyebrow,.setup-row label{color:var(--solar-orange)!important}
+.difficulty-group button.selected{background:var(--solar-orange)!important;border-color:var(--solar-orange)!important;color:#171006!important}
+#shootBtn,.shoot-btn,.match-action-pad button[data-action="shoot"]{background:var(--solar-orange)!important;border-color:var(--solar-orange)!important;color:#171006!important;box-shadow:0 0 14px rgba(255,149,0,.22)!important}
+.match-action-pad button[data-action="tackle"],.keeper-pad button,.back-btn,.secondary-btn{border-color:rgba(255,149,0,.58)!important}
+.game-feedback{border-left-color:var(--solar-orange)!important;background:rgba(255,149,0,.1)!important}
+.progress-fill,.xp-bar-fill,.shot-power-fill,.power-meter-fill{background:var(--solar-orange)!important}
+#powerSlider{accent-color:var(--solar-orange)!important}
+.music-panel,.career-hub,.friends-panel{border-color:rgba(255,149,0,.48)!important}
+.music-panel-heading .eyebrow,.youtube-section-title h3{color:var(--solar-orange)!important}
+.music-play-btn,.music-official-btn{background:var(--solar-orange)!important;color:#171006!important;border-color:var(--solar-orange)!important}
+.music-quick-song-btn{background:rgba(255,149,0,.15)!important;border-color:var(--solar-orange)!important}
+.music-quick-song-btn:hover,.music-quick-song-btn:focus-visible{background:rgba(255,149,0,.28)!important}
+.music-select:focus,button:focus-visible,input:focus-visible{outline-color:var(--solar-orange)!important;border-color:var(--solar-orange)!important}
+.player-card{border-top-color:rgba(255,149,0,.55)!important}
+footer{border-top:1px solid rgba(255,149,0,.28)!important}
