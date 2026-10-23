@@ -468,3 +468,13 @@ footer{border-top:1px solid rgba(0,229,255,.16)}
 .music-select:focus,button:focus-visible,input:focus-visible{outline-color:var(--solar-orange)!important;border-color:var(--solar-orange)!important}
 .player-card{border-top-color:rgba(255,149,0,.55)!important}
 footer{border-top:1px solid rgba(255,149,0,.28)!important}
+
+
+/* ELECTRIC CYAN BOOST — added as separate accents, keeping Solar Orange distinct. */
+.section-heading h2 em,.game-header h2 em{color:var(--electric-cyan)!important}
+.eyebrow:not(.hero .eyebrow){text-shadow:none}
+.mode-card:nth-child(even):hover,.mode-card:nth-child(even).active{border-color:var(--electric-cyan)!important;box-shadow:0 0 18px rgba(0,229,255,.16)!important}
+.secondary-btn,.back-btn{color:var(--electric-cyan)!important;border-color:rgba(0,229,255,.58)!important}
+.music-stop-btn{border-color:rgba(0,229,255,.58)!important;color:var(--electric-cyan)!important}
+.touch-dot{background:var(--electric-cyan)!important;box-shadow:0 0 10px rgba(0,229,255,.45)!important}
+.aim-tip,.pitch-topline span:last-child{color:var(--electric-cyan)!important}
