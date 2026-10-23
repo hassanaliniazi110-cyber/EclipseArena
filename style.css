@@ -478,3 +478,20 @@ footer{border-top:1px solid rgba(255,149,0,.28)!important}
 .music-stop-btn{border-color:rgba(0,229,255,.58)!important;color:var(--electric-cyan)!important}
 .touch-dot{background:var(--electric-cyan)!important;box-shadow:0 0 10px rgba(0,229,255,.45)!important}
 .aim-tip,.pitch-topline span:last-child{color:var(--electric-cyan)!important}
+
+
+/* EXTRA ELECTRIC CYAN — more cyan details, kept separate from Solar Orange. */
+:root{--electric-cyan:#00E5FF}
+.brand b{color:var(--electric-cyan)!important}
+.topbar{box-shadow:inset 0 -1px 0 rgba(0,229,255,.28)!important}
+.hero-index span,.hero .hero-text{color:rgba(0,229,255,.85)!important}
+.hero-art .orbit-one{border-color:rgba(0,229,255,.7)!important}
+.hero-art .orbit-two{border-color:rgba(0,229,255,.42)!important}
+.section-heading h2 em,.game-header h2 em{color:var(--electric-cyan)!important}
+.mode-card:nth-child(even){border-color:rgba(0,229,255,.65)!important}
+.mode-card:nth-child(even) .mode-icon,.mode-card:nth-child(even) .mode-arrow{color:var(--electric-cyan)!important}
+.mode-card:nth-child(even):hover,.mode-card:nth-child(even).active{box-shadow:0 0 22px rgba(0,229,255,.22)!important}
+.secondary-btn,.back-btn,.music-stop-btn{border-color:rgba(0,229,255,.65)!important;color:var(--electric-cyan)!important}
+.music-select:focus{border-color:var(--electric-cyan)!important;box-shadow:0 0 0 2px rgba(0,229,255,.16)!important}
+.touch-dot{background:var(--electric-cyan)!important;box-shadow:0 0 12px rgba(0,229,255,.6)!important}
+.aim-tip,.pitch-topline span:last-child{color:var(--electric-cyan)!important}
