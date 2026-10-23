@@ -679,6 +679,8 @@ const goalkeepers = [
   $("musicPlayBtn").addEventListener("click",startArenaMusic);
   $("musicStopBtn").addEventListener("click",stopArenaMusic);
   $("musicOfficialBtn").addEventListener("click",()=>openOfficialSong($("musicSelect").value));
+  $("playMontagemGuerreiroBtn").addEventListener("click",()=>{ $("musicSelect").value="montagemguerriero"; $("musicOfficialBtn").classList.remove("hidden"); $("musicPlayBtn").classList.add("hidden"); openOfficialSong("montagemguerriero"); });
+  $("playMontagemAbnormalBtn").addEventListener("click",()=>{ $("musicSelect").value="montagemabnormal"; $("musicOfficialBtn").classList.remove("hidden"); $("musicPlayBtn").classList.add("hidden"); openOfficialSong("montagemabnormal"); });
 
 
   // In-game YouTube directory. Channel upload playlists use YouTube's public UU playlist IDs.
