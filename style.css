@@ -655,3 +655,63 @@ svg line,svg polyline,.chart-line,.stat-line,.player-chart-line,.player-stats sv
 .hero-art:before{background:repeating-linear-gradient(90deg,transparent 0 55px,rgba(199,255,74,.12) 56px 57px)!important}
 .topbar,.hero,.mode-section,.roster-section,footer{border-color:rgba(199,255,74,.38)!important}
 .primary-btn,.difficulty-group button.selected,.progress-fill,.xp-bar-fill,.shot-power-fill,.power-meter-fill,.season-progress>i span{background:#c7ff4a!important;border-color:#c7ff4a!important}
+
+
+/* YOUTUBE OWNER PANEL — enforce black + lime green, including access requests and action buttons. */
+.youtube-owner-requests,
+.youtube-owner-requests *,
+.youtube-access-request,
+.youtube-access-request *,
+.youtube-access-gate,
+.youtube-panel,
+.youtube-panel *,
+.youtube-section-title,
+.youtube-section-title *{
+  --lime:#c7ff4a!important;
+  --solar-orange:#c7ff4a!important;
+  --electric-cyan:#c7ff4a!important;
+  --cyan:#c7ff4a!important;
+  --blue:#c7ff4a!important;
+}
+.youtube-owner-requests,.youtube-access-request,.youtube-access-gate,.youtube-panel{
+  background:#080b06!important;
+  color:#eef5e5!important;
+  border-color:rgba(199,255,74,.5)!important;
+  box-shadow:none!important;
+}
+.youtube-owner-requests h3,.youtube-owner-requests h4,
+.youtube-owner-requests .eyebrow,.youtube-owner-requests strong,
+.youtube-owner-requests label,.youtube-owner-requests summary,
+.youtube-access-request h3,.youtube-access-request .eyebrow,
+.youtube-panel-heading h3 em,.youtube-section-title h3,
+.youtube-section-title span{color:#c7ff4a!important}
+.youtube-owner-requests button,.youtube-access-request button,
+.youtube-panel button,.youtube-search-row button,
+.youtube-quick-searches button,.youtube-channel-actions button,
+.youtube-channel-play,.youtube-channel-fav,.youtube-section-title button{
+  background:#080b06!important;
+  color:#c7ff4a!important;
+  border:1px solid rgba(199,255,74,.65)!important;
+  box-shadow:none!important;
+}
+.youtube-owner-requests button:hover,.youtube-access-request button:hover,
+.youtube-panel button:hover,.youtube-channel-actions button:hover{
+  background:rgba(199,255,74,.12)!important;
+  border-color:#c7ff4a!important;
+}
+.youtube-owner-requests input,.youtube-owner-requests textarea,
+.youtube-access-request textarea,.youtube-panel input,.youtube-panel select{
+  background:#050705!important;color:#eef5e5!important;
+  border-color:rgba(199,255,74,.5)!important;accent-color:#c7ff4a!important;
+}
+.youtube-owner-requests input:focus,.youtube-owner-requests textarea:focus,
+.youtube-access-request textarea:focus,.youtube-panel input:focus{
+  outline-color:#c7ff4a!important;border-color:#c7ff4a!important;
+  box-shadow:0 0 0 1px rgba(199,255,74,.2)!important;
+}
+.youtube-owner-requests a,.youtube-panel a{color:#c7ff4a!important}
+.youtube-owner-requests [style*="blue"],.youtube-owner-requests [style*="cyan"],
+.youtube-owner-requests [style*="orange"],.youtube-panel [style*="blue"],
+.youtube-panel [style*="cyan"],.youtube-panel [style*="orange"]{
+  color:#c7ff4a!important;border-color:#c7ff4a!important;
+}
