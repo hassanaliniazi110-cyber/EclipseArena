@@ -619,11 +619,13 @@ const goalkeepers = [
   };
   function openOfficialSong(value){
     const videoId=officialSongs[value];
-    if(!videoId){$("musicStatus").textContent="This song is not available here yet.";return false;}
+    const longAbnormalUrl=value==="montagemabnormal"?"https://embed.music.apple.com/us/album/montagem-anormal-ultra-slowed/6771553459?i=6771553463":null;
+    if(!videoId&&!longAbnormalUrl){$("musicStatus").textContent="This song is not available here yet.";return false;}
     stopArenaMusic();
     const wrap=$("musicEmbedWrap"),player=$("musicEmbedPlayer");
     if(!wrap||!player){$("musicStatus").textContent="In-game player missing. Refresh the game and try again.";return false;}
     wrap.classList.remove("hidden");
+    if(longAbnormalUrl){player.src=longAbnormalUrl;$("musicStatus").textContent="Montagem Anormal Ultra Slowed loaded — listed duration 5:26. Press play in the player if needed.";return true;}
     const segment=officialSongSegments[value];
     const segmentParams=segment?"&start="+segment[0]+"&end="+segment[1]:"";
     player.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(videoId)+"?autoplay=1&playsinline=1&controls=1&rel=0"+segmentParams;
