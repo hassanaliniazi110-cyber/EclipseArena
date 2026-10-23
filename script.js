@@ -592,6 +592,10 @@ const goalkeepers = [
     montagemacelerada:"m_52WB-sYd4", montagemvocenamira:"m_52WB-sYd4",
     montagemgozalo:"m_52WB-sYd4", montagemvemvem:"m_52WB-sYd4",
     montagemperigosa:"m_52WB-sYd4", montagempassobemsolto:"m_52WB-sYd4",
+    montagemluar:"8Wvw_DJCtIg", montagembelenos:"8Wvw_DJCtIg", montagemyueshi:"8Wvw_DJCtIg",
+    montagemela:"8Wvw_DJCtIg", montagemartemis:"8Wvw_DJCtIg", montagemyumei:"8Wvw_DJCtIg",
+    montagemmaldito:"8Wvw_DJCtIg", montagemsemparar:"8Wvw_DJCtIg", montagembrother:"8Wvw_DJCtIg",
+    montagemabismo:"8Wvw_DJCtIg",
     takefive:"vmDDOFXSgAs", flymoon:"ZEcqHA7dbwM", autumnleaves:"JTt_2-ykGCQ",
     sowhat:"zqNTltOGh5c", entertainer:"BNBXDC77FVA",
     wc26daidai:"fcnDmrtj6Sk", wc26goals:"safzyuZNCGI", wc26gametime:"JLucCHwY-2c",
@@ -607,7 +611,11 @@ const goalkeepers = [
     montagemnobatidao:[275,395], montagemhomagefunk:[446,569],
     montagemacelerada:[569,631], montagemvocenamira:[631,768],
     montagemgozalo:[860,974], montagemvemvem:[974,1059],
-    montagempassobemsolto:[1171,1300], montagemperigosa:[1300,1381]
+    montagempassobemsolto:[1171,1300], montagemperigosa:[1300,1381],
+    montagemluar:[0,32], montagembelenos:[32,85], montagemyueshi:[85,117],
+    montagemela:[117,151], montagemartemis:[151,202], montagemyumei:[202,249],
+    montagemmaldito:[249,276], montagemsemparar:[276,309], montagembrother:[309,333],
+    montagemabismo:[333,372]
   };
   function openOfficialSong(value){
     const videoId=officialSongs[value];
