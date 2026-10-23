@@ -565,3 +565,11 @@ footer{border-top:1px solid rgba(199,255,74,.25)!important}
 .game-feedback{border-left-color:#c7ff4a!important;background:rgba(199,255,74,.08)!important}
 .music-select:focus,button:focus-visible,input:focus-visible{outline-color:#c7ff4a!important;border-color:#c7ff4a!important;box-shadow:0 0 0 1px rgba(199,255,74,.15)!important}
 .touch-dot{background:#c7ff4a!important;box-shadow:0 0 10px rgba(199,255,74,.45)!important}
+
+
+/* FINAL LIME FIX: soundtrack icon and Arena Live indicator. */
+.music-note{color:#c7ff4a!important;border-color:#c7ff4a!important;background:rgba(199,255,74,.08)!important}
+.music-panel-heading .music-note svg,.music-panel-heading .music-note i{color:#c7ff4a!important;stroke:#c7ff4a!important;fill:#c7ff4a!important}
+.top-actions .live-dot,.live-dot,.arena-live-dot,.live-indicator,.status-live-dot{background:#c7ff4a!important;border-color:#c7ff4a!important;box-shadow:0 0 10px rgba(199,255,74,.55)!important}
+.top-actions .live-label,.top-actions .live-status,.arena-live,.live-indicator-label{color:#c7ff4a!important}
+.music-panel-heading strong,.music-panel-heading .eyebrow,.music-label,.music-play-btn,.music-stop-btn,.music-official-btn,.music-quick-song-btn{accent-color:#c7ff4a}
