@@ -175,3 +175,10 @@ h2,
 .intro-progress span{background:#c7ff4a!important}
 .player-rating,.player-collect-card small,.player-collect-card>small{color:#c7ff4a!important}
 .player-collect-card{border-color:rgba(199,255,74,.5)!important;background-image:linear-gradient(145deg,rgba(199,255,74,.07),#080a07 65%)!important}
+
+
+/* FINAL PLAYER-STAT + ACCENT COLOR LOCK: lime green and black only. */
+:root{--arena-cyan:#c7ff4a!important;--arena-gold:#c7ff4a!important;--arena-orange:#c7ff4a!important;--arena-orange-bright:#dcff80!important;--orange:#c7ff4a!important;--electric-cyan:#c7ff4a!important;--cyan:#c7ff4a!important;--blue:#c7ff4a!important}
+.fc-attributes,.fc-attributes *,.player-rating,.player-role,.player-special,.player-stats,.player-stats *,.player-stat,.player-stat *,.stat-value,.stat-label,.player-card .stats,.player-card .stats *{color:#c7ff4a!important;border-color:rgba(199,255,74,.55)!important;accent-color:#c7ff4a!important}
+.fc-attributes i,.fc-attributes em,.stat-bar-fill,.player-stat-fill,.stat-fill,.attribute-fill,.player-card .fill{background:#c7ff4a!important;background-image:none!important}
+.player-card,.player-collect-card,.mode-card,.freekick,.longshot,.goalie{--player-glow:rgba(199,255,74,.12)!important;--card-glow:rgba(199,255,74,.12)!important}
