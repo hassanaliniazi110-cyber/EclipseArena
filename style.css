@@ -622,3 +622,17 @@ html,body{background:#050705!important}
 .freekick,.longshot,.goalie{--card-glow:rgba(199,255,74,.1)!important}
 .freekick .mode-icon,.longshot .mode-icon,.goalie .mode-icon{color:#c7ff4a!important}
 .hero h1 em,.hero h2 em,.hero .eyebrow,.hero-stat strong,.hero-index,.mode-section .section-heading .eyebrow,.roster-section .section-heading .eyebrow,.setup-row label{color:#c7ff4a!important}
+
+
+/* LAST-MILE COLOR OVERRIDE — player stats and all field/hero lines lime, no blue/orange. */
+:root{--lime:#c7ff4a;--orange:#c7ff4a;--electric-cyan:#c7ff4a;--cyan:#c7ff4a;--blue:#c7ff4a;--neon-blue:#c7ff4a}
+body,body *{--lime:#c7ff4a;--orange:#c7ff4a;--electric-cyan:#c7ff4a;--cyan:#c7ff4a;--blue:#c7ff4a;--neon-blue:#c7ff4a}
+.freekick,.longshot,.goalie{--card-glow:rgba(199,255,74,.1)!important}
+.freekick .mode-icon,.longshot .mode-icon,.goalie .mode-icon{color:#c7ff4a!important}
+.hero-stadium,.hero-stadium::before,.hero-stadium::after{background-color:#050705!important;border-color:#c7ff4a!important}
+.hero-stadium{background-image:repeating-linear-gradient(0deg,rgba(199,255,74,.055) 0 1px,transparent 1px 28px),linear-gradient(180deg,#11170d,#050705)!important}
+#pitch{border-color:#c7ff4a!important}
+.player-stats,.player-stats *,.player-stat,.player-stat *,.stat-bar,.stat-bar *,.player-attribute,.player-attribute *,.stat-value,.stat-label,.player-card .stats,.player-card .stats *,.player-card .stat,.player-card .stat *,.player-collect-card .stats,.player-collect-card .stats *,.player-collect-card .stat,.player-collect-card .stat *{color:#c7ff4a!important;border-color:rgba(199,255,74,.55)!important;accent-color:#c7ff4a!important}
+.player-stats .bar,.player-stat .bar,.stat-bar-fill,.player-stat-fill,.stat-fill,.attribute-fill,.player-card .fill,.player-collect-card .fill{background:#c7ff4a!important;background-image:none!important}
+.player-card,.player-collect-card{border-color:rgba(199,255,74,.48)!important}
+svg line,svg polyline,.chart-line,.stat-line,.player-chart-line{stroke:#c7ff4a!important}
