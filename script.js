@@ -883,6 +883,66 @@ const goalkeepers = [
   $("youtubeSearchForm").addEventListener("submit",e=>{e.preventDefault();youtubeSearch($("youtubeSearchInput").value);});
   $("youtubeSearchInput").addEventListener("input",renderYouTubeChannels);
   document.querySelectorAll("[data-youtube-search]").forEach(b=>b.addEventListener("click",()=>youtubeSearch(b.dataset.youtubeSearch)));
+  // Read-only YouTube comments panel: comments are fetched through the backend so the API key stays private.
+  (function setupYouTubeComments(){
+    const player=$("youtubeAreaPlayer");
+    if(!player||!player.parentNode)return;
+    const panel=document.createElement("section");
+    panel.id="apexYouTubeComments";
+    panel.setAttribute("aria-live","polite");
+    panel.style.cssText="margin-top:16px;padding:16px;border:1px solid #34401c;border-radius:14px;background:#080b06;color:#f3f6ec";
+    const heading=document.createElement("h3");heading.textContent="YOUTUBE COMMENTS";heading.style.cssText="margin:0 0 8px;color:#C7FF4A";
+    const status=document.createElement("p");status.textContent="Play a single YouTube video to load its comments.";status.style.cssText="font-size:14px;opacity:.85";
+    const list=document.createElement("div");list.id="apexYouTubeCommentList";
+    const more=document.createElement("button");more.type="button";more.textContent="LOAD MORE COMMENTS";more.hidden=true;more.style.cssText="margin-top:12px;padding:10px 14px;border-radius:9px;border:1px solid #C7FF4A;background:#10150b;color:#C7FF4A;font-weight:700";
+    panel.append(heading,status,list,more);
+    player.insertAdjacentElement("afterend",panel);
+    let currentVideo="",nextPageToken="",loading=false;
+    async function load(videoId,append=false){
+      if(loading)return;
+      if(!append){currentVideo=videoId;nextPageToken="";list.replaceChildren();more.hidden=true;status.textContent="Loading comments…";}
+      loading=true;
+      try{
+        const params=new URLSearchParams({videoId});
+        if(append&&nextPageToken)params.set("pageToken",nextPageToken);
+        const config=window.ECLIPSE_CONFIG||{};
+        const base=String(config.backendUrl||"").replace(/\/$/,"");
+        if(!base)throw new Error("The game backend URL is not configured.");
+        const response=await fetch(base+"/api/youtube/comments?"+params.toString());
+        const data=await response.json().catch(()=>({}));
+        if(!response.ok)throw new Error(data.error||"Could not load comments.");
+        if(currentVideo!==videoId)return;
+        const comments=Array.isArray(data.comments)?data.comments:[];
+        if(!append)list.replaceChildren();
+        if(!comments.length&&!append){status.textContent="No public comments were returned for this video.";}
+        comments.forEach(comment=>{
+          const card=document.createElement("article");
+          card.style.cssText="padding:12px 0;border-top:1px solid #273019;overflow-wrap:anywhere";
+          const author=document.createElement("strong");author.textContent=comment.author||"YouTube user";author.style.color="#C7FF4A";
+          const meta=document.createElement("small");meta.textContent=" · "+(comment.publishedAt?new Date(comment.publishedAt).toLocaleDateString():"")+" · ♡ "+(Number(comment.likeCount)||0);meta.style.cssText="opacity:.7";
+          const body=document.createElement("p");body.textContent=comment.text||"";body.style.cssText="white-space:pre-wrap;margin:7px 0 0;font-size:14px;line-height:1.45";
+          card.append(author,meta,body);list.appendChild(card);
+        });
+        nextPageToken=data.nextPageToken||"";
+        more.hidden=!nextPageToken;
+        status.textContent=comments.length?(append?"More comments loaded.":"Showing public top-level comments."):(append?"No more comments.":status.textContent);
+      }catch(error){if(currentVideo===videoId)status.textContent=(error.message||"Comments could not be loaded.")+" If this is the first setup, the owner must add YOUTUBE_API_KEY to the backend environment.";}
+      finally{loading=false;}
+    }
+    more.addEventListener("click",()=>{if(currentVideo&&nextPageToken)load(currentVideo,true);});
+    function syncFromPlayer(){
+      const src=player.getAttribute("src")||"";
+      let url;try{url=new URL(src,location.href);}catch(_){return;}
+      const match=url.pathname.match(/\/embed\/([a-zA-Z0-9_-]{11})/);
+      if(match&&match[1]!==currentVideo)load(match[1]);
+      else if(/\/embed\/videoseries/.test(url.pathname)){
+        currentVideo="";nextPageToken="";list.replaceChildren();more.hidden=true;status.textContent="Comments are shown for single videos, not an entire playlist. Open a video directly to view its comments.";
+      }
+    }
+    new MutationObserver(syncFromPlayer).observe(player,{attributes:true,attributeFilter:["src"]});
+    syncFromPlayer();
+  })();
+
   $("youtubeWatchForm").addEventListener("submit",e=>{
     e.preventDefault();
     const raw=$("youtubeVideoUrl").value.trim(),status=$("youtubeAreaStatus"),player=$("youtubeAreaPlayer");
