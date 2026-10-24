@@ -130,6 +130,61 @@ app.use(cors({
 app.use(express.json({ limit: "12kb", strict: true }));
 app.use(rateLimit({ windowMs: 60 * 1000, limit: 90, standardHeaders: "draft-7", legacyHeaders: false }));
 app.get("/health", (_req, res) => res.json({ ok: true, service: "Eclipse Arena API" }));
+// Public, read-only comments endpoint. Keep YOUTUBE_API_KEY on the server, never in frontend files.
+app.get("/api/youtube/comments", async (req, res) => {
+  const videoId = String(req.query.videoId || "");
+  const pageToken = String(req.query.pageToken || "");
+  if (!/^[A-Za-z0-9_-]{11}$/.test(videoId)) {
+    return res.status(400).json({ error: "A valid single YouTube video ID is required." });
+  }
+  if (pageToken && !/^[A-Za-z0-9_-]{1,500}$/.test(pageToken)) {
+    return res.status(400).json({ error: "Invalid comments page token." });
+  }
+  const apiKey = process.env.YOUTUBE_API_KEY;
+  if (!apiKey) return res.status(503).json({ error: "YouTube comments are not configured yet. The owner must add YOUTUBE_API_KEY to the backend environment." });
+  try {
+    const params = new URLSearchParams({
+      part: "snippet",
+      videoId,
+      maxResults: "20",
+      order: "relevance",
+      textFormat: "plainText",
+      key: apiKey
+    });
+    if (pageToken) params.set("pageToken", pageToken);
+    const upstream = await fetch("https://www.googleapis.com/youtube/v3/commentThreads?" + params.toString(), {
+      headers: { "Accept": "application/json" },
+      signal: AbortSignal.timeout(10000)
+    });
+    const payload = await upstream.json().catch(() => ({}));
+    if (!upstream.ok) {
+      const reason = payload?.error?.errors?.[0]?.reason || "";
+      if (reason === "commentsDisabled" || reason === "disabledComments") {
+        return res.json({ comments: [], nextPageToken: "", message: "Comments are disabled for this video." });
+      }
+      console.error("[YouTube comments API]", upstream.status, reason || "request failed");
+      return res.status(upstream.status === 404 ? 404 : 502).json({
+        error: reason === "commentsDisabled" || reason === "disabledComments"
+          ? "Comments are disabled for this video."
+          : "YouTube could not return comments. Check the API key, quota, and video comment settings."
+      });
+    }
+    const comments = (Array.isArray(payload.items) ? payload.items : []).map(item => {
+      const snippet = item?.snippet?.topLevelComment?.snippet || {};
+      return {
+        author: String(snippet.authorDisplayName || "YouTube user").slice(0, 100),
+        text: String(snippet.textDisplay || "").slice(0, 5000),
+        likeCount: Math.max(0, Number(snippet.likeCount) || 0),
+        publishedAt: String(snippet.publishedAt || "")
+      };
+    });
+    return res.json({ comments, nextPageToken: payload.nextPageToken || "" });
+  } catch (error) {
+    console.error("[YouTube comments request]", error.name || "Error");
+    return res.status(504).json({ error: "YouTube comments request timed out. Please try again." });
+  }
+});
+
 app.get("/api/youtube/access", auth, (req, res) => {
   const playerId = req.player.id;
   const latest = [...youtubeAccessData.requests].reverse().find(r => r.playerId === playerId);
