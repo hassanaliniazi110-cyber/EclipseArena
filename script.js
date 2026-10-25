@@ -83,7 +83,8 @@ const goalkeepers = [
   let cw = 900, ch = 620, lastResult = "", shotTimer = null, soundOn = false, masterVolume = 0.65, passcodeFailures=0, passcodeLockUntil=0, lastShotReplay=null, celebrationUntil=0;
   const match = {active:false,finished:false,clock:0,lastTick:0,player:{x:.5,y:.72},rival:{x:.5,y:.28},ball:{x:.5,y:.72},move:"",sprint:false,hasBall:true,playerGoals:0,rivalGoals:0,rankPoints:0,rank:"ROOKIE III",lastRivalShot:0};
 
-  function isUnlocked(p,isKeeper){const starter=(!isKeeper&&p.name==="Muhammad Arham")||(isKeeper&&p.name==="David Raya");return starter||((p.unlockXP||0)<=(career.unlockXP||0)&&(p.unlockWins||0)<=(career.unlockWins||0));}
+  let apexAdminMode=false;
+  function isUnlocked(p,isKeeper){const starter=(!isKeeper&&p.name==="Muhammad Arham")||(isKeeper&&p.name==="David Raya");return apexAdminMode||starter||((p.unlockXP||0)<=(career.unlockXP||0)&&(p.unlockWins||0)<=(career.unlockWins||0));}
   function playerCard(p, selected, attr, isKeeper){
     const unlocked=isUnlocked(p,isKeeper),xp=career.players[p.name]||0,level=1+Math.floor(xp/100);
     const rawRating=(p.rating||60)+Math.min(4,Math.floor(xp/250));
@@ -383,6 +384,16 @@ const goalkeepers = [
   let connectPromise=null;
   function setServerStatus(message){const el=$("serverStatus");if(el)el.textContent=message;} function setFriendStatus(message){const el=$("friendStatus");if(el)el.textContent=message;}
   function api(path,opts={}){if(!onlineCfg.base)return Promise.reject(new Error("Online server is not configured yet."));const headers={"Content-Type":"application/json",...(opts.headers||{})};if(onlineCfg.token)headers.Authorization="Bearer "+onlineCfg.token;return fetch(onlineCfg.base+path,{...opts,headers}).then(async r=>{const d=await r.json().catch(()=>({error:"Invalid server response"}));if(!r.ok)throw new Error(d.error||"Server error "+r.status);return d;});}
+  // Admin status comes from the authenticated server response, never from a client-set ID.
+  async function detectApexAdmin(){
+    if(!onlineCfg.base||!onlineCfg.token)return;
+    try{
+      const response=await fetch(onlineCfg.base.replace(/\/$/,"")+"/api/youtube/access",{headers:{Authorization:"Bearer "+onlineCfg.token}});
+      if(!response.ok)return;
+      const data=await response.json();
+      if(data.isAdmin&&!apexAdminMode){apexAdminMode=true;renderPlayers();toast("ADMIN MODE · all players and goalkeepers unlocked");}
+    }catch(_){}
+  }
   const nicknameInput=$("nicknameInput");
   const PROFILE_STORAGE_KEY="eclipseProfileV1";
   function readSavedProfile(){try{const p=JSON.parse(localStorage.getItem(PROFILE_STORAGE_KEY)||"null");if(p&&typeof p==="object")return p;}catch(_){}try{return {name:localStorage.getItem("eclipseDisplayName")||"",photo:localStorage.getItem("eclipseProfilePhoto")||""};}catch(_){return {name:"",photo:""};}}
@@ -1010,5 +1021,6 @@ const goalkeepers = [
   $("resetBtn").addEventListener("click",()=>{match.active=false;match.finished=false;cancelAnimationFrame(animationFrame);score=0;attempt=1;shotTaken=false;ballAnim=null;$("scoreValue").textContent="0";toast("Session score reset · Career records and upgrades are saved")});
   // A touch-friendly joystick appears only in goalkeeper mode as an extra dive input.
   window.addEventListener("resize",()=>{if(!$("gameScreen").classList.contains("hidden"))resizeCanvas()});
-  renderPlayers();resizeCanvas();
+  renderPlayers();
+  detectApexAdmin();resizeCanvas();
 })();
