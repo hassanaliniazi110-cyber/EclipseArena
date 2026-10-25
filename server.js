@@ -327,6 +327,15 @@ app.post("/api/friends/remove", auth, (req, res) => {
   saveData();
   res.json({ ok: true });
 });
+// Admin can inspect public player profiles only. Authentication tokens and private account secrets are never returned.
+app.get("/api/admin/players", auth, (req, res) => {
+  if (!youtubeAdminPlayers.has(req.player.id)) {
+    return res.status(403).json({ error: "Admin access required." });
+  }
+  const all = [...players.values()].map(publicProfile)
+    .sort((a, b) => Number(b.online) - Number(a.online) || b.xp - a.xp || a.name.localeCompare(b.name));
+  res.json({ players: all, total: all.length, online: all.filter(p => p.online).length });
+});
 app.get("/api/profiles/:id", auth, (req, res) => {
   const id = cleanText(req.params.id, 24).toUpperCase();
   if (!validPlayerId(id)) return res.status(400).json({ error: "Invalid player ID" });
