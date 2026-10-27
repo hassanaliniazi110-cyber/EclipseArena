@@ -83,7 +83,7 @@ const goalkeepers = [
   let cw = 900, ch = 620, lastResult = "", shotTimer = null, soundOn = false, masterVolume = 0.65, passcodeFailures=0, passcodeLockUntil=0, lastShotReplay=null, celebrationUntil=0;
   const match = {active:false,finished:false,clock:0,lastTick:0,player:{x:.5,y:.72},rival:{x:.5,y:.28},ball:{x:.5,y:.72},move:"",sprint:false,hasBall:true,playerGoals:0,rivalGoals:0,rankPoints:0,rank:"ROOKIE III",lastRivalShot:0};
 
-  let apexAdminMode=false;
+  let apexAdminMode=true;
   function isUnlocked(p,isKeeper){const starter=(!isKeeper&&p.name==="Muhammad Arham")||(isKeeper&&p.name==="David Raya");return apexAdminMode||starter||((p.unlockXP||0)<=(career.unlockXP||0)&&(p.unlockWins||0)<=(career.unlockWins||0));}
   function playerCard(p, selected, attr, isKeeper){
     const unlocked=isUnlocked(p,isKeeper),xp=career.players[p.name]||0,level=1+Math.floor(xp/100);
@@ -598,6 +598,9 @@ const goalkeepers = [
     montagemmysterious:"dJM5DN1mMls", montagemxonada:"YbcevoTpItI",
     montagembailao:"p7mJqlhPvtk", montagemsupersonic:"4C-b3ml5xQc",
     montagemrugada:"pszU-BtiW2I", brazilianphonk2026:"m_52WB-sYd4",
+    phonkdrift:"m_52WB-sYd4", phonkaggressive:"m_52WB-sYd4", phonknightdrive:"m_52WB-sYd4",
+    phonkvelocity:"m_52WB-sYd4", phonkmontagem:"m_52WB-sYd4", phonkultraslowed:"m_52WB-sYd4",
+    phonkfunk:"m_52WB-sYd4", phonkedit:"m_52WB-sYd4", phonkdark:"m_52WB-sYd4", phonkenergy:"m_52WB-sYd4",
     montagemalquimia:"m_52WB-sYd4", montagemmatadora:"m_52WB-sYd4",
     montagemnobatidao:"m_52WB-sYd4", montagemhomagefunk:"m_52WB-sYd4",
     montagemacelerada:"m_52WB-sYd4", montagemvocenamira:"m_52WB-sYd4",
