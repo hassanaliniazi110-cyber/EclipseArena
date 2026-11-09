@@ -82,6 +82,12 @@ const youtubeAdminPlayers = new Set(youtubeAdminPlayerIdConfig
   .split(/[,;\n\r]+/).map(value => value.trim().toUpperCase())
   .filter(value => /^EA-[A-Z0-9]{3,8}-[A-Z0-9]{3,8}$/.test(value)));
 const YOUTUBE_ACCESS_FILE = process.env.YOUTUBE_ACCESS_FILE || path.join(__dirname, "eclipse-youtube-access.json");
+const AUDIT_FILE = process.env.APEX_AUDIT_FILE || path.join(__dirname, "apex-security-audit.jsonl");
+function auditEvent(actorId, action, targetId = "") {
+  const entry = { at: new Date().toISOString(), actorId: cleanText(actorId, 24), action: cleanText(action, 64), targetId: cleanText(targetId, 64) };
+  try { fs.appendFileSync(AUDIT_FILE, JSON.stringify(entry) + "\\n", { mode: 0o600 }); }
+  catch (error) { console.error("[security audit] Could not write audit event:", error.message); }
+}
 let youtubeAccessData = { requests: [], approved: [] };
 function loadYoutubeAccess() {
   try {
@@ -233,6 +239,16 @@ app.post("/api/youtube/requests", auth, inviteLimiter, (req, res) => {
   saveYoutubeAccess();
   res.status(201).json({ status: "pending", message: "Your request was sent to the owner." });
 });
+app.get("/api/admin/audit", auth, (req, res) => {
+  if (!youtubeAdminPlayers.has(req.player.id)) return res.status(403).json({ error: "Admin access required." });
+  try {
+    const lines = fs.readFileSync(AUDIT_FILE, "utf8").trim().split(/\\r?\\n/).filter(Boolean).slice(-100);
+    res.json({ events: lines.map(line => { try { return JSON.parse(line); } catch (_) { return null; } }).filter(Boolean) });
+  } catch (error) {
+    if (error.code === "ENOENT") return res.json({ events: [] });
+    return res.status(500).json({ error: "Audit log is temporarily unavailable." });
+  }
+});
 app.get("/api/youtube/requests", auth, (req, res) => {
   if (!youtubeAdminPlayers.has(req.player.id)) return res.status(403).json({ error: "Only the configured Eclipse Arena owner can review requests." });
   res.json({ requests: youtubeAccessData.requests.filter(r => r.status === "pending") });
@@ -247,6 +263,7 @@ app.post("/api/youtube/requests/:requestId/decision", auth, (req, res) => {
   if (decision === "accept" && !youtubeAccessData.approved.includes(request.playerId)) youtubeAccessData.approved.push(request.playerId);
   if (decision === "decline") youtubeAccessData.approved = youtubeAccessData.approved.filter(id => id !== request.playerId);
   saveYoutubeAccess();
+  auditEvent(req.player.id, "youtube_access_" + request.status, request.playerId);
   res.json({ ok: true, status: request.status, playerId: request.playerId });
 });
 
