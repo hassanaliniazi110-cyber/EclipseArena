@@ -82,6 +82,12 @@ const youtubeAdminPlayers = new Set(youtubeAdminPlayerIdConfig
   .split(/[,;\n\r]+/).map(value => value.trim().toUpperCase())
   .filter(value => /^EA-[A-Z0-9]{3,8}-[A-Z0-9]{3,8}$/.test(value)));
 const YOUTUBE_ACCESS_FILE = process.env.YOUTUBE_ACCESS_FILE || path.join(__dirname, "eclipse-youtube-access.json");
+const AUDIT_FILE = process.env.APEX_AUDIT_FILE || path.join(__dirname, "apex-security-audit.jsonl");
+function auditEvent(actorId, action, targetId = "") {
+  const entry = { at: new Date().toISOString(), actorId: cleanText(actorId, 24), action: cleanText(action, 64), targetId: cleanText(targetId, 64) };
+  try { fs.appendFileSync(AUDIT_FILE, JSON.stringify(entry) + "\\n", { mode: 0o600 }); }
+  catch (error) { console.error("[security audit] Could not write audit event:", error.message); }
+}
 let youtubeAccessData = { requests: [], approved: [] };
 function loadYoutubeAccess() {
   try {
@@ -233,6 +239,16 @@ app.post("/api/youtube/requests", auth, inviteLimiter, (req, res) => {
   saveYoutubeAccess();
   res.status(201).json({ status: "pending", message: "Your request was sent to the owner." });
 });
+app.get("/api/admin/audit", auth, (req, res) => {
+  if (!youtubeAdminPlayers.has(req.player.id)) return res.status(403).json({ error: "Admin access required." });
+  try {
+    const lines = fs.readFileSync(AUDIT_FILE, "utf8").trim().split(/\\r?\\n/).filter(Boolean).slice(-100);
+    res.json({ events: lines.map(line => { try { return JSON.parse(line); } catch (_) { return null; } }).filter(Boolean) });
+  } catch (error) {
+    if (error.code === "ENOENT") return res.json({ events: [] });
+    return res.status(500).json({ error: "Audit log is temporarily unavailable." });
+  }
+});
 app.get("/api/youtube/requests", auth, (req, res) => {
   if (!youtubeAdminPlayers.has(req.player.id)) return res.status(403).json({ error: "Only the configured Eclipse Arena owner can review requests." });
   res.json({ requests: youtubeAccessData.requests.filter(r => r.status === "pending") });
@@ -247,6 +263,7 @@ app.post("/api/youtube/requests/:requestId/decision", auth, (req, res) => {
   if (decision === "accept" && !youtubeAccessData.approved.includes(request.playerId)) youtubeAccessData.approved.push(request.playerId);
   if (decision === "decline") youtubeAccessData.approved = youtubeAccessData.approved.filter(id => id !== request.playerId);
   saveYoutubeAccess();
+  auditEvent(req.player.id, "youtube_access_" + request.status, request.playerId);
   res.json({ ok: true, status: request.status, playerId: request.playerId });
 });
 
@@ -308,14 +325,30 @@ app.get("/api/friends", auth, (req, res) => {
   const friends = [...req.player.friends].map(id => players.get(id)).filter(Boolean).map(publicProfile);
   res.json({ friends });
 });
+app.get("/api/players/search", auth, (req, res) => {
+  const query = cleanText(req.query?.q || "", 24).toLocaleLowerCase();
+  if (query.length < 2) return res.status(400).json({ error: "Enter at least 2 letters to search." });
+  const matches = [...players.values()]
+    .filter(p => p.id !== req.player.id && p.profile.name.toLocaleLowerCase().includes(query))
+    .sort((a, b) => Number(b.profile.name.toLocaleLowerCase() === query) - Number(a.profile.name.toLocaleLowerCase() === query) || a.profile.name.localeCompare(b.profile.name))
+    .slice(0, 10)
+    .map(publicProfile);
+  res.json({ players: matches });
+});
 app.post("/api/friends", auth, (req, res) => {
-  const id = cleanText(req.body?.friendId, 24).toUpperCase();
-  if (!validPlayerId(id)) return res.status(400).json({ error: "Invalid player ID" });
-  if (id === req.player.id) return res.status(400).json({ error: "You cannot add yourself" });
-  const friend = players.get(id);
-  if (!friend) return res.status(404).json({ error: "Player not found on this server" });
-  if (req.player.friends.size >= 100) return res.status(429).json({ error: "Friend limit reached" });
-  req.player.friends.add(id);
+  const requestedId = cleanText(req.body?.friendId, 24).toUpperCase();
+  const requestedName = cleanText(req.body?.friendName, 24).toLocaleLowerCase();
+  let friend = requestedId ? players.get(requestedId) : null;
+  if (!friend && requestedName) {
+    const matches = [...players.values()].filter(p => p.id !== req.player.id && p.profile.name.toLocaleLowerCase() === requestedName);
+    if (matches.length > 1) return res.status(409).json({ error: "More than one player has that name. Search and choose their player ID.", matches: matches.slice(0, 10).map(publicProfile) });
+    friend = matches[0] || null;
+  }
+  if (!friend) return res.status(requestedId || requestedName ? 404 : 400).json({ error: "Player not found. Check the ID or exact display name." });
+  if (friend.id === req.player.id) return res.status(400).json({ error: "You cannot add yourself." });
+  if (req.player.friends.has(friend.id)) return res.status(409).json({ error: "That player is already your friend." });
+  if (req.player.friends.size >= 100) return res.status(429).json({ error: "Friend limit reached." });
+  req.player.friends.add(friend.id);
   friend.friends.add(req.player.id);
   saveData();
   res.status(201).json({ friend: publicProfile(friend) });
@@ -336,6 +369,23 @@ app.get("/api/admin/players", auth, (req, res) => {
     .sort((a, b) => Number(b.online) - Number(a.online) || b.xp - a.xp || a.name.localeCompare(b.name));
   res.json({ players: all, total: all.length, online: all.filter(p => p.online).length });
 });
+app.get("/api/leaderboard", auth, (req, res) => {
+  const board = [...players.values()].map(publicProfile)
+    .sort((a, b) => b.wins - a.wins || b.xp - a.xp || b.goals - a.goals)
+    .slice(0, 50)
+    .map((p, index) => ({ rank: index + 1, ...p }));
+  res.json({ leaderboard: board, updatedAt: new Date().toISOString() });
+});
+app.get("/api/events", auth, (_req, res) => {
+  const now = new Date();
+  const week = Math.floor(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) / 604800000);
+  const events = [
+    { id: "weekly-crossbar", title: "CROSSBAR CUP", type: "weekly", description: "Hit the target and climb the weekly event board.", mode: "crossbar", rewardXp: 250 },
+    { id: "daily-keeper", title: "KEEPER'S DAILY", type: "daily", description: "Test your reactions in a goalkeeper challenge.", mode: "goalkeeping", rewardXp: 75 },
+    { id: "weekend-rush", title: "WEEKEND RUSH", type: "weekly", description: "Take on a fast set of attacking challenges.", mode: "vsattack", rewardXp: 200 }
+  ];
+  res.json({ events, rotation: week, serverTime: now.toISOString() });
+});
 app.get("/api/profiles/:id", auth, (req, res) => {
   const id = cleanText(req.params.id, 24).toUpperCase();
   if (!validPlayerId(id)) return res.status(400).json({ error: "Invalid player ID" });
@@ -349,7 +399,9 @@ app.post("/api/invites", auth, inviteLimiter, (req, res) => {
   const id = cleanText(req.body?.friendId, 24).toUpperCase();
   if (!req.player.friends.has(id)) return res.status(403).json({ error: "Add this player as a friend first" });
   const target = players.get(id);
-  if (!target) return res.status(404).json({ error: "Friend is offline or not found" });
+  if (!target) return res.status(404).json({ error: "Friend not found on this server." });
+  if (!socketsByPlayer.get(id)?.size) return res.status(409).json({ error: "That friend is offline. They must connect to Apex Strikers before you can invite them." });
+  if (!socketsByPlayer.get(req.player.id)?.size) return res.status(409).json({ error: "Your live game connection is not ready. Reconnect and try again." });
   const roomId = crypto.randomBytes(8).toString("hex");
   invites.set(roomId, { from: req.player.id, to: id, createdAt: Date.now() });
   socketsByPlayer.get(id)?.forEach(s => s.emit("friend:invite", { roomId, fromName: req.player.profile.name }));
@@ -416,6 +468,8 @@ io.on("connection", socket => {
       y: Math.max(0.05, Math.min(0.95, Number(state.y))),
       goals: Math.max(0, Math.min(99, Math.floor(Number(state.goals) || 0))),
       hasBall: Boolean(state.hasBall),
+      ballX: Number.isFinite(Number(state.ballX)) ? Math.max(0.02, Math.min(0.98, Number(state.ballX))) : 0.5,
+      ballY: Number.isFinite(Number(state.ballY)) ? Math.max(0.02, Math.min(0.98, Number(state.ballY))) : 0.5,
       clock: Math.max(0, Math.min(90, Number(state.clock) || 0))
     };
     socket.to(roomId).emit("match:state", {
