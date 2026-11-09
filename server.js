@@ -382,7 +382,9 @@ app.post("/api/invites", auth, inviteLimiter, (req, res) => {
   const id = cleanText(req.body?.friendId, 24).toUpperCase();
   if (!req.player.friends.has(id)) return res.status(403).json({ error: "Add this player as a friend first" });
   const target = players.get(id);
-  if (!target) return res.status(404).json({ error: "Friend is offline or not found" });
+  if (!target) return res.status(404).json({ error: "Friend not found on this server." });
+  if (!socketsByPlayer.get(id)?.size) return res.status(409).json({ error: "That friend is offline. They must connect to Apex Strikers before you can invite them." });
+  if (!socketsByPlayer.get(req.player.id)?.size) return res.status(409).json({ error: "Your live game connection is not ready. Reconnect and try again." });
   const roomId = crypto.randomBytes(8).toString("hex");
   invites.set(roomId, { from: req.player.id, to: id, createdAt: Date.now() });
   socketsByPlayer.get(id)?.forEach(s => s.emit("friend:invite", { roomId, fromName: req.player.profile.name }));
@@ -449,6 +451,8 @@ io.on("connection", socket => {
       y: Math.max(0.05, Math.min(0.95, Number(state.y))),
       goals: Math.max(0, Math.min(99, Math.floor(Number(state.goals) || 0))),
       hasBall: Boolean(state.hasBall),
+      ballX: Number.isFinite(Number(state.ballX)) ? Math.max(0.02, Math.min(0.98, Number(state.ballX))) : 0.5,
+      ballY: Number.isFinite(Number(state.ballY)) ? Math.max(0.02, Math.min(0.98, Number(state.ballY))) : 0.5,
       clock: Math.max(0, Math.min(90, Number(state.clock) || 0))
     };
     socket.to(roomId).emit("match:state", {
