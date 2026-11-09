@@ -308,14 +308,30 @@ app.get("/api/friends", auth, (req, res) => {
   const friends = [...req.player.friends].map(id => players.get(id)).filter(Boolean).map(publicProfile);
   res.json({ friends });
 });
+app.get("/api/players/search", auth, (req, res) => {
+  const query = cleanText(req.query?.q || "", 24).toLocaleLowerCase();
+  if (query.length < 2) return res.status(400).json({ error: "Enter at least 2 letters to search." });
+  const matches = [...players.values()]
+    .filter(p => p.id !== req.player.id && p.profile.name.toLocaleLowerCase().includes(query))
+    .sort((a, b) => Number(b.profile.name.toLocaleLowerCase() === query) - Number(a.profile.name.toLocaleLowerCase() === query) || a.profile.name.localeCompare(b.profile.name))
+    .slice(0, 10)
+    .map(publicProfile);
+  res.json({ players: matches });
+});
 app.post("/api/friends", auth, (req, res) => {
-  const id = cleanText(req.body?.friendId, 24).toUpperCase();
-  if (!validPlayerId(id)) return res.status(400).json({ error: "Invalid player ID" });
-  if (id === req.player.id) return res.status(400).json({ error: "You cannot add yourself" });
-  const friend = players.get(id);
-  if (!friend) return res.status(404).json({ error: "Player not found on this server" });
-  if (req.player.friends.size >= 100) return res.status(429).json({ error: "Friend limit reached" });
-  req.player.friends.add(id);
+  const requestedId = cleanText(req.body?.friendId, 24).toUpperCase();
+  const requestedName = cleanText(req.body?.friendName, 24).toLocaleLowerCase();
+  let friend = requestedId ? players.get(requestedId) : null;
+  if (!friend && requestedName) {
+    const matches = [...players.values()].filter(p => p.id !== req.player.id && p.profile.name.toLocaleLowerCase() === requestedName);
+    if (matches.length > 1) return res.status(409).json({ error: "More than one player has that name. Search and choose their player ID.", matches: matches.slice(0, 10).map(publicProfile) });
+    friend = matches[0] || null;
+  }
+  if (!friend) return res.status(requestedId || requestedName ? 404 : 400).json({ error: "Player not found. Check the ID or exact display name." });
+  if (friend.id === req.player.id) return res.status(400).json({ error: "You cannot add yourself." });
+  if (req.player.friends.has(friend.id)) return res.status(409).json({ error: "That player is already your friend." });
+  if (req.player.friends.size >= 100) return res.status(429).json({ error: "Friend limit reached." });
+  req.player.friends.add(friend.id);
   friend.friends.add(req.player.id);
   saveData();
   res.status(201).json({ friend: publicProfile(friend) });
@@ -335,6 +351,23 @@ app.get("/api/admin/players", auth, (req, res) => {
   const all = [...players.values()].map(publicProfile)
     .sort((a, b) => Number(b.online) - Number(a.online) || b.xp - a.xp || a.name.localeCompare(b.name));
   res.json({ players: all, total: all.length, online: all.filter(p => p.online).length });
+});
+app.get("/api/leaderboard", auth, (req, res) => {
+  const board = [...players.values()].map(publicProfile)
+    .sort((a, b) => b.wins - a.wins || b.xp - a.xp || b.goals - a.goals)
+    .slice(0, 50)
+    .map((p, index) => ({ rank: index + 1, ...p }));
+  res.json({ leaderboard: board, updatedAt: new Date().toISOString() });
+});
+app.get("/api/events", auth, (_req, res) => {
+  const now = new Date();
+  const week = Math.floor(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) / 604800000);
+  const events = [
+    { id: "weekly-crossbar", title: "CROSSBAR CUP", type: "weekly", description: "Hit the target and climb the weekly event board.", mode: "crossbar", rewardXp: 250 },
+    { id: "daily-keeper", title: "KEEPER'S DAILY", type: "daily", description: "Test your reactions in a goalkeeper challenge.", mode: "goalkeeping", rewardXp: 75 },
+    { id: "weekend-rush", title: "WEEKEND RUSH", type: "weekly", description: "Take on a fast set of attacking challenges.", mode: "vsattack", rewardXp: 200 }
+  ];
+  res.json({ events, rotation: week, serverTime: now.toISOString() });
 });
 app.get("/api/profiles/:id", auth, (req, res) => {
   const id = cleanText(req.params.id, 24).toUpperCase();
