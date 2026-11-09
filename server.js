@@ -445,9 +445,17 @@ io.on("connection", socket => {
     }
     socket.join(roomId);
     inviterSockets.forEach(s => s.join(roomId));
-    activeMatches.set(roomId, { players: new Set([invite.from, invite.to]), createdAt: Date.now() });
+    const match = { players: new Set([invite.from, invite.to]), createdAt: Date.now(), startAt: Date.now(), states: new Map(), timer: null };
+    activeMatches.set(roomId, match);
     invites.delete(roomId);
-    io.to(roomId).emit("match:ready", { roomId });
+    io.to(roomId).emit("match:ready", { roomId, startAt: match.startAt, durationSeconds: 90 });
+    match.timer = setTimeout(() => {
+      if (activeMatches.get(roomId) !== match) return;
+      const ids = [...match.players];
+      const results = ids.map(playerId => ({ playerId, goals: match.states.get(playerId)?.goals || 0 }));
+      activeMatches.delete(roomId);
+      io.to(roomId).emit("match:finished", { roomId, finishedAt: Date.now(), players: results });
+    }, 90000);
   });
   socket.on("match:decline", payload => {
     const roomId = cleanText(payload?.roomId, 32), invite = invites.get(roomId);
@@ -472,10 +480,13 @@ io.on("connection", socket => {
       ballY: Number.isFinite(Number(state.ballY)) ? Math.max(0.02, Math.min(0.98, Number(state.ballY))) : 0.5,
       clock: Math.max(0, Math.min(90, Number(state.clock) || 0))
     };
+    match.states.set(id, safeState);
+    const serverClock = Math.min(90, (Date.now() - match.startAt) / 1000);
     socket.to(roomId).emit("match:state", {
       roomId,
       fromName: players.get(id)?.profile.name || "Friend",
       playerId: id,
+      serverClock,
       state: safeState
     });
   });
@@ -484,6 +495,7 @@ io.on("connection", socket => {
     if (!socketsByPlayer.get(id)?.size) socketsByPlayer.delete(id);
     for (const [roomId, match] of activeMatches) {
       if (match.players.has(id)) {
+        clearTimeout(match.timer);
         activeMatches.delete(roomId);
         io.to(roomId).emit("match:ended", { message: "A player disconnected" });
       }
