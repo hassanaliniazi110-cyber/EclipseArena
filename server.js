@@ -382,7 +382,7 @@ app.post("/api/games/complete",auth,inviteLimiter,(req,res)=>{
   if(req.player.rewardDay!==today){req.player.rewardDay=today;req.player.rewardGemsToday=0;}
   if(req.player.rewardGemsToday>=200){req.player.gameSession=null;saveData();return res.status(429).json({error:"Daily gem reward limit reached."});}
   if(Date.now()-req.player.lastGameClaimAt<45000){req.player.gameSession=null;saveData();return res.status(429).json({error:"Finish another game before claiming more gems."});}
-  let reward=25,eventReward=0,eventId="";
+  let reward=25,eventReward=0,eventXp=0,eventId="";
   const eventKey=session.mode==="vsattack"?"game-changers":session.mode==="crossbar"?"neon-derby":session.mode==="goalkeeping"?"last-line":"";
   if(eventKey){
     const period=eventKey==="game-changers"?"week-"+Math.floor(Date.now()/604800000):today;
@@ -390,6 +390,7 @@ app.post("/api/games/complete",auth,inviteLimiter,(req,res)=>{
     const claimKey=eventKey+":"+period;
     if(!req.player.eventClaims[claimKey]){
       eventReward=eventKey==="game-changers"?45:eventKey==="neon-derby"?25:15;
+      eventXp=eventKey==="game-changers"?300:eventKey==="neon-derby"?180:90;
       req.player.eventClaims[claimKey]=true;eventId=eventKey;
     }
   }
@@ -397,7 +398,7 @@ app.post("/api/games/complete",auth,inviteLimiter,(req,res)=>{
   req.player.gems=Math.min(1000000,req.player.gems+reward);
   req.player.rewardGemsToday+=reward;req.player.lastGameClaimAt=Date.now();req.player.gameSession=null;
   saveData();auditEvent(req.player.id,"game_reward_claimed",String(reward));
-  res.json({gems:req.player.gems,reward,eventReward,eventId,dailyEarned:req.player.rewardGemsToday,dailyLimit:200});
+  res.json({gems:req.player.gems,reward,eventReward,eventXp,eventId,dailyEarned:req.player.rewardGemsToday,dailyLimit:200});
 });
 app.get("/api/leaderboard", auth, (req, res) => {
   const board = [...players.values()].map(publicProfile)
