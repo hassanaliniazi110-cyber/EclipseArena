@@ -844,6 +844,7 @@ const goalkeepers = [
   }
   async function refreshYouTubeRequests(){
     const list=$("youtubeOwnerRequestList");if(!list)return;
+    if(!admin2FAToken){list.textContent="Verify your authenticator above before loading owner requests.";return;}
     try{
       const data=await api("/api/youtube/requests");
       list.replaceChildren();
