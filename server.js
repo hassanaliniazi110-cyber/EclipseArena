@@ -314,12 +314,10 @@ app.get("/api/admin/audit", auth, (req, res) => {
     return res.status(500).json({ error: "Audit log is temporarily unavailable." });
   }
 });
-app.get("/api/youtube/requests", auth, (req, res) => {
-  if (!youtubeAdminPlayers.has(req.player.id)) return res.status(403).json({ error: "Only the configured Eclipse Arena owner can review requests." });
+app.get("/api/youtube/requests", auth, requireAdmin2FA, (req, res) => {
   res.json({ requests: youtubeAccessData.requests.filter(r => r.status === "pending") });
 });
-app.post("/api/youtube/requests/:requestId/decision", auth, (req, res) => {
-  if (!youtubeAdminPlayers.has(req.player.id)) return res.status(403).json({ error: "Only the configured Eclipse Arena owner can decide requests." });
+app.post("/api/youtube/requests/:requestId/decision", auth, requireAdmin2FA, (req, res) => {
   const request = youtubeAccessData.requests.find(r => r.id === req.params.requestId && r.status === "pending");
   if (!request) return res.status(404).json({ error: "Request not found or already handled." });
   const decision = req.body?.decision;
