@@ -86,6 +86,54 @@ const goalkeepers = [
   let apexAdminMode=false;
   let ownedDraftCardIds=new Set();
   const normalizePlayerName=value=>String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"");
+  const rosterPhotoSlugs={
+    cristianoronaldo:"ronaldo",lionelmessi:"messi",kylianmbappe:"mbappe",erlinghaaland:"haaland",
+    judebellingham:"bellingham",lamineyamal:"lamine-yamal",kevindebruyne:"de-bruyne",mohamedsalah:"salah",
+    viniciusjunior:"vinicius",neymarjr:"neymar",harrykane:"kane",bukayosaka:"bukayo-saka",
+    diegomaradona:"maradona",luisfigo:"luis-figo",zinedinezidane:"zidane",pele:"pele",
+    ronaldonazario:"ronaldo-nazario",ronaldinho:"ronaldinho",thierryhenry:"thierry-henry",xavi:"xavi",
+    andresiniesta:"iniesta",andreapirlo:"andrea-pirlo",sergioramos:"ramos",virgilvandijk:"van-dijk",
+    karimbenzema:"benzema",rodri:"rodri",
+    alisson:"alisson",thibautcourtois:"thibaut-courtois",manuelneuer:"neuer",
+    marcandreterstegen:"ter-stegen",gianluigibuffon:"buffon",ikercasillas:"casillas",
+    petrcech:"petr-cech",oliverkahn:"oliver-kahn",edwinvandersar:"van-der-sar",keylornavas:"keylor-navas"
+  };
+  function isValidPlayerPhoto(source){
+    const value=String(source||"");
+    return /^https:\/\/geofootballguessr\.com\/footballers\/[a-z0-9-]+\.webp$/i.test(value)||
+      /^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(value)||
+      /^data:image\/svg\+xml;charset=utf-8,/i.test(value);
+  }
+  function makePlayerAvatarData(name,role){
+    const words=String(name||"APEX PLAYER").trim().split(/\s+/).filter(Boolean);
+    const initials=words.slice(0,2).map(word=>word[0]||"").join("").toUpperCase()||"AP";
+    const keeper=/keeper|goalkeeper|sweeper/i.test(String(role||""));
+    const label=keeper?"GOALKEEPER":"APEX PLAYER";
+    const svg='<svg xmlns="http://www.w3.org/2000/svg" width="320" height="420" viewBox="0 0 320 420"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#20344a"/><stop offset=".55" stop-color="#101923"/><stop offset="1" stop-color="#090e14"/></linearGradient><linearGradient id="shirt" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d6ff65"/><stop offset="1" stop-color="#548d36"/></linearGradient></defs><rect width="320" height="420" rx="18" fill="url(#bg)"/><path d="M0 290 320 170M0 360 320 240" stroke="#ffffff" stroke-opacity=".07" stroke-width="2"/><circle cx="160" cy="140" r="61" fill="#b7c3cb"/><path d="M101 145c7-65 111-90 120 2-14-21-27-32-50-35-26 19-46 25-70 33Z" fill="#667887"/><path d="M48 420c8-103 48-157 112-157s104 54 112 157" fill="url(#shirt)"/><path d="M117 277h86l-9 52h-68z" fill="#20344a"/><text x="160" y="362" text-anchor="middle" font-family="Arial,sans-serif" font-size="49" font-weight="900" fill="#f5f8ed">'+initials+'</text><text x="160" y="397" text-anchor="middle" font-family="Arial,sans-serif" font-size="14" font-weight="800" letter-spacing="3" fill="#e5f7ba">'+label+'</text></svg>';
+    return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
+  }
+  function ensureRosterPlayerImages(){
+    const savedPhoto=readSavedProfile().photo||"";
+    [...players,...goalkeepers].forEach(player=>{
+      if(isValidPlayerPhoto(player.image))return;
+      const slug=rosterPhotoSlugs[normalizePlayerName(player.name)];
+      const sourced=slug?"https://geofootballguessr.com/footballers/"+slug+".webp":"";
+      const key=normalizePlayerName(player.name);
+      const personal=["muhammadarham","hassanali"].includes(key)&&isValidPlayerPhoto(savedPhoto)?savedPhoto:"";
+      player.image=isValidPlayerPhoto(sourced)?sourced:(personal||makePlayerAvatarData(player.name,player.role));
+    });
+  }
+  function attachPlayerPortraitFallbacks(root){
+    if(!root)return;
+    root.querySelectorAll(".player-card-photo").forEach(photo=>{
+      photo.addEventListener("error",()=>{
+        if(photo.dataset.fallbackApplied==="true")return;
+        photo.dataset.fallbackApplied="true";
+        photo.src=makePlayerAvatarData(photo.dataset.playerName||"Apex Player",photo.dataset.playerRole||"PLAYER");
+      },{once:true});
+    });
+  }
+
   function syncOwnedCardsToRoster(ownedIds,cardCatalog){
     ownedDraftCardIds=new Set(Array.isArray(ownedIds)?ownedIds.filter(id=>typeof id==="string"):[]);
     (Array.isArray(cardCatalog)?cardCatalog:[]).forEach(card=>{
@@ -120,15 +168,18 @@ const goalkeepers = [
     const offsets=isKeeper?[1,0,-3,2,-2,1]:p.role==="ST"?[0,3,-2,-1,-4,2]:p.role==="RW"||p.role==="LW"?[3,0,-1,3,-5,-2]:p.role==="CAM"||p.role==="CM"?[-1,-1,3,1,0,0]:[0,0,0,0,0,0];
     const attributes=labels.map((label,i)=>'<span><b>'+label+'</b><strong>'+(p.stats&&p.stats[label]!=null?p.stats[label]:Math.min(199,Math.max(45,rating+offsets[i])))+'</strong></span>').join("");
     const safeName=String(p.name).replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
-    const safeImage=/^https:\/\/geofootballguessr\.com\/footballers\/[a-z0-9-]+\.webp$/i.test(String(p.image||""))?p.image:"";
-    const portrait=safeImage?'<img class="player-card-photo" src="'+safeImage+'" alt="'+safeName+' portrait" loading="lazy">':"";
+    const safeImage=isValidPlayerPhoto(p.image)?p.image:makePlayerAvatarData(p.name,isKeeper?"GOALKEEPER":p.role);
+    const portrait='<img class="player-card-photo" src="'+safeImage+'" data-player-name="'+safeName+'" data-player-role="'+(isKeeper?"GOALKEEPER":String(p.role||"PLAYER"))+'" alt="'+safeName+' portrait" loading="lazy">';
     const signedTag=p.cardId&&ownedDraftCardIds.has(p.cardId)?'<span class="player-signed-tag">SIGNED CARD</span>':"";
     return '<button class="player-card '+(p.name===selected?'selected ':'')+(signedTag?'player-card-signed ':'')+(!unlocked?'player-locked':'')+'" '+(unlocked?'':'disabled aria-label="Locked player '+safeName+'" ')+attr+'="'+safeName.replace(/"/g,"&quot;")+'" style="--player-glow:'+p.glow+'">'+portrait+'<div class="player-card-copy">'+signedTag+'<div class="player-rating">'+displayRating+'</div><div class="player-role">'+p.role+' · OVR</div><div class="player-name">'+safeName+'</div><div class="player-special">'+(unlocked?p.special:lockLabel)+'</div><div class="fc-attributes">'+attributes+'</div><div class="ovr-meter"><i><span style="width:'+Math.min(100,rating)+'%"></span></i></div></div></button>';
   }
   function renderPlayers(){
+    ensureRosterPlayerImages();
     $("playerGrid").innerHTML=players.map(p=>playerCard(p,selectedPlayer,"data-player",false)).join("");
+    attachPlayerPortraitFallbacks($("playerGrid"));
     $("playerGrid").querySelectorAll("[data-player]").forEach(btn=>btn.addEventListener("click",()=>{selectedPlayer=btn.dataset.player;renderPlayers();if(typeof renderCareerHub==="function")renderCareerHub();toast(selectedPlayer+" selected as player");}));
     $("goalkeeperGrid").innerHTML=goalkeepers.map(p=>playerCard(p,selectedGoalkeeper,"data-goalkeeper",true)).join("");
+    attachPlayerPortraitFallbacks($("goalkeeperGrid"));
     $("goalkeeperGrid").querySelectorAll("[data-goalkeeper]").forEach(btn=>btn.addEventListener("click",()=>{selectedGoalkeeper=btn.dataset.goalkeeper;renderPlayers();if(typeof renderCareerHub==="function")renderCareerHub();toast(selectedGoalkeeper+" selected as goalkeeper");}));
     const count=players.filter(p=>isUnlocked(p,false)).length,gcount=goalkeepers.filter(p=>isUnlocked(p,true)).length;
     const counters=document.querySelectorAll(".section-count");if(counters[0])counters[0].textContent=count+" / "+players.length+" UNLOCKED";if(counters[1])counters[1].textContent=gcount+" / "+goalkeepers.length+" UNLOCKED";
@@ -484,7 +535,7 @@ const goalkeepers = [
         card.stats||{PAC:Math.max(45,Number(card.ovr||80)-2),SHO:Math.max(45,Number(card.ovr||80)-1),PAS:Math.max(45,Number(card.ovr||80)-4),DRI:Math.max(45,Number(card.ovr||80)-3),DEF:Math.max(35,Number(card.ovr||80)-20),PHY:Math.max(45,Number(card.ovr||80)-7)},
         card.club||"APEX FC"
       ]]));
-      if(catalog.arham)catalog.arham[5]=readSavedProfile().photo||"";
+      if(catalog.arham){const savedPhoto=readSavedProfile().photo||"";catalog.arham[5]=isValidPlayerPhoto(savedPhoto)?savedPhoto:makePlayerAvatarData(catalog.arham[0],catalog.arham[2]);}
       const cardRarityMap=Object.fromEntries((data.cardCatalog||[]).map(card=>[card.id,card.rarity]));
       const rarityFor=id=>cardRarityMap[id]||(["messi","ronaldo","figo"].includes(id)?"ICON":"ELITE");
       const makeCard=(p,extraClass="")=>{
@@ -493,11 +544,9 @@ const goalkeepers = [
         card.className="apex-player-card draft-player-card "+(p.rarity==="ICON"?"icon ":p.rarity==="GAME CHANGERS"?"game-changers ":"elite ")+(extraClass||"");
         card.dataset.player=p.id||"";
         const portrait=document.createElement("div");portrait.className="apex-card-portrait";
-        if(info[5]){
-          const photo=document.createElement("img");photo.src=info[5];photo.alt=info[0]+" player portrait";photo.loading="lazy";photo.referrerPolicy="no-referrer";
-          photo.onerror=()=>{photo.remove();portrait.classList.add("photo-unavailable");portrait.textContent="PLAYER PORTRAIT UNAVAILABLE";};
-          portrait.appendChild(photo);
-        }else{portrait.classList.add("photo-needed");portrait.textContent="MA";}
+        const photo=document.createElement("img");photo.src=isValidPlayerPhoto(info[5])?info[5]:makePlayerAvatarData(info[0],info[2]);photo.alt=info[0]+" player portrait";photo.loading="lazy";photo.referrerPolicy="no-referrer";
+        photo.onerror=()=>{if(photo.dataset.fallbackApplied==="true")return;photo.dataset.fallbackApplied="true";photo.src=makePlayerAvatarData(info[0],info[2]);};
+        portrait.appendChild(photo);
         const foil=document.createElement("div");foil.className="apex-card-foil";
         const top=document.createElement("div");top.className="apex-card-top";
         const ratingGroup=document.createElement("div");ratingGroup.className="apex-card-rating-group";
