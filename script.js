@@ -477,24 +477,20 @@ const goalkeepers = [
     panel.innerHTML='<section class="apex-draft-market"><div class="draft-market-kicker">APEX STRIKERS · PLAYER EXCHANGE</div><h3>THE DRAFT ROOM</h3><p>Exchange gems for a Draft Voucher. Each voucher reveals three player cards. Choose ONE to sign. Duplicate picks upgrade your existing card.</p><div class="apex-store-head"><strong>YOUR WALLET</strong><span class="apex-gem-count" id="apexGemCount">Loading...</span></div><div class="draft-wallet-line"><span id="apexVoucherCount">◇ -- DRAFT VOUCHERS</span><span>150 GEMS = 1 VOUCHER</span></div><div class="apex-pack-row draft-voucher-actions"><button class="apex-pack draft-buy" id="buyDraftVoucher"><strong>GET DRAFT VOUCHER</strong><span>150 GEMS · 1 VOUCHER</span><small>Build your next signing shortlist.</small></button><button class="apex-pack draft-start" id="startPlayerDraft"><strong>ENTER THE DRAFT</strong><span>1 VOUCHER · 3 PLAYER PICKS</span><small>Choose one card to add to your squad.</small></button></div><p id="apexPackStatus" class="career-hub-status" aria-live="polite"></p><div id="apexDraftChoices" class="apex-card-grid draft-choice-grid"></div><div id="apexPackReveal" class="apex-card-grid"></div></section><p class="apex-photo-credit">Player photographs: Wikimedia Commons. Credits and licence information are listed here: <a href="https://geofootballguessr.com/image-credits" target="_blank" rel="noopener noreferrer">photo credits</a>.</p><h4>YOUR SIGNED PLAYERS</h4><div id="apexOwnedCards" class="apex-card-grid"></div>';
     if(!onlineCfg.base||!onlineCfg.token){$("apexGemCount").textContent="Connect online to sync gems";$("apexVoucherCount").textContent="Connect to view vouchers";updateCareerVoucherBalance("CONNECT ONLINE");return;}
     try{
-      const data=await api("/api/store");$("apexGemCount").textContent="◇ "+data.gems+" GEMS";updateTopGemBalance(data.gems);updateCareerVoucherBalance(data.draftVouchers||0);$("apexVoucherCount").textContent="◇ "+(data.draftVouchers||0)+" DRAFT VOUCHERS";
+      const data=await api("/api/store");$("apexGemCount").textContent="◇ "+data.gems+" GEMS";updateTopGemBalance(data.gems);updateCareerVoucherBalance(data.draftVouchers||0);$("apexVoucherCount").textContent="◇ "+(data.draftVouchers||0)+" DRAFT VOUCHERS";syncOwnedCardsToRoster(data.ownedCards,data.cardCatalog);
       const photoUrl=slug=>"https://geofootballguessr.com/footballers/"+slug+".webp";
-      const catalog={
-        arham:["Muhammad Arham",122,"ST","SAUDI ARABIA","SA","",{PAC:90,SHO:93,PAS:80,DRI:88,DEF:40,PHY:85},"APEX FC"],
-        messi:["Lionel Messi",123,"RW","ARGENTINA","AR",photoUrl("messi"),{PAC:87,SHO:98,PAS:99,DRI:99,DEF:40,PHY:75},"INTER MIAMI"],
-        ronaldo:["Cristiano Ronaldo",124,"ST","PORTUGAL","PT",photoUrl("ronaldo"),{PAC:95,SHO:99,PAS:83,DRI:93,DEF:45,PHY:92},"AL NASSR"],
-        mbappe:["Kylian Mbappé",122,"ST","FRANCE","FR",photoUrl("mbappe"),{PAC:99,SHO:96,PAS:82,DRI:97,DEF:40,PHY:84},"REAL MADRID"],
-        yamal:["Lamine Yamal",121,"RW","SPAIN","ES",photoUrl("lamine-yamal"),{PAC:96,SHO:91,PAS:91,DRI:97,DEF:38,PHY:70},"FC BARCELONA"],
-        haaland:["Erling Haaland",121,"ST","NORWAY","NO",photoUrl("haaland"),{PAC:97,SHO:99,PAS:74,DRI:84,DEF:45,PHY:95},"MAN CITY"],
-        bellingham:["Jude Bellingham",120,"CM","ENGLAND","EN",photoUrl("bellingham"),{PAC:88,SHO:89,PAS:92,DRI:93,DEF:82,PHY:88},"REAL MADRID"],
-        salah:["Mohamed Salah",120,"RW","EGYPT","EG",photoUrl("salah"),{PAC:95,SHO:97,PAS:88,DRI:95,DEF:48,PHY:82},"LIVERPOOL"],
-        debruyne:["Kevin De Bruyne",121,"CAM","BELGIUM","BE",photoUrl("de-bruyne"),{PAC:84,SHO:95,PAS:99,DRI:90,DEF:65,PHY:80},"MAN CITY"],
-        figo:["Luis Figo",119,"RW","PORTUGAL","PT",photoUrl("luis-figo"),{PAC:94,SHO:90,PAS:95,DRI:97,DEF:48,PHY:80},"ICON"]
-      };
+      const catalog=Object.fromEntries((data.cardCatalog||[]).map(card=>[card.id,[
+        card.name,card.ovr,card.position,card.country,card.flag,card.image||"",
+        card.stats||{PAC:Math.max(45,Number(card.ovr||80)-2),SHO:Math.max(45,Number(card.ovr||80)-1),PAS:Math.max(45,Number(card.ovr||80)-4),DRI:Math.max(45,Number(card.ovr||80)-3),DEF:Math.max(35,Number(card.ovr||80)-20),PHY:Math.max(45,Number(card.ovr||80)-7)},
+        card.club||"APEX FC"
+      ]]));
+      if(catalog.arham)catalog.arham[5]=readSavedProfile().photo||"";
+      const cardRarityMap=Object.fromEntries((data.cardCatalog||[]).map(card=>[card.id,card.rarity]));
+      const rarityFor=id=>cardRarityMap[id]||(["messi","ronaldo","figo"].includes(id)?"ICON":"ELITE");
       const makeCard=(p,extraClass="")=>{
         const info=catalog[p.id]||[p.name,p.ovr,p.position,p.country,p.flag,"",{},"APEX FC"];
         const card=document.createElement("article");
-        card.className="apex-player-card draft-player-card "+(p.rarity==="ICON"?"icon ":"elite ")+(extraClass||"");
+        card.className="apex-player-card draft-player-card "+(p.rarity==="ICON"?"icon ":p.rarity==="GAME CHANGERS"?"game-changers ":"elite ")+(extraClass||"");
         card.dataset.player=p.id||"";
         const portrait=document.createElement("div");portrait.className="apex-card-portrait";
         if(info[5]){
@@ -516,7 +512,7 @@ const goalkeepers = [
         const footer=document.createElement("div");footer.className="apex-card-footer";
         const name=document.createElement("strong");name.className="apex-card-name";name.textContent=info[0];
         const country=document.createElement("small");country.className="apex-card-country";
-        const flagMap={SA:"🇸🇦",AR:"🇦🇷",PT:"🇵🇹",FR:"🇫🇷",ES:"🇪🇸",NO:"🇳🇴",EN:"🏴",EG:"🇪🇬",BE:"🇧🇪"};
+        const flagMap={SA:"🇸🇦",AR:"🇦🇷",PT:"🇵🇹",FR:"🇫🇷",ES:"🇪🇸",NO:"🇳🇴",EN:"🏴",EG:"🇪🇬",BE:"🇧🇪",BR:"🇧🇷",HR:"🇭🇷",KR:"🇰🇷",PL:"🇵🇱",SE:"🇸🇪",UY:"🇺🇾",WA:"🏴",DE:"🇩🇪"};
         country.textContent=(flagMap[info[4]]||"⚽")+"  "+info[3];
         const club=document.createElement("small");club.className="apex-card-club";club.textContent=info[7]||"APEX FC";
         const stats=document.createElement("div");stats.className="apex-card-stats";
@@ -542,10 +538,10 @@ const goalkeepers = [
         const close=document.createElement("button");close.type="button";close.className="apex-signing-continue";close.textContent="CONTINUE";close.addEventListener("click",()=>overlay.remove());
         stage.append(kicker,title,subtitle,card,seal,close);overlay.appendChild(stage);document.body.appendChild(overlay);close.focus();
       };
-      const box=$("apexOwnedCards");box.replaceChildren();(data.ownedCards||[]).forEach(id=>{const info=catalog[id];if(!info)return;const level=Number(data.cardLevels?.[id])||0;const card=makeCard({id,name:info[0],ovr:info[1],position:info[2],country:info[3],flag:info[4],rarity:["messi","ronaldo","figo"].includes(id)?"ICON":"ELITE",level});const upgrade=document.createElement("small");upgrade.className="apex-card-upgrade";upgrade.textContent=level?"UPGRADE LEVEL "+level:"BASE CARD";card.appendChild(upgrade);box.appendChild(card);});
+      const box=$("apexOwnedCards");box.replaceChildren();(data.ownedCards||[]).forEach(id=>{const info=catalog[id];if(!info)return;const level=Number(data.cardLevels?.[id])||0;const card=makeCard({id,name:info[0],ovr:info[1],position:info[2],country:info[3],flag:info[4],rarity:rarityFor(id),level});const upgrade=document.createElement("small");upgrade.className="apex-card-upgrade";upgrade.textContent=level?"UPGRADE LEVEL "+level:"BASE CARD";card.appendChild(upgrade);box.appendChild(card);});
       if(!box.childElementCount)box.textContent="No cards yet. Enter your first draft to sign a player.";
       const choices=$("apexDraftChoices");
-      const renderDraft=draft=>{choices.replaceChildren();if(!draft||!Array.isArray(draft.choices))return;const heading=document.createElement("h4");heading.className="draft-choice-heading";heading.textContent="YOUR THREE PICKS · CHOOSE ONE";choices.appendChild(heading);const bestId=[...draft.choices].sort((a,b)=>(catalog[b]?.[1]||0)-(catalog[a]?.[1]||0))[0];draft.choices.forEach(id=>{const p=catalog[id];if(!p)return;const card=makeCard({id,name:p[0],ovr:p[1],position:p[2],country:p[3],flag:p[4],rarity:["messi","ronaldo","figo"].includes(id)?"ICON":"ELITE"},"draft-pick-card");if(id===bestId){card.classList.add("draft-best-pull-card");const badge=document.createElement("span");badge.className="draft-best-pull-badge";badge.textContent="★ BEST PULL";card.appendChild(badge);}const odds=document.createElement("small");odds.className="draft-card-odds";const chance=Number(draft.odds?.[id]);odds.textContent="PACK CHANCE · "+(Number.isFinite(chance)?chance.toFixed(2):"—")+"%";card.appendChild(odds);const choose=document.createElement("button");choose.className="draft-select-btn";choose.type="button";choose.textContent="SIGN THIS PLAYER";choose.addEventListener("click",async()=>{choose.disabled=true;$("apexPackStatus").textContent="Preparing your signing reveal...";try{const result=await api("/api/store/draft/choose",{method:"POST",body:JSON.stringify({cardId:id,draftId:draft.id})});$("apexPackStatus").textContent=result.pick.duplicate?(result.pick.upgraded?"DUPLICATE SIGNED · CARD UPGRADED!":"DUPLICATE SIGNED · MAX LEVEL"):"WELCOME TO THE SQUAD · "+result.pick.name.toUpperCase()+"!";updateTopGemBalance(result.gems);showSigningReveal(result.pick);await loadApexStore();}catch(error){$("apexPackStatus").textContent=error.message;choose.disabled=false;}});card.appendChild(choose);choices.appendChild(card);});};
+      const renderDraft=draft=>{choices.replaceChildren();if(!draft||!Array.isArray(draft.choices))return;const heading=document.createElement("h4");heading.className="draft-choice-heading";heading.textContent="YOUR THREE PICKS · CHOOSE ONE";choices.appendChild(heading);const bestId=[...draft.choices].sort((a,b)=>(catalog[b]?.[1]||0)-(catalog[a]?.[1]||0))[0];draft.choices.forEach(id=>{const p=catalog[id];if(!p)return;const card=makeCard({id,name:p[0],ovr:p[1],position:p[2],country:p[3],flag:p[4],rarity:rarityFor(id)},"draft-pick-card");if(id===bestId){card.classList.add("draft-best-pull-card");const badge=document.createElement("span");badge.className="draft-best-pull-badge";badge.textContent="★ BEST PULL";card.appendChild(badge);}const odds=document.createElement("small");odds.className="draft-card-odds";const chance=Number(draft.odds?.[id]);odds.textContent="PACK CHANCE · "+(Number.isFinite(chance)?chance.toFixed(2):"—")+"%";card.appendChild(odds);const choose=document.createElement("button");choose.className="draft-select-btn";choose.type="button";choose.textContent="SIGN THIS PLAYER";choose.addEventListener("click",async()=>{choose.disabled=true;$("apexPackStatus").textContent="Preparing your signing reveal...";try{const result=await api("/api/store/draft/choose",{method:"POST",body:JSON.stringify({cardId:id,draftId:draft.id})});$("apexPackStatus").textContent=result.pick.duplicate?(result.pick.upgraded?"DUPLICATE SIGNED · CARD UPGRADED!":"DUPLICATE SIGNED · MAX LEVEL"):"WELCOME TO THE SQUAD · "+result.pick.name.toUpperCase()+"!";updateTopGemBalance(result.gems);showSigningReveal(result.pick);await loadApexStore();}catch(error){$("apexPackStatus").textContent=error.message;choose.disabled=false;}});card.appendChild(choose);choices.appendChild(card);});};
       if(data.activeDraft&&data.activeDraft.expiresAt>Date.now())renderDraft(data.activeDraft);
       $("buyDraftVoucher").addEventListener("click",async()=>{const button=$("buyDraftVoucher");button.disabled=true;$("apexPackStatus").textContent="Exchanging gems for a draft voucher...";try{const result=await api("/api/store/vouchers/buy",{method:"POST",body:JSON.stringify({quantity:1})});updateTopGemBalance(result.gems);$("apexPackStatus").textContent="DRAFT VOUCHER ADDED TO YOUR WALLET!";await loadApexStore();}catch(error){$("apexPackStatus").textContent=error.message;button.disabled=false;}});
       $("startPlayerDraft").addEventListener("click",async()=>{const button=$("startPlayerDraft");button.disabled=true;$("apexPackStatus").textContent="The draft room is opening...";try{const result=await api("/api/store/draft/start",{method:"POST",body:JSON.stringify({})});$("apexVoucherCount").textContent="◇ "+result.draftVouchers+" DRAFT VOUCHERS";updateCareerVoucherBalance(result.draftVouchers);$("apexPackStatus").textContent="THREE PLAYERS. ONE SIGNING. MAKE YOUR PICK.";renderDraft(result.draft);}catch(error){$("apexPackStatus").textContent=error.message;}finally{button.disabled=false;}});
@@ -558,7 +554,7 @@ const goalkeepers = [
   async function loadApexLiveHub(){
     const eventBox=$("apexEvents"),modal=$("eventsModal");
     const localEvents=[
-      {id:"game-changers",title:"GAME CHANGERS",subtitle:"ICON REBORN",type:"FEATURED",description:"A new generation meets football legends. Take on the attacking challenge.",mode:"vsattack",rewardGems:45,rewardXp:300},
+      {id:"game-changers",title:"GAME CHANGERS",subtitle:"ICON REBORN",type:"FEATURED",description:"Win the event to sign a featured Game Changers player, plus gems and XP.",mode:"vsattack",rewardGems:45,rewardXp:300,rewardPlayer:"1 GAME CHANGERS PLAYER"},
       {id:"neon-derby",title:"NEON DERBY",subtitle:"LIGHTS. CROWD. KICK-OFF.",type:"WEEKLY",description:"Hit the target in a high-energy crossbar challenge.",mode:"crossbar",rewardGems:25,rewardXp:180},
       {id:"last-line",title:"LAST LINE",subtitle:"THE WALL NEVER FALLS",type:"DAILY",description:"Read the shot and protect your goal in the keeper challenge.",mode:"goalkeeping",rewardGems:15,rewardXp:90}
     ];
@@ -570,7 +566,7 @@ const goalkeepers = [
         const featured=events.find(e=>e.id==="game-changers")||localEvents[0];
         if($("featuredEventTitle"))$("featuredEventTitle").textContent=featured.title+": "+(featured.subtitle||"");
         if($("featuredEventSubtitle"))$("featuredEventSubtitle").textContent=featured.description;
-        if($("featuredEventReward"))$("featuredEventReward").textContent="UP TO "+featured.rewardGems+" GEMS + "+featured.rewardXp+" XP";
+        if($("featuredEventReward"))$("featuredEventReward").textContent="UP TO "+featured.rewardGems+" GEMS + "+featured.rewardXp+" XP"+(featured.rewardPlayer?" + "+featured.rewardPlayer:"");
       }catch(_){}
     }
     const enterEvent=event=>{const allowed=["vsattack","crossbar","goalkeeping"];if(!event||!allowed.includes(event.mode)){toast("This event is being prepared. Please try another challenge.");return;}if(modal)modal.classList.add("hidden");pendingApexEventId=event.id;startMode(event.mode);$("controlHeading").textContent=event.title+" · "+(event.subtitle||"EVENT");$("controlText").textContent=event.description+" Complete the challenge to earn the event reward.";toast(event.title+" EVENT STARTED");};
@@ -584,7 +580,7 @@ const goalkeepers = [
         const title=document.createElement("h3");title.textContent=event.title;
         const subtitle=document.createElement("strong");subtitle.className="apex-event-subtitle";subtitle.textContent=event.subtitle||"LIMITED-TIME CHALLENGE";
         const desc=document.createElement("p");desc.textContent=event.description;
-        const rewards=document.createElement("div");rewards.className="apex-event-rewards";rewards.textContent="◇ "+event.rewardGems+" GEMS   ·   "+event.rewardXp+" XP";
+        const rewards=document.createElement("div");rewards.className="apex-event-rewards";rewards.textContent="◇ "+event.rewardGems+" GEMS   ·   "+event.rewardXp+" XP"+(event.rewardPlayer?"   ·   "+event.rewardPlayer:"");
         const button=document.createElement("button");button.type="button";button.className="primary-btn apex-event-play";button.textContent="ENTER EVENT";
         button.addEventListener("click",()=>enterEvent(event));
         card.append(art,badge,title,subtitle,desc,rewards,button);eventBox.appendChild(card);
