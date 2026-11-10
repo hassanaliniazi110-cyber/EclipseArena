@@ -492,7 +492,7 @@ app.post("/api/games/complete",auth,inviteLimiter,(req,res)=>{
   reward=Math.min(reward+eventReward,200-req.player.rewardGemsToday);
   req.player.gems=Math.min(1000000,req.player.gems+reward);
   req.player.profile.xp=Math.min(10000000,req.player.profile.xp+20+eventXp);
-  req.player.rewardGemsToday+=reward;req.player.lastGameClaimAt=Date.now();req.player.gameSession=null;
+  req.player.rewardGemsToday+=reward;req.player.profile.xp=Math.min(10000000,req.player.profile.xp+eventXp);req.player.lastGameClaimAt=Date.now();req.player.gameSession=null;
   saveData();auditEvent(req.player.id,"game_reward_claimed",String(reward));
   res.json({gems:req.player.gems,reward,eventReward,eventXp,eventId,dailyEarned:req.player.rewardGemsToday,dailyLimit:200});
 });
