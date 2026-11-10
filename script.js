@@ -382,7 +382,8 @@ const goalkeepers = [
   const onlineCfg={base:(()=>{try{return String(window.ECLIPSE_CONFIG?.backendUrl||"").trim().replace(/\/$/,"");}catch(_){return "";}})(),token:(()=>{try{return localStorage.getItem("eclipseDeviceToken")||"";}catch(_){return "";}})(),socket:null,roomId:null,onlineMatch:false,lastStateAt:0};
   let connectPromise=null,activeRewardSessionId=null;
   function setServerStatus(message){const el=$("serverStatus");if(el)el.textContent=message;} function setFriendStatus(message){const el=$("friendStatus");if(el)el.textContent=message;}
-  function api(path,opts={}){if(!onlineCfg.base)return Promise.reject(new Error("Online server is not configured yet."));const headers={"Content-Type":"application/json",...(opts.headers||{})};if(onlineCfg.token)headers.Authorization="Bearer "+onlineCfg.token;return fetch(onlineCfg.base+path,{...opts,headers}).then(async r=>{const d=await r.json().catch(()=>({error:"Invalid server response"}));if(!r.ok)throw new Error(d.error||"Server error "+r.status);return d;});}
+  let admin2FAToken="";
+  function api(path,opts={}){if(!onlineCfg.base)return Promise.reject(new Error("Online server is not configured yet."));const headers={"Content-Type":"application/json",...(opts.headers||{})};if(onlineCfg.token)headers.Authorization="Bearer "+onlineCfg.token;if(admin2FAToken)headers["X-Admin-2FA"]=admin2FAToken;return fetch(onlineCfg.base+path,{...opts,headers}).then(async r=>{const d=await r.json().catch(()=>({error:"Invalid server response"}));if(!r.ok)throw new Error(d.error||"Server error "+r.status);return d;});}
   // Admin status comes from the authenticated server response, never from a client-set ID.
   async function detectApexAdmin(){
     if(!onlineCfg.base||!onlineCfg.token)return;
@@ -390,7 +391,7 @@ const goalkeepers = [
       const response=await fetch(onlineCfg.base.replace(/\/$/,"")+"/api/youtube/access",{headers:{Authorization:"Bearer "+onlineCfg.token}});
       if(!response.ok)return;
       const data=await response.json();
-      if(data.isAdmin&&!apexAdminMode){apexAdminMode=true;renderPlayers();toast("ADMIN MODE · all players and goalkeepers unlocked");}
+      if(data.isAdmin&&!apexAdminMode){apexAdminMode=true;renderPlayers();toast("ADMIN MODE · all players and goalkeepers unlocked");}if(data.isAdmin){const ownerPanel=$("youtubeOwnerRequests");ownerPanel?.classList.remove("hidden");try{const status=await api("/api/admin/2fa/status");const label=$("admin2FAStatus");if(label)label.textContent=status.enrolled?"Authenticator enrolled. Enter a current code to unlock owner actions for 10 minutes.":status.encryptionKeyConfigured?"Two-step verification is ready to set up.":"Server setup needed: add APEX_2FA_ENCRYPTION_KEY in the hosting environment.";const setup=$("admin2FASetupBtn");if(setup)setup.disabled=status.enrolled||!status.encryptionKeyConfigured;}catch(error){const label=$("admin2FAStatus");if(label)label.textContent=error.message;}}
     }catch(_){}
   }
   const nicknameInput=$("nicknameInput");
