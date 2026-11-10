@@ -56,3 +56,14 @@ This starter stores profiles and friends in memory, so data can be lost when the
 - Match rewards have server-side session timing, cooldowns, and daily caps, but this is not full anti-cheat: authoritative gameplay validation still requires server-simulated match actions.
 
 After updating `server.js`, `script.js`, `index.html`, or `style.css`, redeploy the frontend and restart/redeploy the Wispbyte backend. GitHub commits do not automatically deploy the Wispbyte API.
+
+
+## Apex Draft Room
+
+- The player market now sells **Apex Draft Vouchers** for 150 gems each.
+- One voucher opens a three-player shortlist. The player chooses one card to sign.
+- The server stores voucher balances and active drafts, checks that the selected card was actually offered, and upgrades duplicate picks.
+- An active draft expires after five minutes. If a player leaves and returns before expiry, the same draft remains available.
+- Voucher purchases and draft picks are logged in the server audit trail.
+- Owner two-step verification uses standard TOTP (6 digits, 30-second period), compatible with Google Authenticator and Microsoft Authenticator. In either app, choose to add an account using a setup key, enter the secret shown once, then type the current six-digit code in Apex Strikers.
+- The opening cinematic now uses staggered letter fades and runs for about 8.35 seconds before fading away.
