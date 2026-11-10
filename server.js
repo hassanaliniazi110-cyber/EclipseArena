@@ -475,10 +475,42 @@ app.get("/api/admin/players", auth, (req, res) => {
     .sort((a, b) => Number(b.online) - Number(a.online) || b.xp - a.xp || a.name.localeCompare(b.name));
   res.json({ players: all, total: all.length, online: all.filter(p => p.online).length });
 });
-const STORE_CARDS = [{id:"arham",name:"Muhammad Arham",ovr:122,position:"ST",country:"SAUDI ARABIA",flag:"SA",rarity:"ELITE"},{id:"messi",name:"Lionel Messi",ovr:123,position:"RW",country:"ARGENTINA",flag:"AR",rarity:"ICON"},{id:"ronaldo",name:"Cristiano Ronaldo",ovr:124,position:"ST",country:"PORTUGAL",flag:"PT",rarity:"ICON"},{id:"mbappe",name:"Kylian Mbappe",ovr:122,position:"ST",country:"FRANCE",flag:"FR",rarity:"ELITE"},{id:"yamal",name:"Lamine Yamal",ovr:121,position:"RW",country:"SPAIN",flag:"ES",rarity:"ELITE"},{id:"haaland",name:"Erling Haaland",ovr:121,position:"ST",country:"NORWAY",flag:"NO",rarity:"ELITE"},{id:"bellingham",name:"Jude Bellingham",ovr:120,position:"CM",country:"ENGLAND",flag:"EN",rarity:"ELITE"},{id:"salah",name:"Mohamed Salah",ovr:120,position:"RW",country:"EGYPT",flag:"EG",rarity:"ELITE"},{id:"debruyne",name:"Kevin De Bruyne",ovr:121,position:"CAM",country:"BELGIUM",flag:"BE",rarity:"ELITE"},{id:"figo",name:"Luis Figo",ovr:119,position:"RW",country:"PORTUGAL",flag:"PT",rarity:"ICON"}];
-app.get("/api/store",auth,(req,res)=>res.json({gems:req.player.gems,draftVouchers:req.player.draftVouchers||0,activeDraft:req.player.activeDraft||null,ownedCards:req.player.ownedCards,cardLevels:req.player.cardLevels,draft:{name:"APEX PLAYER DRAFT",voucherCost:150,choices:3,pick:1}}));
+const STORE_CARDS = [
+  {id:"arham",name:"Muhammad Arham",ovr:122,position:"ST",country:"SAUDI ARABIA",flag:"SA",rarity:"ELITE",image:""},
+  {id:"messi",name:"Lionel Messi",ovr:123,position:"RW",country:"ARGENTINA",flag:"AR",rarity:"ICON",image:"https://geofootballguessr.com/footballers/messi.webp"},
+  {id:"ronaldo",name:"Cristiano Ronaldo",ovr:124,position:"ST",country:"PORTUGAL",flag:"PT",rarity:"ICON",image:"https://geofootballguessr.com/footballers/ronaldo.webp"},
+  {id:"mbappe",name:"Kylian Mbappé",ovr:122,position:"ST",country:"FRANCE",flag:"FR",rarity:"ELITE",image:"https://geofootballguessr.com/footballers/mbappe.webp"},
+  {id:"yamal",name:"Lamine Yamal",ovr:121,position:"RW",country:"SPAIN",flag:"ES",rarity:"ELITE",image:"https://geofootballguessr.com/footballers/lamine-yamal.webp"},
+  {id:"haaland",name:"Erling Haaland",ovr:121,position:"ST",country:"NORWAY",flag:"NO",rarity:"ELITE",image:"https://geofootballguessr.com/footballers/haaland.webp"},
+  {id:"bellingham",name:"Jude Bellingham",ovr:120,position:"CM",country:"ENGLAND",flag:"EN",rarity:"ELITE",image:"https://geofootballguessr.com/footballers/bellingham.webp"},
+  {id:"salah",name:"Mohamed Salah",ovr:120,position:"RW",country:"EGYPT",flag:"EG",rarity:"ELITE",image:"https://geofootballguessr.com/footballers/salah.webp"},
+  {id:"debruyne",name:"Kevin De Bruyne",ovr:121,position:"CAM",country:"BELGIUM",flag:"BE",rarity:"ELITE",image:"https://geofootballguessr.com/footballers/de-bruyne.webp"},
+  {id:"figo",name:"Luis Figo",ovr:119,position:"RW",country:"PORTUGAL",flag:"PT",rarity:"ICON",image:"https://geofootballguessr.com/footballers/luis-figo.webp"},
+  {id:"neymar",name:"Neymar Jr.",ovr:122,position:"LW",country:"BRAZIL",flag:"BR",rarity:"GAME CHANGERS",image:"https://geofootballguessr.com/footballers/neymar.webp"},
+  {id:"vinicius",name:"Vinícius Júnior",ovr:123,position:"LW",country:"BRAZIL",flag:"BR",rarity:"GAME CHANGERS",image:"https://geofootballguessr.com/footballers/vinicius.webp"},
+  {id:"modric",name:"Luka Modrić",ovr:120,position:"CM",country:"CROATIA",flag:"HR",rarity:"ELITE",image:"https://geofootballguessr.com/footballers/modric.webp"},
+  {id:"kane",name:"Harry Kane",ovr:122,position:"ST",country:"ENGLAND",flag:"EN",rarity:"ELITE",image:"https://geofootballguessr.com/footballers/kane.webp"},
+  {id:"son",name:"Son Heung-min",ovr:121,position:"LW",country:"SOUTH KOREA",flag:"KR",rarity:"ELITE",image:"https://geofootballguessr.com/footballers/son.webp"},
+  {id:"lewandowski",name:"Robert Lewandowski",ovr:122,position:"ST",country:"POLAND",flag:"PL",rarity:"ELITE",image:"https://geofootballguessr.com/footballers/lewandowski.webp"},
+  {id:"zidane",name:"Zinedine Zidane",ovr:126,position:"CAM",country:"FRANCE",flag:"FR",rarity:"ICON",image:"https://geofootballguessr.com/footballers/zidane.webp"},
+  {id:"ronaldinho",name:"Ronaldinho",ovr:126,position:"LW",country:"BRAZIL",flag:"BR",rarity:"ICON",image:"https://geofootballguessr.com/footballers/ronaldinho.webp"},
+  {id:"beckham",name:"David Beckham",ovr:124,position:"RM",country:"ENGLAND",flag:"EN",rarity:"ICON",image:"https://geofootballguessr.com/footballers/beckham.webp"},
+  {id:"iniesta",name:"Andrés Iniesta",ovr:125,position:"CM",country:"SPAIN",flag:"ES",rarity:"ICON",image:"https://geofootballguessr.com/footballers/iniesta.webp"},
+  {id:"xavi",name:"Xavi",ovr:124,position:"CM",country:"SPAIN",flag:"ES",rarity:"ICON",image:"https://geofootballguessr.com/footballers/xavi.webp"},
+  {id:"ibrahimovic",name:"Zlatan Ibrahimović",ovr:125,position:"ST",country:"SWEDEN",flag:"SE",rarity:"ICON",image:"https://geofootballguessr.com/footballers/ibrahimovic.webp"},
+  {id:"benzema",name:"Karim Benzema",ovr:122,position:"ST",country:"FRANCE",flag:"FR",rarity:"GAME CHANGERS",image:"https://geofootballguessr.com/footballers/benzema.webp"},
+  {id:"suarez",name:"Luis Suárez",ovr:121,position:"ST",country:"URUGUAY",flag:"UY",rarity:"ELITE",image:"https://geofootballguessr.com/footballers/suarez.webp"},
+  {id:"griezmann",name:"Antoine Griezmann",ovr:121,position:"ST",country:"FRANCE",flag:"FR",rarity:"GAME CHANGERS",image:"https://geofootballguessr.com/footballers/antoine-griezmann.webp"},
+  {id:"kaka",name:"Kaká",ovr:124,position:"CAM",country:"BRAZIL",flag:"BR",rarity:"ICON",image:"https://geofootballguessr.com/footballers/kaka.webp"},
+  {id:"hazard",name:"Eden Hazard",ovr:121,position:"LW",country:"BELGIUM",flag:"BE",rarity:"GAME CHANGERS",image:"https://geofootballguessr.com/footballers/eden-hazard.webp"},
+  {id:"bale",name:"Gareth Bale",ovr:123,position:"RW",country:"WALES",flag:"WA",rarity:"ICON",image:"https://geofootballguessr.com/footballers/bale.webp"},
+  {id:"kroos",name:"Toni Kroos",ovr:124,position:"CM",country:"GERMANY",flag:"DE",rarity:"ICON",image:"https://geofootballguessr.com/footballers/toni-kroos.webp"},
+  {id:"casemiro",name:"Casemiro",ovr:121,position:"CDM",country:"BRAZIL",flag:"BR",rarity:"ELITE",image:"https://geofootballguessr.com/footballers/casemiro.webp"}
+];
+const GAME_CHANGER_CARD_IDS = ["neymar","vinicius","benzema","griezmann","hazard"];
+app.get("/api/store",auth,(req,res)=>res.json({gems:req.player.gems,draftVouchers:req.player.draftVouchers||0,activeDraft:req.player.activeDraft||null,ownedCards:req.player.ownedCards,cardLevels:req.player.cardLevels,cardCatalog:STORE_CARDS,draft:{name:"APEX PLAYER DRAFT",voucherCost:150,choices:3,pick:1}}));
 app.post("/api/store/vouchers/buy",auth,storeLimiter,(req,res)=>{const quantity=Math.max(1,Math.min(5,Math.floor(Number(req.body?.quantity)||1)));const current=Math.max(0,Number(req.player.draftVouchers)||0);if(current+quantity>99)return res.status(409).json({error:"Your voucher wallet is full. Use some vouchers before buying more."});const cost=150*quantity;if(req.player.gems<cost)return res.status(409).json({error:"Not enough gems for that many draft vouchers."});req.player.gems-=cost;req.player.draftVouchers=current+quantity;saveData();auditEvent(req.player.id,"draft_vouchers_bought",String(quantity));res.json({gems:req.player.gems,draftVouchers:req.player.draftVouchers});});
-const DRAFT_WEIGHTS={ronaldo:1,messi:2,figo:3,mbappe:80,yamal:100,haaland:90,bellingham:85,salah:85,debruyne:85};
+const DRAFT_WEIGHTS={ronaldo:1,messi:2,figo:3,mbappe:80,yamal:100,haaland:90,bellingham:85,salah:85,debruyne:85,neymar:60,vinicius:70,modric:45,kane:65,son:60,lewandowski:65,zidane:3,ronaldinho:5,beckham:8,iniesta:12,xavi:12,ibrahimovic:6,benzema:35,suarez:28,griezmann:45,kaka:10,hazard:35,bale:30,kroos:28,casemiro:45};
 const draftWeight=card=>Math.max(1,Number(DRAFT_WEIGHTS[card.id])||1);
 function weightedDraftPick(items){const total=items.reduce((sum,card)=>sum+draftWeight(card),0);let roll=crypto.randomInt(total);for(const card of items){roll-=draftWeight(card);if(roll<0)return card;}return items[items.length-1];}
 function draftChanceInThree(targetId,pool){function missChance(remaining,draws){if(draws<=0)return 1;const total=remaining.reduce((sum,card)=>sum+draftWeight(card),0);if(!total)return 1;let miss=0;for(const card of remaining){if(card.id===targetId)continue;const rest=remaining.filter(item=>item.id!==card.id);miss+=(draftWeight(card)/total)*missChance(rest,draws-1);}return miss;}return Math.max(0,Math.min(100,(1-missChance(pool,Math.min(3,pool.length)))*100));}
@@ -495,7 +527,7 @@ app.post("/api/games/complete",auth,gameLimiter,(req,res)=>{
   if(req.player.rewardGemsToday>=200){req.player.gameSession=null;saveData();return res.status(429).json({error:"Daily gem reward limit reached."});}
   if(Date.now()-req.player.lastGameClaimAt<5000){req.player.gameSession=null;saveData();return res.status(429).json({error:"Start the next game and finish it before claiming more gems."});}
   const reportedScore=Math.max(0,Math.min(5000,Math.floor(Number(req.body?.score)||0)));
-  let reward=Math.min(50,15+Math.floor(reportedScore/100)),eventReward=0,eventXp=0,eventId="";
+  let reward=Math.min(50,15+Math.floor(reportedScore/100)),eventReward=0,eventXp=0,eventId="",eventCard=null;
   const eventKey=["game-changers","neon-derby","last-line"].includes(session.eventId)?session.eventId:"";
   if(eventKey){
     const period=eventKey==="game-changers"?"week-"+Math.floor(Date.now()/604800000):today;
@@ -505,14 +537,27 @@ app.post("/api/games/complete",auth,gameLimiter,(req,res)=>{
       eventReward=eventKey==="game-changers"?45:eventKey==="neon-derby"?25:15;
       eventXp=eventKey==="game-changers"?300:eventKey==="neon-derby"?180:90;
       req.player.eventClaims[claimKey]=true;eventId=eventKey;
+      if(eventKey==="game-changers"){
+        const eventPool=STORE_CARDS.filter(card=>GAME_CHANGER_CARD_IDS.includes(card.id));
+        if(eventPool.length){
+          const awarded=eventPool[crypto.randomInt(eventPool.length)];
+          const duplicate=req.player.ownedCards.includes(awarded.id);
+          const oldLevel=Math.max(0,Number(req.player.cardLevels[awarded.id])||0);
+          if(!duplicate)req.player.ownedCards.push(awarded.id);
+          else req.player.cardLevels[awarded.id]=Math.min(5,oldLevel+1);
+          req.player.ownedCards=[...new Set(req.player.ownedCards)].slice(0,100);
+          eventCard={...awarded,level:req.player.cardLevels[awarded.id]||0,duplicate,upgraded:duplicate&&oldLevel<5};
+        }
+      }
     }
   }
   reward=Math.min(reward+eventReward,200-req.player.rewardGemsToday);
   req.player.gems=Math.min(1000000,req.player.gems+reward);
   req.player.profile.xp=Math.min(10000000,req.player.profile.xp+20+eventXp);
-  req.player.rewardGemsToday+=reward;req.player.profile.xp=Math.min(10000000,req.player.profile.xp+eventXp);req.player.lastGameClaimAt=Date.now();req.player.gameSession=null;
+  req.player.rewardGemsToday+=reward;req.player.lastGameClaimAt=Date.now();req.player.gameSession=null;
   saveData();auditEvent(req.player.id,"game_reward_claimed",String(reward));
-  res.json({gems:req.player.gems,reward,eventReward,eventXp,eventId,dailyEarned:req.player.rewardGemsToday,dailyLimit:200});
+  if(eventCard)auditEvent(req.player.id,"game_changers_player_awarded",eventCard.id);
+  res.json({gems:req.player.gems,reward,eventReward,eventXp,eventId,eventCard,ownedCards:req.player.ownedCards,cardLevels:req.player.cardLevels,dailyEarned:req.player.rewardGemsToday,dailyLimit:200});
 });
 app.get("/api/leaderboard", auth, (req, res) => {
   const board = [...players.values()].map(publicProfile)
@@ -521,7 +566,7 @@ app.get("/api/leaderboard", auth, (req, res) => {
     .map((p, index) => ({ rank: index + 1, ...p }));
   res.json({ leaderboard: board, updatedAt: new Date().toISOString() });
 });
-app.get("/api/events",auth,(_req,res)=>{const now=new Date();const week=Math.floor(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate())/604800000);const events=[{id:"game-changers",title:"GAME CHANGERS: ICON REBORN",subtitle:"Legends return. New eras begin.",type:"featured",description:"Build your squad around game-changing football icons.",mode:"vsattack",rewardGems:45,rewardXp:300,endsAt:new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()+(7-now.getUTCDay()))).toISOString()},{id:"neon-derby",title:"NEON DERBY",subtitle:"A city divided. One pitch.",type:"weekly",description:"Take on the derby challenge.",mode:"crossbar",rewardGems:25,rewardXp:180},{id:"last-line",title:"LAST LINE",subtitle:"Keep your fortress standing.",type:"daily",description:"A goalkeeper reaction challenge.",mode:"goalkeeping",rewardGems:15,rewardXp:90}];res.json({featured:events[0],events,rotation:week,serverTime:now.toISOString()});});
+app.get("/api/events",auth,(_req,res)=>{const now=new Date();const week=Math.floor(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate())/604800000);const events=[{id:"game-changers",title:"GAME CHANGERS: ICON REBORN",subtitle:"Legends return. New eras begin.",type:"featured",description:"Build your squad around game-changing football icons.",mode:"vsattack",rewardGems:45,rewardXp:300,rewardPlayer:"1 GAME CHANGERS PLAYER",endsAt:new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()+(7-now.getUTCDay()))).toISOString()},{id:"neon-derby",title:"NEON DERBY",subtitle:"A city divided. One pitch.",type:"weekly",description:"Take on the derby challenge.",mode:"crossbar",rewardGems:25,rewardXp:180},{id:"last-line",title:"LAST LINE",subtitle:"Keep your fortress standing.",type:"daily",description:"A goalkeeper reaction challenge.",mode:"goalkeeping",rewardGems:15,rewardXp:90}];res.json({featured:events[0],events,rotation:week,serverTime:now.toISOString()});});
 app.get("/api/profiles/:id", auth, (req, res) => {
   const id = cleanText(req.params.id, 24).toUpperCase();
   if (!validPlayerId(id)) return res.status(400).json({ error: "Invalid player ID" });
