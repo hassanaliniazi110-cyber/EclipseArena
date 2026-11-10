@@ -381,16 +381,7 @@ app.get("/api/leaderboard", auth, (req, res) => {
     .map((p, index) => ({ rank: index + 1, ...p }));
   res.json({ leaderboard: board, updatedAt: new Date().toISOString() });
 });
-app.get("/api/events", auth, (_req, res) => {
-  const now = new Date();
-  const week = Math.floor(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) / 604800000);
-  const events = [
-    { id: "weekly-crossbar", title: "CROSSBAR CUP", type: "weekly", description: "Hit the target and climb the weekly event board.", mode: "crossbar", rewardXp: 250 },
-    { id: "daily-keeper", title: "KEEPER'S DAILY", type: "daily", description: "Test your reactions in a goalkeeper challenge.", mode: "goalkeeping", rewardXp: 75 },
-    { id: "weekend-rush", title: "WEEKEND RUSH", type: "weekly", description: "Take on a fast set of attacking challenges.", mode: "vsattack", rewardXp: 200 }
-  ];
-  res.json({ events, rotation: week, serverTime: now.toISOString() });
-});
+app.get("/api/events",auth,(_req,res)=>{const now=new Date();const week=Math.floor(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate())/604800000);const events=[{id:"game-changers",title:"GAME CHANGERS: ICON REBORN",subtitle:"Legends return. New eras begin.",type:"featured",description:"Build your squad around game-changing football icons.",mode:"vsattack",rewardGems:45,rewardXp:300,endsAt:new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()+(7-now.getUTCDay()))).toISOString()},{id:"neon-derby",title:"NEON DERBY",subtitle:"A city divided. One pitch.",type:"weekly",description:"Take on the derby challenge.",mode:"crossbar",rewardGems:25,rewardXp:180},{id:"last-line",title:"LAST LINE",subtitle:"Keep your fortress standing.",type:"daily",description:"A goalkeeper reaction challenge.",mode:"goalkeeping",rewardGems:15,rewardXp:90}];res.json({featured:events[0],events,rotation:week,serverTime:now.toISOString()});});
 app.get("/api/profiles/:id", auth, (req, res) => {
   const id = cleanText(req.params.id, 24).toUpperCase();
   if (!validPlayerId(id)) return res.status(400).json({ error: "Invalid player ID" });
