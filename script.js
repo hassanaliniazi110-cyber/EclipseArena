@@ -416,11 +416,13 @@ const goalkeepers = [
     try{
       const [eventData,boardData]=await Promise.all([api("/api/events"),api("/api/leaderboard")]);
       const eventBox=$("apexEvents"),boardBox=$("apexLeaderboard");
+      const featured=eventData.featured;
+      if(featured){$("featuredEventTitle").textContent=featured.title;$("featuredEventSubtitle").textContent=featured.subtitle||featured.description;$("featuredEventReward").textContent="UP TO "+featured.rewardGems+" GEMS + "+featured.rewardXp+" XP";$("featuredEventPlay").onclick=()=>startMode(featured.mode);}
       if(eventBox){
         eventBox.replaceChildren();
         (eventData.events||[]).forEach(event=>{
           const card=document.createElement("article"),title=document.createElement("strong"),desc=document.createElement("p"),meta=document.createElement("small"),button=document.createElement("button");
-          title.textContent=event.title;desc.textContent=event.description;meta.textContent=String(event.type||"event").toUpperCase()+" · "+event.rewardXp+" XP";
+          title.textContent=event.title;desc.textContent=event.description;meta.textContent=String(event.type||"event").toUpperCase()+" · "+event.rewardGems+" GEMS · "+event.rewardXp+" XP";
           button.type="button";button.textContent="PLAY EVENT";button.addEventListener("click",()=>startMode(event.mode));
           card.append(title,desc,meta,button);eventBox.appendChild(card);
         });
