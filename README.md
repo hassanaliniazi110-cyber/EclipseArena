@@ -38,3 +38,21 @@ This starter stores profiles and friends in memory, so data can be lost when the
 - This controls access to the YouTube Area inside Eclipse Arena; it does not make public YouTube videos private or stop people opening YouTube directly.
 - Profile lookup requires an authenticated token. Match-state score values from clients are not treated as verified scores or used for ranking.
 - After updating `server.js`, upload/redeploy the backend on Wispbyte and restart it. GitHub Pages changes alone do not update the API.
+
+
+## Apex Strikers security and events update
+
+- Owner moderation actions for YouTube access requests now require authenticator-based two-step verification. The authenticator secret is encrypted at rest with AES-256-GCM, and successful verification creates a short-lived 10-minute admin session.
+- Add `APEX_2FA_ENCRYPTION_KEY` to the backend host environment before enrolling. It must be exactly 64 hexadecimal characters (32 random bytes). Generate a fresh value on the server with:
+  ```sh
+  node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+  ```
+  Keep the value private, store it in the host's environment settings, and never commit it to GitHub. Keep `apex-admin-2fa.json` on persistent private server storage; losing the key or file can prevent authenticator decryption.
+- In the YouTube Area owner panel, choose **SET UP AUTHENTICATOR**, add the displayed setup key to an authenticator app, then enter its current six-digit code and press **VERIFY**. Owner request review and approval are locked until this succeeds.
+- The app already applies a global API rate limit, registration/invite/profile limits, strict CORS, Helmet, small JSON request limits, audit logging, and limits on concurrent Socket.IO connections and state packets. These are application-level protections, not OS-level Fail2ban. Installing Fail2ban itself requires supported Linux host access and administrator privileges.
+- Gem packs use guaranteed, non-random player unlocks; duplicates increase card upgrade levels. Gems are earned through completed game sessions and have a daily cap. Packs do not accept real-money payments.
+- Featured event entry sends the selected event ID to the server. Event bonuses are only issued for the matching selected event, not simply for playing the same mode elsewhere.
+- Player portraits are real photos from Wikimedia Commons. Their photographer and licence credits are shown in the Apex Market. Each image remains subject to its individual licence and attribution terms.
+- Match rewards have server-side session timing, cooldowns, and daily caps, but this is not full anti-cheat: authoritative gameplay validation still requires server-simulated match actions.
+
+After updating `server.js`, `script.js`, `index.html`, or `style.css`, redeploy the frontend and restart/redeploy the Wispbyte backend. GitHub commits do not automatically deploy the Wispbyte API.
