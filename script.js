@@ -826,7 +826,7 @@ const goalkeepers = [
     try{
       if(connectPromise)await connectPromise;
       const access=await api("/api/youtube/access");
-      if(access.isAdmin){ownerPanel?.classList.remove("hidden");await refreshYouTubeRequests();}
+      if(access.isAdmin){ownerPanel?.classList.remove("hidden");if(admin2FAToken)await refreshYouTubeRequests();else{const list=$("youtubeOwnerRequestList");if(list)list.textContent="Verify your authenticator above to load and review owner requests.";}}
       if(access.allowed){
         screen.classList.add("youtube-authorized");
         gate.textContent="Access verified by the Apex Strikers server.";
