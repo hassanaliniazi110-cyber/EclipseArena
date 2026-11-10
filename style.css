@@ -734,3 +734,6 @@ svg line,svg polyline,.chart-line,.stat-line,.player-chart-line,.player-stats sv
 .apex-card-portrait:before{content:"";position:absolute;top:13px;left:50%;width:37px;height:37px;transform:translateX(-50%);border-radius:50%;background:linear-gradient(145deg,#d6a47d,#744b37);box-shadow:0 0 0 5px rgba(255,255,255,.2)}
 .apex-card-portrait:after{content:"";position:absolute;bottom:-14px;left:50%;width:88px;height:77px;transform:translateX(-50%);border-radius:45% 45% 10% 10%;background:linear-gradient(145deg,#243b50,#101d2b);border:2px solid rgba(255,255,255,.35)}
 @keyframes packReveal{0%{opacity:0;transform:translateY(35px) rotateY(85deg) scale(.65)}65%{opacity:1;transform:translateY(-8px) rotateY(-8deg) scale(1.04)}100%{opacity:1;transform:translateY(0) rotateY(0) scale(1)}}
+
+.intro-event-line{margin-top:12px;color:#d7ff76;font-size:clamp(.58rem,1.5vw,.78rem);font-weight:900;letter-spacing:.16em;text-align:center;animation:introEventPulse 2.4s ease-in-out infinite}
+@keyframes introEventPulse{0%,100%{opacity:.58;letter-spacing:.14em}50%{opacity:1;letter-spacing:.19em}}
