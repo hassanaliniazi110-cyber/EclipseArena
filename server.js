@@ -425,6 +425,7 @@ io.use((socket, next) => {
 io.on("connection", socket => {
   const id = socket.data.playerId;
   if (!socketsByPlayer.has(id)) socketsByPlayer.set(id, new Set());
+  if (socketsByPlayer.get(id).size >= 3) { socket.disconnect(true); return; }
   socketsByPlayer.get(id).add(socket);
   for (const friendId of players.get(id)?.friends || []) {
     socketsByPlayer.get(friendId)?.forEach(friendSocket => friendSocket.emit("friend:status", { playerId: id, online: true }));
