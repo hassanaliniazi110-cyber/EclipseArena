@@ -424,29 +424,46 @@ const goalkeepers = [
     }catch(error){$("apexPackStatus").textContent="Store unavailable: "+error.message;}
   }
   async function loadApexLiveHub(){
-    if(!onlineCfg.base||!onlineCfg.token)return;
-    try{
-      const [eventData,boardData]=await Promise.all([api("/api/events"),api("/api/leaderboard")]);
-      const eventBox=$("apexEvents"),boardBox=$("apexLeaderboard");
-      const featured=eventData.featured;
-      if(featured){$("featuredEventTitle").textContent=featured.title;$("featuredEventSubtitle").textContent=featured.subtitle||featured.description;$("featuredEventReward").textContent="UP TO "+featured.rewardGems+" GEMS + "+featured.rewardXp+" XP";$("featuredEventPlay").onclick=()=>startMode(featured.mode);}
-      if(eventBox){
-        eventBox.replaceChildren();
-        (eventData.events||[]).forEach(event=>{
-          const card=document.createElement("article"),title=document.createElement("strong"),desc=document.createElement("p"),meta=document.createElement("small"),button=document.createElement("button");
-          title.textContent=event.title;desc.textContent=event.description;meta.textContent=String(event.type||"event").toUpperCase()+" · "+event.rewardGems+" GEMS · "+event.rewardXp+" XP";
-          button.type="button";button.textContent="PLAY EVENT";button.addEventListener("click",()=>startMode(event.mode));
-          card.append(title,desc,meta,button);eventBox.appendChild(card);
-        });
-      }
-      if(boardBox){
-        boardBox.replaceChildren();
-        (boardData.leaderboard||[]).slice(0,10).forEach(p=>{
-          const row=document.createElement("p");row.textContent="#"+p.rank+"  "+p.name+" · "+p.wins+" wins · "+p.xp+" XP";boardBox.appendChild(row);
-        });
-        if(!boardBox.childElementCount)boardBox.textContent="No players have joined the leaderboard yet.";
-      }
-    }catch(error){const box=$("apexEvents");if(box)box.textContent="Live events are temporarily unavailable: "+error.message;}
+    const eventBox=$("apexEvents"),modal=$("eventsModal");
+    const localEvents=[
+      {id:"game-changers",title:"GAME CHANGERS",subtitle:"ICON REBORN",type:"FEATURED",description:"A new generation meets football legends. Take on the attacking challenge.",mode:"vsattack",rewardGems:45,rewardXp:300},
+      {id:"neon-derby",title:"NEON DERBY",subtitle:"LIGHTS. CROWD. KICK-OFF.",type:"WEEKLY",description:"Hit the target in a high-energy crossbar challenge.",mode:"crossbar",rewardGems:25,rewardXp:180},
+      {id:"last-line",title:"LAST LINE",subtitle:"THE WALL NEVER FALLS",type:"DAILY",description:"Read the shot and protect your goal in the keeper challenge.",mode:"goalkeeping",rewardGems:15,rewardXp:90}
+    ];
+    let events=localEvents;
+    if(onlineCfg.base&&onlineCfg.token){
+      try{
+        const eventData=await api("/api/events");
+        if(Array.isArray(eventData.events)&&eventData.events.some(e=>["game-changers","neon-derby","last-line"].includes(e.id)))events=eventData.events;
+        const featured=events.find(e=>e.id==="game-changers")||localEvents[0];
+        if($("featuredEventTitle"))$("featuredEventTitle").textContent=featured.title+": "+(featured.subtitle||"");
+        if($("featuredEventSubtitle"))$("featuredEventSubtitle").textContent=featured.description;
+        if($("featuredEventReward"))$("featuredEventReward").textContent="UP TO "+featured.rewardGems+" GEMS + "+featured.rewardXp+" XP";
+      }catch(_){}
+    }
+    if($("featuredEventPlay"))$("featuredEventPlay").onclick=()=>startMode("vsattack");
+    if(eventBox){
+      eventBox.replaceChildren();
+      events.forEach((event,index)=>{
+        const card=document.createElement("article");card.className="apex-event-card"+(index===0?" featured":"");
+        const badge=document.createElement("span");badge.className="apex-event-badge";badge.textContent=event.type||"LIMITED EVENT";
+        const title=document.createElement("h3");title.textContent=event.title;
+        const subtitle=document.createElement("strong");subtitle.className="apex-event-subtitle";subtitle.textContent=event.subtitle||"LIMITED-TIME CHALLENGE";
+        const desc=document.createElement("p");desc.textContent=event.description;
+        const rewards=document.createElement("div");rewards.className="apex-event-rewards";rewards.textContent="◇ "+event.rewardGems+" GEMS   ·   "+event.rewardXp+" XP";
+        const button=document.createElement("button");button.type="button";button.className="primary-btn";button.textContent="PLAY EVENT ↗";
+        button.addEventListener("click",()=>{if(modal)modal.classList.add("hidden");startMode(event.mode);});
+        card.append(badge,title,subtitle,desc,rewards,button);eventBox.appendChild(card);
+      });
+    }
+    const open=$("viewEventsBtn"),close=$("closeEventsBtn");
+    if(open&&!open.dataset.bound){open.dataset.bound="1";open.addEventListener("click",()=>{if(modal)modal.classList.remove("hidden");});}
+    if(close&&!close.dataset.bound){close.dataset.bound="1";close.addEventListener("click",()=>{if(modal)modal.classList.add("hidden");});}
+    if(modal&&!modal.dataset.bound){modal.dataset.bound="1";modal.addEventListener("click",e=>{if(e.target===modal)modal.classList.add("hidden");});}
+    const boardBox=$("apexLeaderboard");
+    if(boardBox&&onlineCfg.base&&onlineCfg.token){
+      try{const boardData=await api("/api/leaderboard");boardBox.replaceChildren();(boardData.leaderboard||[]).slice(0,10).forEach(p=>{const row=document.createElement("p");row.textContent="#"+p.rank+"  "+p.name+" · "+p.wins+" wins · "+p.xp+" XP";boardBox.appendChild(row);});if(!boardBox.childElementCount)boardBox.textContent="No players have joined the leaderboard yet.";}catch(_){}
+    }
   }
   async function refreshServerFriends(){const d=await api("/api/friends");for(const p of d.friends||[]){const f=savedFriends.find(x=>x.id===p.id);if(f)Object.assign(f,p);else savedFriends.push(p);}try{localStorage.setItem("eclipseFriends",JSON.stringify(savedFriends));}catch(_){}renderFriends();}
   async function connectOnline(){if(!onlineCfg.base){setServerStatus("Offline mode · online server has not been deployed/configured yet.");return;}if(!/^https:\/\//i.test(onlineCfg.base)){setServerStatus("Blocked: backend configuration must use HTTPS.");return;}setServerStatus("Connecting…");try{const d=await api("/api/register",{method:"POST",body:JSON.stringify({profile:onlineProfile()})});if(d.token){onlineCfg.token=d.token;try{localStorage.setItem("eclipseDeviceToken",d.token);}catch(_){}}try{localStorage.setItem("eclipsePlayerId",d.playerId);}catch(_){}playerId=d.playerId;if($("myPlayerId"))$("myPlayerId").textContent=d.playerId;await api("/api/profile",{method:"PUT",body:JSON.stringify({profile:onlineProfile()})});const sc=document.createElement("script");sc.src=onlineCfg.base+"/socket.io/socket.io.js";sc.onload=()=>{if(!window.io){setServerStatus("Server connected, but live socket client did not load.");return;}if(onlineCfg.socket)onlineCfg.socket.disconnect();onlineCfg.socket=window.io(onlineCfg.base,{auth:{playerId:d.playerId,token:onlineCfg.token},transports:["websocket","polling"]});onlineCfg.socket.on("connect",()=>{setServerStatus("🟢 ONLINE · "+d.playerId);});onlineCfg.socket.on("connect_error",e=>{setServerStatus("Socket connection error: "+e.message);});onlineCfg.socket.on("friend:status",e=>{setFriendStatus(e.playerId+" is "+(e.online?"online":"offline"));});onlineCfg.socket.on("friend:invite",invite=>{if(confirm(invite.fromName+" invited you to a friend match. Accept?")){onlineCfg.roomId=invite.roomId;onlineCfg.socket.emit("match:accept",{roomId:invite.roomId});}else onlineCfg.socket.emit("match:decline",{roomId:invite.roomId});});onlineCfg.socket.on("match:ready",e=>{onlineCfg.roomId=e.roomId;onlineCfg.onlineMatch=true;onlineCfg.matchStartAt=Number(e.startAt)||Date.now();setFriendStatus("🟢 Online match connected! Shared 90-second match started.");startMode("headtohead");});onlineCfg.socket.on("match:state",e=>{if(!onlineCfg.onlineMatch||e.roomId!==onlineCfg.roomId||!e.state)return;const st=e.state;if(Number.isFinite(Number(e.serverClock)))match.clock=Math.max(match.clock,Number(e.serverClock));if(Number.isFinite(st.x)&&Number.isFinite(st.y)){match.rival={x:Math.max(.08,Math.min(.92,st.x)),y:Math.max(.06,Math.min(.94,1-st.y))};match.rivalGoals=Math.max(0,Math.min(99,Number(st.goals)||0));match.hasBall=!Boolean(st.hasBall);if(Number.isFinite(Number(st.ballX))&&Number.isFinite(Number(st.ballY)))match.ball={x:Math.max(.02,Math.min(.98,Number(st.ballX))),y:Math.max(.02,Math.min(.98,1-Number(st.ballY)))};$("matchScore").textContent=match.playerGoals+" - "+match.rivalGoals;drawPitch();}});onlineCfg.socket.on("match:finished",e=>{const mine=(e.players||[]).find(p=>p.playerId===playerId),other=(e.players||[]).find(p=>p.playerId!==playerId);if(mine&&other){match.playerGoals=Number(mine.goals)||0;match.rivalGoals=Number(other.goals)||0;$("matchScore").textContent=match.playerGoals+" - "+match.rivalGoals;}onlineCfg.onlineMatch=false;onlineCfg.matchStartAt=0;if(match.active)endFullMatch();setFriendStatus("🏁 Match finished. Final score: "+match.playerGoals+" - "+match.rivalGoals);});onlineCfg.socket.on("match:ended",e=>{onlineCfg.onlineMatch=false;setFriendStatus("Friend match ended: "+(e.message||e.reason||"connection closed"));});onlineCfg.socket.on("match:error",e=>{setFriendStatus(e.message);});};sc.onerror=()=>{setServerStatus("Server API connected, but Socket.IO client could not load.");};document.head.appendChild(sc);await refreshServerFriends();await loadApexLiveHub();}catch(e){setServerStatus("Could not connect: "+e.message);}}
