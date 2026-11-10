@@ -196,7 +196,7 @@ app.use(cors({
     return callback(new Error("Origin is not allowed"));
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  allowedHeaders: ["Content-Type", "Authorization", "X-Admin-2FA"]
 }));
 app.use(express.json({ limit: "12kb", strict: true }));
 app.use(rateLimit({ windowMs: 60 * 1000, limit: 90, standardHeaders: "draft-7", legacyHeaders: false }));
