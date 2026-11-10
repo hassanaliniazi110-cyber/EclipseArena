@@ -442,19 +442,21 @@ const goalkeepers = [
         if($("featuredEventReward"))$("featuredEventReward").textContent="UP TO "+featured.rewardGems+" GEMS + "+featured.rewardXp+" XP";
       }catch(_){}
     }
-    if($("featuredEventPlay"))$("featuredEventPlay").onclick=()=>startMode("vsattack");
+    const enterEvent=event=>{const allowed=["vsattack","crossbar","goalkeeping"];if(!event||!allowed.includes(event.mode)){toast("This event is being prepared. Please try another challenge.");return;}if(modal)modal.classList.add("hidden");startMode(event.mode);$("controlHeading").textContent=event.title+" · "+(event.subtitle||"EVENT");$("controlText").textContent=event.description+" Complete the challenge to earn the event reward.";toast(event.title+" EVENT STARTED");};
+    if($("featuredEventPlay"))$("featuredEventPlay").onclick=()=>enterEvent(events.find(e=>e.id==="game-changers")||localEvents[0]);
     if(eventBox){
       eventBox.replaceChildren();
       events.forEach((event,index)=>{
         const card=document.createElement("article");card.className="apex-event-card"+(index===0?" featured":"");
-        const badge=document.createElement("span");badge.className="apex-event-badge";badge.textContent=event.type||"LIMITED EVENT";
+        const art=document.createElement("div");art.className="apex-event-art "+(event.id||"");art.setAttribute("aria-hidden","true");art.textContent=event.id==="game-changers"?"GC":event.id==="neon-derby"?"ND":"LL";
+        const badge=document.createElement("span");badge.className="apex-event-badge";badge.textContent=String(event.type||"LIMITED EVENT").toUpperCase();
         const title=document.createElement("h3");title.textContent=event.title;
         const subtitle=document.createElement("strong");subtitle.className="apex-event-subtitle";subtitle.textContent=event.subtitle||"LIMITED-TIME CHALLENGE";
         const desc=document.createElement("p");desc.textContent=event.description;
         const rewards=document.createElement("div");rewards.className="apex-event-rewards";rewards.textContent="◇ "+event.rewardGems+" GEMS   ·   "+event.rewardXp+" XP";
-        const button=document.createElement("button");button.type="button";button.className="primary-btn";button.textContent="PLAY EVENT ↗";
-        button.addEventListener("click",()=>{if(modal)modal.classList.add("hidden");startMode(event.mode);});
-        card.append(badge,title,subtitle,desc,rewards,button);eventBox.appendChild(card);
+        const button=document.createElement("button");button.type="button";button.className="primary-btn apex-event-play";button.textContent="ENTER EVENT";
+        button.addEventListener("click",()=>enterEvent(event));
+        card.append(art,badge,title,subtitle,desc,rewards,button);eventBox.appendChild(card);
       });
     }
     const open=$("viewEventsBtn"),careerOpen=$("careerViewEventsBtn"),close=$("closeEventsBtn");
