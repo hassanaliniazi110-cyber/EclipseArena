@@ -546,7 +546,7 @@ const goalkeepers = [
     const daily=dailyRecord();if(dailyChallengeActive&&mode===dailyChallengeMode&&!(daily.date===dateKey()&&daily.done)){try{localStorage.setItem("eclipseDailyChallenge",JSON.stringify({date:dateKey(),done:true,success:Boolean(success),mode}));}catch(_){}dailyChallengeActive=false;message+=" · DAILY CHALLENGE COMPLETED";renderCareerHub();}
 
     if(success)score+=mode==="goalkeeping"?150:100;
-    if(mode!=="headtohead"&&(mode!=="vsattack"||matchAttacks>=5))claimGameReward(score);
+    if(mode!=="headtohead"&&(mode!=="vsattack"||matchAttacks>=4))claimGameReward(score);
     if(mode==="headtohead"||mode==="vsattack"){
       matchAttacks++;
       if(mode==="headtohead"){matchMinute=Math.min(90,matchAttacks*10);if(Math.random()<.34)opponentScore++;}
