@@ -128,8 +128,8 @@ function totpCode(secret, time = Date.now()) {
   return String((digest.readUInt32BE(offset) & 0x7fffffff) % 1000000).padStart(6, "0");
 }
 function verifyAdminCode(secret, code) {
-  const supplied = String(code || "").replace(/\\s/g, "");
-  if (!/^\\d{6}$/.test(supplied)) return false;
+  const supplied = String(code || "").replace(/\s/g, "");
+  if (!/^\d{6}$/.test(supplied)) return false;
   for (const drift of [-30000, 0, 30000]) {
     const expected = totpCode(secret, Date.now() + drift);
     if (crypto.timingSafeEqual(Buffer.from(supplied), Buffer.from(expected))) return true;
