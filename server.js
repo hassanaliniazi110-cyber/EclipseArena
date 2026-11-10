@@ -477,12 +477,13 @@ app.post("/api/games/complete",auth,inviteLimiter,(req,res)=>{
   const session=req.player.gameSession;
   if(!session||req.body?.sessionId!==session.id)return res.status(409).json({error:"No active game reward session."});
   const elapsed=Date.now()-session.startedAt;
-  if(elapsed<20000||elapsed>1800000){req.player.gameSession=null;return res.status(400).json({error:"Play for at least 5 seconds before claiming a reward."});}
+  if(elapsed<5000||elapsed>1800000){req.player.gameSession=null;return res.status(400).json({error:"Play for at least 5 seconds before claiming a reward."});}
   const today=new Date().toISOString().slice(0,10);
   if(req.player.rewardDay!==today){req.player.rewardDay=today;req.player.rewardGemsToday=0;}
   if(req.player.rewardGemsToday>=200){req.player.gameSession=null;saveData();return res.status(429).json({error:"Daily gem reward limit reached."});}
   if(Date.now()-req.player.lastGameClaimAt<45000){req.player.gameSession=null;saveData();return res.status(429).json({error:"Finish another game before claiming more gems."});}
-  let reward=25,eventReward=0,eventXp=0,eventId="";
+  const reportedScore=Math.max(0,Math.min(5000,Math.floor(Number(req.body?.score)||0)));
+  let reward=Math.min(50,15+Math.floor(reportedScore/100)),eventReward=0,eventXp=0,eventId="";
   const eventKey=["game-changers","neon-derby","last-line"].includes(session.eventId)?session.eventId:"";
   if(eventKey){
     const period=eventKey==="game-changers"?"week-"+Math.floor(Date.now()/604800000):today;
