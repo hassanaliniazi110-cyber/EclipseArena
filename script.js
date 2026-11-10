@@ -384,7 +384,26 @@ const goalkeepers = [
   function setServerStatus(message){const el=$("serverStatus");if(el)el.textContent=message;} function setFriendStatus(message){const el=$("friendStatus");if(el)el.textContent=message;}
   let admin2FAToken="";
   function api(path,opts={}){if(!onlineCfg.base)return Promise.reject(new Error("Online server is not configured yet."));const headers={"Content-Type":"application/json",...(opts.headers||{})};if(onlineCfg.token)headers.Authorization="Bearer "+onlineCfg.token;if(admin2FAToken)headers["X-Admin-2FA"]=admin2FAToken;return fetch(onlineCfg.base+path,{...opts,headers}).then(async r=>{const d=await r.json().catch(()=>({error:"Invalid server response"}));if(!r.ok)throw new Error(d.error||"Server error "+r.status);return d;});}
-  async function claimGameReward(finalScore){if(rewardClaimedThisGame||!onlineCfg.base||!onlineCfg.token)return;rewardClaimedThisGame=true;try{const sessionId=activeRewardSessionId||await activeRewardSessionPromise;if(!sessionId)throw new Error("Game reward session was not created.");const data=await api("/api/games/complete",{method:"POST",body:JSON.stringify({sessionId,score:finalScore})});activeRewardSessionId=null;updateTopGemBalance(data.gems);if(data.eventXp){career.xp+=data.eventXp;career.unlockXP=(career.unlockXP||0)+data.eventXp;saveCareer();api("/api/profile",{method:"PUT",body:JSON.stringify({profile:onlineProfile()})}).catch(()=>{});}renderCareerHub();toast("+"+data.reward+" GEMS EARNED · "+data.gems+" TOTAL");}catch(error){rewardClaimedThisGame=false;if(error.message)toast("Gem reward not added: "+error.message);}}
+  async function claimGameReward(finalScore){
+    if(rewardClaimedThisGame)return;
+    if(!onlineCfg.base||!onlineCfg.token){toast("Connect online to collect your match gems.");return;}
+    rewardClaimedThisGame=true;
+    try{
+      const sessionId=activeRewardSessionId||(activeRewardSessionPromise?await activeRewardSessionPromise:null);
+      if(!sessionId)throw new Error("Your online game session did not start. Start a new game while connected.");
+      const safeScore=Math.max(0,Math.min(5000,Math.floor(Number(finalScore)||0)));
+      const data=await api("/api/games/complete",{method:"POST",body:JSON.stringify({sessionId,score:safeScore})});
+      activeRewardSessionId=null;activeRewardSessionPromise=null;
+      updateTopGemBalance(data.gems);
+      const storeBalance=$("apexGemCount");if(storeBalance)storeBalance.textContent="◇ "+Number(data.gems).toLocaleString()+" GEMS";
+      if(data.eventXp){career.xp+=data.eventXp;career.unlockXP=(career.unlockXP||0)+data.eventXp;saveCareer();api("/api/profile",{method:"PUT",body:JSON.stringify({profile:onlineProfile()})}).catch(()=>{});}
+      renderCareerHub();
+      toast("+"+data.reward+" GEMS EARNED · "+data.gems+" TOTAL");
+    }catch(error){
+      rewardClaimedThisGame=false;
+      if(error.message)toast("Gem reward not added: "+error.message);
+    }
+  }
   // Admin status comes from the authenticated server response, never from a client-set ID.
   async function detectApexAdmin(){
     if(!onlineCfg.base||!onlineCfg.token)return;
@@ -426,10 +445,70 @@ const goalkeepers = [
     try{
       const data=await api("/api/store");$("apexGemCount").textContent="◇ "+data.gems+" GEMS";updateTopGemBalance(data.gems);updateCareerVoucherBalance(data.draftVouchers||0);$("apexVoucherCount").textContent="◇ "+(data.draftVouchers||0)+" DRAFT VOUCHERS";
       const photoUrl=slug=>"https://geofootballguessr.com/footballers/"+slug+".webp";
-      const catalog={arham:["Muhammad Arham",122,"ST","SAUDI ARABIA","SA",""],messi:["Lionel Messi",123,"RW","ARGENTINA","AR",photoUrl("messi")],ronaldo:["Cristiano Ronaldo",124,"ST","PORTUGAL","PT",photoUrl("ronaldo")],mbappe:["Kylian Mbappé",122,"ST","FRANCE","FR",photoUrl("mbappe")],yamal:["Lamine Yamal",121,"RW","SPAIN","ES",photoUrl("lamine-yamal")],haaland:["Erling Haaland",121,"ST","NORWAY","NO",photoUrl("haaland")],bellingham:["Jude Bellingham",120,"CM","ENGLAND","EN",photoUrl("bellingham")],salah:["Mohamed Salah",120,"RW","EGYPT","EG",photoUrl("salah")],debruyne:["Kevin De Bruyne",121,"CAM","BELGIUM","BE",photoUrl("de-bruyne")],figo:["Luis Figo",119,"RW","PORTUGAL","PT",photoUrl("luis-figo")]};
-      const makeCard=(p,extraClass="")=>{const info=catalog[p.id]||[p.name,p.ovr,p.position,p.country,p.flag,""];const card=document.createElement("article");card.className="apex-player-card draft-player-card "+(p.rarity==="ICON"?"icon ":"")+(extraClass||"");const top=document.createElement("div");top.className="apex-card-top";const rating=document.createElement("strong");rating.className="apex-card-rating";rating.textContent=Number(p.ovr||info[1])+Number(p.level||0);const position=document.createElement("span");position.className="apex-card-position";position.textContent=p.position||info[2];top.append(rating,position);const portrait=document.createElement("div");portrait.className="apex-card-portrait";if(info[5]){const photo=document.createElement("img");photo.src=info[5];photo.alt=info[0]+" player portrait";photo.loading="lazy";photo.referrerPolicy="no-referrer";photo.onerror=()=>{photo.remove();portrait.classList.add("photo-unavailable");portrait.textContent="PHOTO UNAVAILABLE";};portrait.appendChild(photo);}else{portrait.classList.add("photo-needed");portrait.textContent="CUSTOM PLAYER PHOTO";}const name=document.createElement("strong");name.className="apex-card-name";name.textContent=info[0];const country=document.createElement("small");country.className="apex-card-country";const flagMap={SA:"🇸🇦",AR:"🇦🇷",PT:"🇵🇹",FR:"🇫🇷",ES:"🇪🇸",NO:"🇳🇴",EN:"🏴",EG:"🇪🇬",BE:"🇧🇪"};country.textContent=(flagMap[info[4]]||"⚽")+"  "+info[3];const ratingLabel=document.createElement("small");ratingLabel.className="apex-card-rating-label";ratingLabel.textContent="OVR";card.append(top,portrait,name,country,ratingLabel);return card;};
-      const showSigningReveal=pick=>{const overlay=document.createElement("div");overlay.className="apex-signing-overlay";overlay.setAttribute("role","dialog");overlay.setAttribute("aria-modal","true");overlay.setAttribute("aria-label","New player signing");const stage=document.createElement("div");stage.className="apex-signing-stage";const kicker=document.createElement("p");kicker.className="apex-signing-kicker";kicker.textContent=pick.duplicate?(pick.upgraded?"DUPLICATE UPGRADE":"SQUAD SIGNING"):"WELCOME TO THE SQUAD";const title=document.createElement("h2");title.textContent=pick.duplicate?(pick.upgraded?"CARD UPGRADED!":"PLAYER SIGNED!"):"NEW PLAYER SIGNED!";const subtitle=document.createElement("p");subtitle.className="apex-signing-subtitle";subtitle.textContent=(pick.name||"PLAYER").toUpperCase()+" · "+(Number(pick.ovr)||0)+" OVR";const card=makeCard(pick,"signing-hero-card");const seal=document.createElement("div");seal.className="apex-signing-seal";seal.textContent=pick.duplicate?(pick.upgraded?"LEVEL "+pick.level+" UPGRADE":"ALREADY OWNED"):"ADDED TO YOUR SQUAD";const close=document.createElement("button");close.type="button";close.className="apex-signing-continue";close.textContent="CONTINUE";close.addEventListener("click",()=>overlay.remove());stage.append(kicker,title,subtitle,card,seal,close);overlay.appendChild(stage);document.body.appendChild(overlay);close.focus();};
-      const box=$("apexOwnedCards");box.replaceChildren();(data.ownedCards||[]).forEach(id=>{const info=catalog[id];if(!info)return;const level=Number(data.cardLevels?.[id])||0;const card=makeCard({id,name:info[0],ovr:info[1],position:info[2],country:info[3],flag:info[4],rarity:["messi","ronaldo","figo"].includes(id)?"ICON":"ELITE",level});const upgrade=document.createElement("small");upgrade.textContent=level?"UPGRADE LEVEL "+level:"BASE CARD";card.appendChild(upgrade);box.appendChild(card);});
+      const catalog={
+        arham:["Muhammad Arham",122,"ST","SAUDI ARABIA","SA","",{PAC:90,SHO:93,PAS:80,DRI:88,DEF:40,PHY:85},"APEX FC"],
+        messi:["Lionel Messi",123,"RW","ARGENTINA","AR",photoUrl("messi"),{PAC:87,SHO:98,PAS:99,DRI:99,DEF:40,PHY:75},"INTER MIAMI"],
+        ronaldo:["Cristiano Ronaldo",124,"ST","PORTUGAL","PT",photoUrl("ronaldo"),{PAC:95,SHO:99,PAS:83,DRI:93,DEF:45,PHY:92},"AL NASSR"],
+        mbappe:["Kylian Mbappé",122,"ST","FRANCE","FR",photoUrl("mbappe"),{PAC:99,SHO:96,PAS:82,DRI:97,DEF:40,PHY:84},"REAL MADRID"],
+        yamal:["Lamine Yamal",121,"RW","SPAIN","ES",photoUrl("lamine-yamal"),{PAC:96,SHO:91,PAS:91,DRI:97,DEF:38,PHY:70},"FC BARCELONA"],
+        haaland:["Erling Haaland",121,"ST","NORWAY","NO",photoUrl("haaland"),{PAC:97,SHO:99,PAS:74,DRI:84,DEF:45,PHY:95},"MAN CITY"],
+        bellingham:["Jude Bellingham",120,"CM","ENGLAND","EN",photoUrl("bellingham"),{PAC:88,SHO:89,PAS:92,DRI:93,DEF:82,PHY:88},"REAL MADRID"],
+        salah:["Mohamed Salah",120,"RW","EGYPT","EG",photoUrl("salah"),{PAC:95,SHO:97,PAS:88,DRI:95,DEF:48,PHY:82},"LIVERPOOL"],
+        debruyne:["Kevin De Bruyne",121,"CAM","BELGIUM","BE",photoUrl("de-bruyne"),{PAC:84,SHO:95,PAS:99,DRI:90,DEF:65,PHY:80},"MAN CITY"],
+        figo:["Luis Figo",119,"RW","PORTUGAL","PT",photoUrl("luis-figo"),{PAC:94,SHO:90,PAS:95,DRI:97,DEF:48,PHY:80},"ICON"]
+      };
+      const makeCard=(p,extraClass="")=>{
+        const info=catalog[p.id]||[p.name,p.ovr,p.position,p.country,p.flag,"",{},"APEX FC"];
+        const card=document.createElement("article");
+        card.className="apex-player-card draft-player-card "+(p.rarity==="ICON"?"icon ":"elite ")+(extraClass||"");
+        card.dataset.player=p.id||"";
+        const portrait=document.createElement("div");portrait.className="apex-card-portrait";
+        if(info[5]){
+          const photo=document.createElement("img");photo.src=info[5];photo.alt=info[0]+" player portrait";photo.loading="lazy";photo.referrerPolicy="no-referrer";
+          photo.onerror=()=>{photo.remove();portrait.classList.add("photo-unavailable");portrait.textContent="PLAYER PORTRAIT UNAVAILABLE";};
+          portrait.appendChild(photo);
+        }else{portrait.classList.add("photo-needed");portrait.textContent="MA";}
+        const foil=document.createElement("div");foil.className="apex-card-foil";
+        const top=document.createElement("div");top.className="apex-card-top";
+        const ratingGroup=document.createElement("div");ratingGroup.className="apex-card-rating-group";
+        const rating=document.createElement("strong");rating.className="apex-card-rating";rating.textContent=Number(p.ovr||info[1])+Number(p.level||0);
+        const ratingLabel=document.createElement("small");ratingLabel.className="apex-card-rating-label";ratingLabel.textContent="OVR";
+        ratingGroup.append(rating,ratingLabel);
+        const position=document.createElement("span");position.className="apex-card-position";position.textContent=p.position||info[2];
+        top.append(ratingGroup,position);
+        const rarity=document.createElement("span");rarity.className="apex-card-rarity";
+        rarity.textContent=p.rarity==="ICON"?"ICON":(p.rarity||"ELITE").toUpperCase();
+        const crest=document.createElement("span");crest.className="apex-card-crest";crest.textContent="A";
+        const footer=document.createElement("div");footer.className="apex-card-footer";
+        const name=document.createElement("strong");name.className="apex-card-name";name.textContent=info[0];
+        const country=document.createElement("small");country.className="apex-card-country";
+        const flagMap={SA:"🇸🇦",AR:"🇦🇷",PT:"🇵🇹",FR:"🇫🇷",ES:"🇪🇸",NO:"🇳🇴",EN:"🏴",EG:"🇪🇬",BE:"🇧🇪"};
+        country.textContent=(flagMap[info[4]]||"⚽")+"  "+info[3];
+        const club=document.createElement("small");club.className="apex-card-club";club.textContent=info[7]||"APEX FC";
+        const stats=document.createElement("div");stats.className="apex-card-stats";
+        const statData=info[6]||{};
+        ["PAC","SHO","PAS","DRI","DEF","PHY"].forEach(label=>{
+          const item=document.createElement("span");item.className="apex-card-stat";
+          const value=document.createElement("strong");value.textContent=Number(statData[label]||Math.max(45,Number(p.ovr||info[1])-8));
+          const key=document.createElement("small");key.textContent=label;item.append(value,key);stats.appendChild(item);
+        });
+        const brand=document.createElement("small");brand.className="apex-card-brand";brand.textContent="APEX STRIKERS · PLAYER ITEM";
+        footer.append(name,country,club,stats,brand);
+        card.append(portrait,foil,top,rarity,crest,footer);
+        return card;
+      };
+      const showSigningReveal=pick=>{
+        const overlay=document.createElement("div");overlay.className="apex-signing-overlay";overlay.setAttribute("role","dialog");overlay.setAttribute("aria-modal","true");overlay.setAttribute("aria-label","New player signing");
+        const stage=document.createElement("div");stage.className="apex-signing-stage";
+        const kicker=document.createElement("p");kicker.className="apex-signing-kicker";kicker.textContent=pick.duplicate?(pick.upgraded?"DUPLICATE UPGRADE":"SQUAD SIGNING"):"WELCOME TO THE SQUAD";
+        const title=document.createElement("h2");title.textContent=pick.duplicate?(pick.upgraded?"CARD UPGRADED!":"PLAYER SIGNED!"):"NEW PLAYER SIGNED!";
+        const subtitle=document.createElement("p");subtitle.className="apex-signing-subtitle";subtitle.textContent=(pick.name||"PLAYER").toUpperCase()+" · "+(Number(pick.ovr)||0)+" OVR";
+        const card=makeCard(pick,"signing-hero-card");
+        const seal=document.createElement("div");seal.className="apex-signing-seal";seal.textContent=pick.duplicate?(pick.upgraded?"LEVEL "+pick.level+" UPGRADE":"ALREADY OWNED"):"ADDED TO YOUR SQUAD";
+        const close=document.createElement("button");close.type="button";close.className="apex-signing-continue";close.textContent="CONTINUE";close.addEventListener("click",()=>overlay.remove());
+        stage.append(kicker,title,subtitle,card,seal,close);overlay.appendChild(stage);document.body.appendChild(overlay);close.focus();
+      };
+      const box=$("apexOwnedCards");box.replaceChildren();(data.ownedCards||[]).forEach(id=>{const info=catalog[id];if(!info)return;const level=Number(data.cardLevels?.[id])||0;const card=makeCard({id,name:info[0],ovr:info[1],position:info[2],country:info[3],flag:info[4],rarity:["messi","ronaldo","figo"].includes(id)?"ICON":"ELITE",level});const upgrade=document.createElement("small");upgrade.className="apex-card-upgrade";upgrade.textContent=level?"UPGRADE LEVEL "+level:"BASE CARD";card.appendChild(upgrade);box.appendChild(card);});
       if(!box.childElementCount)box.textContent="No cards yet. Enter your first draft to sign a player.";
       const choices=$("apexDraftChoices");
       const renderDraft=draft=>{choices.replaceChildren();if(!draft||!Array.isArray(draft.choices))return;const heading=document.createElement("h4");heading.className="draft-choice-heading";heading.textContent="YOUR THREE PICKS · CHOOSE ONE";choices.appendChild(heading);const bestId=[...draft.choices].sort((a,b)=>(catalog[b]?.[1]||0)-(catalog[a]?.[1]||0))[0];draft.choices.forEach(id=>{const p=catalog[id];if(!p)return;const card=makeCard({id,name:p[0],ovr:p[1],position:p[2],country:p[3],flag:p[4],rarity:["messi","ronaldo","figo"].includes(id)?"ICON":"ELITE"},"draft-pick-card");if(id===bestId){card.classList.add("draft-best-pull-card");const badge=document.createElement("span");badge.className="draft-best-pull-badge";badge.textContent="★ BEST PULL";card.appendChild(badge);}const odds=document.createElement("small");odds.className="draft-card-odds";const chance=Number(draft.odds?.[id]);odds.textContent="PACK CHANCE · "+(Number.isFinite(chance)?chance.toFixed(2):"—")+"%";card.appendChild(odds);const choose=document.createElement("button");choose.className="draft-select-btn";choose.type="button";choose.textContent="SIGN THIS PLAYER";choose.addEventListener("click",async()=>{choose.disabled=true;$("apexPackStatus").textContent="Preparing your signing reveal...";try{const result=await api("/api/store/draft/choose",{method:"POST",body:JSON.stringify({cardId:id,draftId:draft.id})});$("apexPackStatus").textContent=result.pick.duplicate?(result.pick.upgraded?"DUPLICATE SIGNED · CARD UPGRADED!":"DUPLICATE SIGNED · MAX LEVEL"):"WELCOME TO THE SQUAD · "+result.pick.name.toUpperCase()+"!";updateTopGemBalance(result.gems);showSigningReveal(result.pick);await loadApexStore();}catch(error){$("apexPackStatus").textContent=error.message;choose.disabled=false;}});card.appendChild(choose);choices.appendChild(card);});};
@@ -500,12 +579,12 @@ const goalkeepers = [
     if(isRandomRush){const choices=["penalty","freekick","longshot","goalkeeping","vsattack","crossbar","survival"];nextMode=choices[Math.floor(Math.random()*choices.length)];}
     mode=nextMode;shotTaken=false;ballAnim=null;keeperMotion=null;
     activeRewardSessionId=null;activeRewardSessionPromise=null;rewardClaimedThisGame=false;activeRewardEventId=pendingApexEventId;pendingApexEventId="";
-    if(onlineCfg.base&&onlineCfg.token)activeRewardSessionPromise=api("/api/games/start",{method:"POST",body:JSON.stringify({mode,eventId:activeRewardEventId})}).then(data=>{activeRewardSessionId=data.sessionId;return data.sessionId;}).catch(error=>{activeRewardSessionPromise=null;throw error;});
+    if(onlineCfg.base&&onlineCfg.token)activeRewardSessionPromise=api("/api/games/start",{method:"POST",body:JSON.stringify({mode,eventId:activeRewardEventId})}).then(data=>{activeRewardSessionId=data.sessionId;return data.sessionId;}).catch(error=>{activeRewardSessionId=null;activeRewardSessionPromise=null;toast("Online game session could not start: "+error.message);return null;});
     if(!isRandomRush){recentModes=[nextMode,...recentModes.filter(x=>x!==nextMode)].slice(0,5);try{localStorage.setItem("eclipseRecentModes",JSON.stringify(recentModes));}catch(_){}renderModeTools();}
     match.active=mode==="headtohead";match.finished=false;match.clock=0;match.playerGoals=0;match.rivalGoals=0;match.rankPoints=0;match.rank="ROOKIE III";match.player={x:.5,y:.72};match.rival={x:.5,y:.28};match.ball={x:.5,y:.72};match.move="";match.sprint=false;match.hasBall=true;match.lastRivalShot=0;
     $("matchHud").classList.toggle("hidden",!match.active);$("matchControls").classList.toggle("hidden",!match.active);$("matchResult").classList.add("hidden");$("matchResult").textContent="";
     $("powerSlider").classList.toggle("hidden",match.active);$("powerSlider").disabled=match.active;$("shootBtn").classList.toggle("hidden",match.active);$("matchRank").textContent="ROOKIE III · 0 PTS";
-    if(mode==="headtohead"||mode==="vsattack"){score=0;opponentScore=0;matchMinute=0;matchAttacks=0;attempt=1;}
+    score=0;attempt=1;if(mode==="headtohead"||mode==="vsattack"){opponentScore=0;matchMinute=0;matchAttacks=0;}
     $("homeScreen").classList.add("hidden");$("gameScreen").classList.remove("hidden");
     $("gameTitle").innerHTML=modeNames[mode]+" <em>MODE</em>";$("controlHeading").textContent=modeText[mode][0];$("controlText").textContent=modeText[mode][1];
     if(isRandomRush){$("gameTitle").innerHTML="RANDOM <em>RUSH</em>";$("controlHeading").textContent="Surprise challenge: "+modeNames[mode];$("controlText").textContent="Random Rush picked "+modeNames[mode]+". Finish the challenge, then try again for a different surprise.";}
@@ -656,7 +735,7 @@ const goalkeepers = [
   document.querySelectorAll("[data-difficulty]").forEach(b=>b.addEventListener("click",()=>{difficulty=b.dataset.difficulty;document.querySelectorAll("[data-difficulty]").forEach(x=>x.classList.toggle("selected",x===b));}));
 
   $("playNowBtn").addEventListener("click",()=>{document.querySelector(".mode-section")?.scrollIntoView({behavior:"smooth",block:"start"});toast("Choose a challenge to begin")});
-  $("backBtn").addEventListener("click",()=>{if(mode!=="headtohead"&&mode!=="vsattack")claimGameReward(score);match.active=false;cancelAnimationFrame(animationFrame);$("matchHud").classList.add("hidden");$("matchControls").classList.add("hidden");$("gameScreen").classList.add("hidden");$("homeScreen").classList.remove("hidden");ballAnim=null;cancelAnimationFrame(animationFrame);window.scrollTo({top:0,behavior:"auto"})});
+  $("backBtn").addEventListener("click",()=>{if(mode!=="headtohead"&&mode!=="vsattack"&&!rewardClaimedThisGame)claimGameReward(score);match.active=false;cancelAnimationFrame(animationFrame);$("matchHud").classList.add("hidden");$("matchControls").classList.add("hidden");$("gameScreen").classList.add("hidden");$("homeScreen").classList.remove("hidden");ballAnim=null;cancelAnimationFrame(animationFrame);window.scrollTo({top:0,behavior:"auto"})});
   $("shootBtn").addEventListener("click",()=>{if(mode==="goalkeeping"||mode==="survival")dive();else shoot()});$("nextBtn").addEventListener("click",nextAttempt);
   $("powerSlider").addEventListener("input",e=>{power=Number(e.target.value);$("powerReadout").textContent=power+"%"});
   document.querySelectorAll("[data-dive]").forEach(b=>b.addEventListener("click",()=>{keeperDive=b.dataset.dive;document.querySelectorAll("[data-dive]").forEach(x=>x.style.borderColor=x===b?"#c7ff4a":"");$("feedback").textContent="Dive selected: "+keeperDive.toUpperCase()+". Press save when ready."}));
