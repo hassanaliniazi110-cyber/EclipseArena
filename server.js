@@ -61,7 +61,7 @@ function loadData() {
     if (data.version !== 1 || !Array.isArray(data.players)) return;
     for (const p of data.players.slice(0, MAX_PLAYERS)) {
       if (!validPlayerId(p.id) || !/^[a-f0-9]{64}$/i.test(p.tokenHash || "")) continue;
-      const player = { id: p.id, tokenHash: p.tokenHash, profile: normalizeProfile(p.profile), friends: new Set(Array.isArray(p.friends) ? p.friends.filter(validPlayerId).slice(0, 100) : []), gems: p.gems === undefined ? 250 : Math.max(0, Math.min(1000000, Math.floor(Number(p.gems) || 0))), ownedCards: Array.isArray(p.ownedCards) ? [...new Set(p.ownedCards.filter(x => typeof x === 'string').slice(0, 100))] : ['arham'], cardLevels: p.cardLevels && typeof p.cardLevels === 'object' ? p.cardLevels : {}, draftVouchers: Math.max(0,Math.min(99,Number(p.draftVouchers)||0)), activeDraft: p.activeDraft && typeof p.activeDraft==="object" ? p.activeDraft : null, rewardDay: String(p.rewardDay || ''), rewardGemsToday: Math.max(0, Math.min(200, Number(p.rewardGemsToday) || 0)), lastGameClaimAt: Math.max(0, Number(p.lastGameClaimAt) || 0), eventClaims: p.eventClaims && typeof p.eventClaims === "object" ? p.eventClaims : {}, gameSession: null };
+      const player = { id: p.id, tokenHash: p.tokenHash, profile: normalizeProfile(p.profile), friends: new Set(Array.isArray(p.friends) ? p.friends.filter(validPlayerId).slice(0, 100) : []), gems: p.gems === undefined ? 250 : Math.max(0, Math.floor(Number(p.gems) || 0)), ownedCards: Array.isArray(p.ownedCards) ? [...new Set(p.ownedCards.filter(x => typeof x === 'string').slice(0, 100))] : ['arham'], cardLevels: p.cardLevels && typeof p.cardLevels === 'object' ? p.cardLevels : {}, draftVouchers: Math.max(0,Math.min(99,Number(p.draftVouchers)||0)), activeDraft: p.activeDraft && typeof p.activeDraft==="object" ? p.activeDraft : null, rewardDay: String(p.rewardDay || ''), rewardGemsToday: Math.max(0, Number(p.rewardGemsToday) || 0), lastGameClaimAt: Math.max(0, Number(p.lastGameClaimAt) || 0), eventClaims: p.eventClaims && typeof p.eventClaims === "object" ? p.eventClaims : {}, gameSession: null };
       players.set(player.id, player); tokenToPlayer.set(player.tokenHash, player.id);
     }
   } catch (e) { if (e.code !== "ENOENT") console.error("Could not load player data:", e.message); }
@@ -524,7 +524,6 @@ app.post("/api/games/complete",auth,gameLimiter,(req,res)=>{
   if(elapsed<5000||elapsed>1800000){req.player.gameSession=null;return res.status(400).json({error:"Play for at least 5 seconds before claiming a reward."});}
   const today=new Date().toISOString().slice(0,10);
   if(req.player.rewardDay!==today){req.player.rewardDay=today;req.player.rewardGemsToday=0;}
-  if(req.player.rewardGemsToday>=200){req.player.gameSession=null;saveData();return res.status(429).json({error:"Daily gem reward limit reached."});}
   if(Date.now()-req.player.lastGameClaimAt<5000){req.player.gameSession=null;saveData();return res.status(429).json({error:"Start the next game and finish it before claiming more gems."});}
   const reportedScore=Math.max(0,Math.min(5000,Math.floor(Number(req.body?.score)||0)));
   let reward=Math.min(50,15+Math.floor(reportedScore/100)),eventReward=0,eventXp=0,eventId="",eventCard=null;
@@ -551,13 +550,13 @@ app.post("/api/games/complete",auth,gameLimiter,(req,res)=>{
       }
     }
   }
-  reward=Math.min(reward+eventReward,200-req.player.rewardGemsToday);
-  req.player.gems=Math.min(1000000,req.player.gems+reward);
+  reward+=eventReward;
+  req.player.gems+=reward;
   req.player.profile.xp=Math.min(10000000,req.player.profile.xp+20+eventXp);
   req.player.rewardGemsToday+=reward;req.player.lastGameClaimAt=Date.now();req.player.gameSession=null;
   saveData();auditEvent(req.player.id,"game_reward_claimed",String(reward));
   if(eventCard)auditEvent(req.player.id,"game_changers_player_awarded",eventCard.id);
-  res.json({gems:req.player.gems,reward,eventReward,eventXp,eventId,eventCard,ownedCards:req.player.ownedCards,cardLevels:req.player.cardLevels,dailyEarned:req.player.rewardGemsToday,dailyLimit:200});
+  res.json({gems:req.player.gems,reward,eventReward,eventXp,eventId,eventCard,ownedCards:req.player.ownedCards,cardLevels:req.player.cardLevels,dailyEarned:req.player.rewardGemsToday,dailyLimit:null,unlimitedGems:true});
 });
 app.get("/api/leaderboard", auth, (req, res) => {
   const board = [...players.values()].map(publicProfile)
