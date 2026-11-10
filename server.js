@@ -50,7 +50,7 @@ const tokenToPlayer = new Map();
 const DATA_FILE = process.env.ECLIPSE_DATA_FILE || path.join(__dirname, "eclipse-data.json");
 function hashToken(token) { return crypto.createHash("sha256").update(String(token)).digest("hex"); }
 function saveData() {
-  const data = [...players.values()].map(p => ({ id: p.id, tokenHash: p.tokenHash, profile: p.profile, friends: [...p.friends] }));
+  const data = [...players.values()].map(p => ({ id: p.id, tokenHash: p.tokenHash, profile: p.profile, friends: [...p.friends], gems: p.gems, ownedCards: p.ownedCards, cardLevels: p.cardLevels, rewardDay: p.rewardDay, rewardGemsToday: p.rewardGemsToday, lastGameClaimAt: p.lastGameClaimAt }));
   const temp = DATA_FILE + ".tmp";
   fs.writeFileSync(temp, JSON.stringify({ version: 1, players: data }), { mode: 0o600 });
   fs.renameSync(temp, DATA_FILE);
@@ -61,7 +61,7 @@ function loadData() {
     if (data.version !== 1 || !Array.isArray(data.players)) return;
     for (const p of data.players.slice(0, MAX_PLAYERS)) {
       if (!validPlayerId(p.id) || !/^[a-f0-9]{64}$/i.test(p.tokenHash || "")) continue;
-      const player = { id: p.id, tokenHash: p.tokenHash, profile: normalizeProfile(p.profile), friends: new Set(Array.isArray(p.friends) ? p.friends.filter(validPlayerId).slice(0, 100) : []) };
+      const player = { id: p.id, tokenHash: p.tokenHash, profile: normalizeProfile(p.profile), friends: new Set(Array.isArray(p.friends) ? p.friends.filter(validPlayerId).slice(0, 100) : []), gems: Math.max(0, Math.min(1000000, Math.floor(Number(p.gems) || 0))), ownedCards: Array.isArray(p.ownedCards) ? [...new Set(p.ownedCards.filter(x => typeof x === 'string').slice(0, 100))] : ['arham'], cardLevels: p.cardLevels && typeof p.cardLevels === 'object' ? p.cardLevels : {}, rewardDay: String(p.rewardDay || ''), rewardGemsToday: Math.max(0, Math.min(200, Number(p.rewardGemsToday) || 0)), lastGameClaimAt: Math.max(0, Number(p.lastGameClaimAt) || 0), gameSession: null };
       players.set(player.id, player); tokenToPlayer.set(player.tokenHash, player.id);
     }
   } catch (e) { if (e.code !== "ENOENT") console.error("Could not load player data:", e.message); }
@@ -272,7 +272,7 @@ function cleanText(value, max = 24) {
 }
 function validPlayerId(id) { return /^EA-[A-Z0-9]{3,8}-[A-Z0-9]{3,8}$/.test(String(id || "")); }
 function publicProfile(p) {
-  return { id: p.id, name: p.profile.name, xp: p.profile.xp, goals: p.profile.goals, saves: p.profile.saves,
+  return { id: p.id, name: p.profile.name, gems: p.gems || 0, ownedCards: p.ownedCards || [], cardLevels: p.cardLevels || {}, xp: p.profile.xp, goals: p.profile.goals, saves: p.profile.saves,
     wins: p.profile.wins, best: p.profile.best, player: p.profile.player, goalkeeper: p.profile.goalkeeper,
     ovr: p.profile.ovr, online: Boolean(socketsByPlayer.get(p.id)?.size) };
 }
@@ -310,7 +310,7 @@ app.post("/api/register", registerLimiter, (req, res) => {
   let id;
   do { id = "EA-" + crypto.randomBytes(3).toString("hex").toUpperCase() + "-" + crypto.randomBytes(3).toString("hex").toUpperCase(); } while (players.has(id));
   const token = crypto.randomBytes(32).toString("hex");
-  const player = { id, tokenHash: hashToken(token), profile, friends: new Set() };
+  const player = { id, tokenHash: hashToken(token), profile, friends: new Set(), gems: 250, ownedCards: ['arham'], cardLevels: { arham: 0 }, rewardDay: '', rewardGemsToday: 0, lastGameClaimAt: 0, gameSession: null };
   players.set(id, player);
   tokenToPlayer.set(player.tokenHash, id);
   saveData();
