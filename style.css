@@ -819,3 +819,24 @@ svg line,svg polyline,.chart-line,.stat-line,.player-chart-line,.player-stats sv
 @keyframes introCardFlash{0%{filter:brightness(3) saturate(1.5);transform:translateY(-50%) rotate(10deg) scale(1.2)}100%{filter:brightness(1);transform:translateY(-50%) rotate(10deg) scale(1)}}
 @media(max-width:700px){.intro-featured-card{right:10px;top:auto;bottom:12px;transform:rotate(7deg) scale(.65)}.intro-wordmark{max-width:85vw;font-size:clamp(22px,6vw,38px)}.intro-final-line{max-width:72vw;text-align:center}}
 @media(prefers-reduced-motion:reduce){.intro-splash{animation:intro-exit .3s linear 3.5s forwards}.intro-wordmark .intro-letter,.intro-caption,.intro-event-line,.intro-final-line,.intro-skip-line{opacity:1;animation:none;filter:none;transform:none}}
+
+/* FC-style player cards: portrait-first layout, bold rating and position */
+.apex-player-card.draft-player-card{width:174px;min-height:294px;padding:10px 10px 12px;border-radius:13px;border-width:2px;background:linear-gradient(155deg,#efffc0 0%,#a9c95b 44%,#344b2c 100%);gap:5px;isolation:isolate}
+.apex-player-card.draft-player-card:before{content:"";position:absolute;inset:5px;border:1px solid rgba(255,255,255,.42);border-radius:8px;pointer-events:none;z-index:-1}
+.apex-player-card.draft-player-card.icon{background:linear-gradient(155deg,#fff0c6 0%,#c99b4d 45%,#4b351c 100%);border-color:#f6d98b}
+.apex-card-top{align-items:flex-start;min-height:45px;gap:8px;color:#132015}
+.apex-card-rating{font:1000 2.05rem/1 'Orbitron',sans-serif;letter-spacing:-.06em;text-shadow:0 1px rgba(255,255,255,.55)}
+.apex-card-position{margin-left:auto;padding:4px 6px;border-radius:4px;background:rgba(15,25,18,.82);color:#f5ffd8;font:900 .7rem 'Orbitron',sans-serif}
+.apex-card-portrait{position:relative;width:100%;height:174px;align-self:stretch;border:0;border-radius:5px 5px 2px 2px;background:linear-gradient(155deg,#d8e4ca,#566a53);overflow:hidden;display:grid;place-items:center;color:#1a2a1d;font:900 .65rem 'Orbitron',sans-serif;text-align:center;padding:8px}
+.apex-card-portrait img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 18%;display:block}
+.apex-card-portrait.photo-needed,.apex-card-portrait.photo-unavailable{background:linear-gradient(145deg,#233a31,#101b19);color:#d7ff78;border:1px dashed rgba(215,255,120,.65)}
+.apex-card-name{display:block;text-align:center;font:1000 .82rem/1.12 'Orbitron',sans-serif;letter-spacing:-.02em;text-transform:uppercase;color:#122016;text-shadow:0 1px rgba(255,255,255,.45);min-height:29px}
+.apex-card-country{display:block;text-align:center;font-size:.62rem;font-weight:900;letter-spacing:.04em;color:#1d2d1c}
+.apex-card-rating-label{position:absolute;right:10px;top:38px;font:900 .52rem 'Orbitron',sans-serif;color:#1a2a1d;opacity:.7}
+.apex-leaderboard-row{display:flex;align-items:center;gap:12px;padding:9px 10px;margin:5px 0;border:1px solid rgba(199,255,74,.12);border-radius:9px;background:rgba(255,255,255,.035)}
+.apex-leaderboard-row strong{min-width:30px;color:#d7ff78;font:900 .9rem 'Orbitron',sans-serif}
+.apex-leaderboard-row span{font-size:.82rem;color:#e4e9ef}
+.apex-leaderboard-updated{display:block;margin-top:10px;color:#9eacb9;font-size:.65rem;letter-spacing:.04em}
+.brand-mark{display:grid;place-items:center;overflow:hidden}
+.brand-mark svg{width:100%;height:100%;display:block}
+@media(max-width:650px){.apex-player-card.draft-player-card{width:calc(50% - 8px);max-width:174px;min-height:276px}.apex-card-portrait{height:158px}}
