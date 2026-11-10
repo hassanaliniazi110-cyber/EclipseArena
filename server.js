@@ -298,7 +298,7 @@ app.post("/api/register", registerLimiter, (req, res) => {
   const existingId = bearer && tokenToPlayer.get(hashToken(bearer[1]));
   if (existingId && players.has(existingId)) {
     const existing = players.get(existingId);
-    existing.profile = profile;
+    existing.profile = { ...existing.profile, name: profile.name, player: profile.player, goalkeeper: profile.goalkeeper, ovr: profile.ovr };
     tokenToPlayer.delete(existing.tokenHash);
     const rotatedToken = crypto.randomBytes(32).toString("hex");
     existing.tokenHash = hashToken(rotatedToken);
@@ -310,14 +310,16 @@ app.post("/api/register", registerLimiter, (req, res) => {
   let id;
   do { id = "EA-" + crypto.randomBytes(3).toString("hex").toUpperCase() + "-" + crypto.randomBytes(3).toString("hex").toUpperCase(); } while (players.has(id));
   const token = crypto.randomBytes(32).toString("hex");
-  const player = { id, tokenHash: hashToken(token), profile, friends: new Set(), gems: 250, ownedCards: ['arham'], cardLevels: { arham: 0 }, rewardDay: '', rewardGemsToday: 0, lastGameClaimAt: 0, eventClaims: {}, gameSession: null };
+  const safeNewProfile = normalizeProfile({ name: profile.name, player: profile.player, goalkeeper: profile.goalkeeper, ovr: profile.ovr });
+  const player = { id, tokenHash: hashToken(token), profile: safeNewProfile, friends: new Set(), gems: 250, ownedCards: ['arham'], cardLevels: { arham: 0 }, rewardDay: '', rewardGemsToday: 0, lastGameClaimAt: 0, eventClaims: {}, gameSession: null };
   players.set(id, player);
   tokenToPlayer.set(player.tokenHash, id);
   saveData();
   res.status(201).json({ playerId: id, token });
 });
 app.put("/api/profile", auth, profileLimiter, (req, res) => {
-  req.player.profile = normalizeProfile(req.body?.profile);
+  const incoming = normalizeProfile(req.body?.profile);
+  req.player.profile = { ...req.player.profile, name: incoming.name, player: incoming.player, goalkeeper: incoming.goalkeeper, ovr: incoming.ovr };
   saveData();
   res.json({ profile: publicProfile(req.player) });
 });
@@ -396,6 +398,7 @@ app.post("/api/games/complete",auth,inviteLimiter,(req,res)=>{
   }
   reward=Math.min(reward+eventReward,200-req.player.rewardGemsToday);
   req.player.gems=Math.min(1000000,req.player.gems+reward);
+  req.player.profile.xp=Math.min(10000000,req.player.profile.xp+20+eventXp);
   req.player.rewardGemsToday+=reward;req.player.lastGameClaimAt=Date.now();req.player.gameSession=null;
   saveData();auditEvent(req.player.id,"game_reward_claimed",String(reward));
   res.json({gems:req.player.gems,reward,eventReward,eventXp,eventId,dailyEarned:req.player.rewardGemsToday,dailyLimit:200});
