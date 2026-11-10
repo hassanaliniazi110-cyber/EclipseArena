@@ -1083,5 +1083,6 @@ const goalkeepers = [
   // A touch-friendly joystick appears only in goalkeeper mode as an extra dive input.
   window.addEventListener("resize",()=>{if(!$("gameScreen").classList.contains("hidden"))resizeCanvas()});
   renderPlayers();
+  loadApexLiveHub();
   detectApexAdmin();resizeCanvas();
 })();
