@@ -83,6 +83,71 @@ const youtubeAdminPlayers = new Set(youtubeAdminPlayerIdConfig
   .filter(value => /^EA-[A-Z0-9]{3,8}-[A-Z0-9]{3,8}$/.test(value)));
 const YOUTUBE_ACCESS_FILE = process.env.YOUTUBE_ACCESS_FILE || path.join(__dirname, "eclipse-youtube-access.json");
 const AUDIT_FILE = process.env.APEX_AUDIT_FILE || path.join(__dirname, "apex-security-audit.jsonl");
+const ADMIN_2FA_FILE = process.env.APEX_ADMIN_2FA_FILE || path.join(__dirname, "apex-admin-2fa.json");
+const ADMIN_2FA_KEY = /^[a-f0-9]{64}$/i.test(process.env.APEX_2FA_ENCRYPTION_KEY || "") ? Buffer.from(process.env.APEX_2FA_ENCRYPTION_KEY, "hex") : null;
+let admin2FA = null;
+const admin2FASessions = new Map();
+function readAdmin2FA() {
+  try { admin2FA = JSON.parse(fs.readFileSync(ADMIN_2FA_FILE, "utf8")); }
+  catch (error) { if (error.code !== "ENOENT") console.error("[security] Could not read admin 2FA data:", error.message); }
+}
+function saveAdmin2FA() {
+  const temp = ADMIN_2FA_FILE + ".tmp";
+  fs.writeFileSync(temp, JSON.stringify(admin2FA), { mode: 0o600 });
+  fs.renameSync(temp, ADMIN_2FA_FILE);
+}
+function encryptAdminSecret(secret) {
+  if (!ADMIN_2FA_KEY) throw new Error("Set APEX_2FA_ENCRYPTION_KEY to a 64-character hexadecimal key before enrolling admin 2FA.");
+  const iv = crypto.randomBytes(12), cipher = crypto.createCipheriv("aes-256-gcm", ADMIN_2FA_KEY, iv);
+  const encrypted = Buffer.concat([cipher.update(secret, "utf8"), cipher.final()]);
+  return { iv: iv.toString("hex"), tag: cipher.getAuthTag().toString("hex"), data: encrypted.toString("hex") };
+}
+function decryptAdminSecret(record) {
+  if (!ADMIN_2FA_KEY || !record) return null;
+  try {
+    const decipher = crypto.createDecipheriv("aes-256-gcm", ADMIN_2FA_KEY, Buffer.from(record.iv, "hex"));
+    decipher.setAuthTag(Buffer.from(record.tag, "hex"));
+    return Buffer.concat([decipher.update(Buffer.from(record.data, "hex")), decipher.final()]).toString("utf8");
+  } catch (_) { return null; }
+}
+function base32Encode(buffer) {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"; let bits = 0, value = 0, out = "";
+  for (const byte of buffer) { value = (value << 8) | byte; bits += 8; while (bits >= 5) { out += alphabet[(value >>> (bits - 5)) & 31]; bits -= 5; } }
+  if (bits) out += alphabet[(value << (5 - bits)) & 31];
+  return out;
+}
+function base32Decode(value) {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"; let bits = 0, buffer = 0; const out = [];
+  for (const char of String(value || "").toUpperCase().replace(/=+$/g, "")) { const index = alphabet.indexOf(char); if (index < 0) continue; buffer = (buffer << 5) | index; bits += 5; if (bits >= 8) { out.push((buffer >>> (bits - 8)) & 255); bits -= 8; } }
+  return Buffer.from(out);
+}
+function totpCode(secret, time = Date.now()) {
+  const counter = Math.floor(time / 30000), msg = Buffer.alloc(8); msg.writeBigUInt64BE(BigInt(counter));
+  const digest = crypto.createHmac("sha1", base32Decode(secret)).update(msg).digest();
+  const offset = digest[digest.length - 1] & 15;
+  return String((digest.readUInt32BE(offset) & 0x7fffffff) % 1000000).padStart(6, "0");
+}
+function verifyAdminCode(secret, code) {
+  const supplied = String(code || "").replace(/\\s/g, "");
+  if (!/^\\d{6}$/.test(supplied)) return false;
+  for (const drift of [-30000, 0, 30000]) {
+    const expected = totpCode(secret, Date.now() + drift);
+    if (crypto.timingSafeEqual(Buffer.from(supplied), Buffer.from(expected))) return true;
+  }
+  return false;
+}
+function requireAdmin2FA(req, res, next) {
+  if (!youtubeAdminPlayers.has(req.player.id)) return res.status(403).json({ error: "Owner access required." });
+  if (!admin2FA || !admin2FA.enabled || !decryptAdminSecret(admin2FA.secret)) return res.status(503).json({ error: "Admin two-step verification is not enrolled. Set APEX_2FA_ENCRYPTION_KEY, then enroll in Admin Security." });
+  const token = String(req.get("x-admin-2fa") || "");
+  const session = admin2FASessions.get(token);
+  if (!session || session.playerId !== req.player.id || session.expiresAt < Date.now()) {
+    if (session) admin2FASessions.delete(token);
+    return res.status(403).json({ error: "Verify your authenticator code in Admin Security first." });
+  }
+  next();
+}
+
 function auditEvent(actorId, action, targetId = "") {
   const entry = { at: new Date().toISOString(), actorId: cleanText(actorId, 24), action: cleanText(action, 64), targetId: cleanText(targetId, 64) };
   try { fs.appendFileSync(AUDIT_FILE, JSON.stringify(entry) + "\\n", { mode: 0o600 }); }
@@ -267,6 +332,36 @@ app.post("/api/youtube/requests/:requestId/decision", auth, (req, res) => {
   res.json({ ok: true, status: request.status, playerId: request.playerId });
 });
 
+readAdmin2FA();
+const admin2FALimiter = rateLimit({ windowMs: 5 * 60 * 1000, limit: 8, standardHeaders: "draft-7", legacyHeaders: false, message: { error: "Too many authenticator attempts. Wait five minutes." } });
+app.get("/api/admin/2fa/status", auth, (req, res) => {
+  if (!youtubeAdminPlayers.has(req.player.id)) return res.status(403).json({ error: "Owner access required." });
+  res.json({ enrolled: Boolean(admin2FA && admin2FA.enabled), encryptionKeyConfigured: Boolean(ADMIN_2FA_KEY), sessionMinutes: 10 });
+});
+app.post("/api/admin/2fa/setup", auth, admin2FALimiter, (req, res) => {
+  if (!youtubeAdminPlayers.has(req.player.id)) return res.status(403).json({ error: "Owner access required." });
+  if (!ADMIN_2FA_KEY) return res.status(503).json({ error: "Set APEX_2FA_ENCRYPTION_KEY to a 64-character hexadecimal key in the server environment first." });
+  if (admin2FA && admin2FA.enabled) return res.status(409).json({ error: "Admin two-step verification is already enrolled." });
+  const secret = base32Encode(crypto.randomBytes(20));
+  admin2FA = { enabled: true, secret: encryptAdminSecret(secret), createdAt: new Date().toISOString(), playerId: req.player.id };
+  saveAdmin2FA(); auditEvent(req.player.id, "admin_2fa_enrolled");
+  const label = encodeURIComponent("Apex Strikers Admin");
+  res.json({ ok: true, secret, otpauthUrl: "otpauth://totp/" + label + "?secret=" + secret + "&issuer=Apex%20Strikers&algorithm=SHA1&digits=6&period=30", message: "Add this account to an authenticator app, then verify a current six-digit code." });
+});
+app.post("/api/admin/2fa/verify", auth, admin2FALimiter, (req, res) => {
+  if (!youtubeAdminPlayers.has(req.player.id)) return res.status(403).json({ error: "Owner access required." });
+  const secret = decryptAdminSecret(admin2FA && admin2FA.secret);
+  if (!secret || !verifyAdminCode(secret, req.body?.code)) { auditEvent(req.player.id, "admin_2fa_failed"); return res.status(401).json({ error: "That code did not match. Check the authenticator clock and try again." }); }
+  const token = crypto.randomBytes(32).toString("hex");
+  admin2FASessions.set(token, { playerId: req.player.id, expiresAt: Date.now() + 10 * 60 * 1000 });
+  auditEvent(req.player.id, "admin_2fa_verified");
+  res.json({ ok: true, adminToken: token, expiresInSeconds: 600 });
+});
+app.post("/api/admin/2fa/logout", auth, (req, res) => {
+  const token = String(req.get("x-admin-2fa") || "");
+  if (token) admin2FASessions.delete(token);
+  res.json({ ok: true });
+});
 function cleanText(value, max = 24) {
   return String(value ?? "").replace(/[<>\u0000-\u001f]/g, "").trim().slice(0, max);
 }
