@@ -840,3 +840,38 @@ svg line,svg polyline,.chart-line,.stat-line,.player-chart-line,.player-stats sv
 .brand-mark{display:grid;place-items:center;overflow:hidden}
 .brand-mark svg{width:100%;height:100%;display:block}
 @media(max-width:650px){.apex-player-card.draft-player-card{width:calc(50% - 8px);max-width:174px;min-height:276px}.apex-card-portrait{height:158px}}
+
+
+/* Cinematic draft cards: full-bleed portraits, clear OVR and signing reveal */
+.apex-player-card.draft-player-card{position:relative;isolation:isolate;overflow:hidden;min-height:306px;padding:11px 10px 12px;gap:5px;background:linear-gradient(155deg,#263d35 0%,#14221f 52%,#080e12 100%);border:2px solid #b7d66c;box-shadow:0 15px 34px #0009,inset 0 0 22px #d8ff9b22}
+.apex-player-card.draft-player-card.icon{border-color:#f3cf78;background:linear-gradient(155deg,#694b22 0%,#302318 50%,#100d0a 100%);box-shadow:0 15px 38px #000b,0 0 18px #f5c66b35,inset 0 0 24px #ffe3a333}
+.apex-card-portrait{position:absolute!important;inset:0!important;width:auto!important;height:auto!important;align-self:stretch!important;border:0!important;border-radius:0!important;background:transparent!important;z-index:0!important;overflow:hidden!important;display:block!important}
+.apex-card-portrait img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 17%;border:0;border-radius:0;opacity:.9;filter:saturate(1.05) contrast(1.08);transform:scale(1.025);mask-image:linear-gradient(to bottom,#000 0%,#000 58%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 58%,transparent 100%)}
+.apex-card-portrait:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,13,15,.04) 15%,rgba(7,13,15,.08) 38%,rgba(7,13,15,.74) 72%,rgba(7,13,15,.98) 100%);pointer-events:none}
+.apex-card-portrait.photo-needed,.apex-card-portrait.photo-unavailable{display:grid!important;place-items:center!important;color:#fff!important;font-size:.8rem!important;text-align:center;padding:18px;background:radial-gradient(circle at 50% 35%,#b7a16a,#354638 70%,#101a18)!important}
+.apex-card-top,.apex-card-name,.apex-card-country,.apex-card-rating-label{position:relative;z-index:2;color:#fff;text-shadow:0 2px 7px #000c}
+.apex-card-top{align-items:flex-start;font-size:.85rem}
+.apex-card-rating{font-size:2rem!important;line-height:1;color:#fff4c9!important;text-shadow:0 2px 10px #000,0 0 12px #ffd36a88!important}
+.apex-card-position{padding:4px 6px;border-radius:5px;background:#07100dcc;color:#fff!important;font-weight:900}
+.apex-card-name{margin-top:auto;font-size:.95rem!important;line-height:1.05;letter-spacing:.01em}
+.apex-card-country{font-size:.64rem!important;color:#f4e9d2!important}
+.apex-card-rating-label{font-size:.56rem!important;letter-spacing:.2em;color:#f6d58d!important}
+.draft-best-pull-card{border-color:#fff0a6!important;box-shadow:0 0 0 1px #ffdc72,0 0 26px #ffcc4e77,0 16px 38px #000b!important;animation:draftBestPulse 2s ease-in-out infinite}
+.draft-best-pull-badge{position:absolute;z-index:4;top:42px;left:8px;padding:5px 8px;border:1px solid #ffe9a5;border-radius:5px;background:linear-gradient(100deg,#fff0a9,#c77b21);color:#271606;font:900 .56rem 'Orbitron',sans-serif;letter-spacing:.06em;box-shadow:0 2px 12px #0008}
+.draft-card-odds{position:relative;z-index:3;display:block;padding:5px 3px;color:#ffe2a5!important;font-size:.58rem!important;font-weight:900;letter-spacing:.055em;text-align:center;text-shadow:0 2px 5px #000}
+.apex-signing-overlay{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:18px;background:radial-gradient(circle at 50% 38%,#f7a52b44,transparent 38%),rgba(3,7,12,.94);backdrop-filter:blur(9px);animation:signingBackdrop .45s ease both}
+.apex-signing-stage{width:min(520px,100%);max-height:94vh;overflow:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:22px 16px;border:1px solid #f5c66b88;border-radius:22px;background:linear-gradient(155deg,#1d2825,#090e13 72%);box-shadow:0 0 55px #f59b2b33,inset 0 1px #fff2}
+.apex-signing-kicker{margin:0;color:#ffce82;font:900 .7rem 'Orbitron',sans-serif;letter-spacing:.2em;text-align:center}
+.apex-signing-stage h2{margin:0;color:#fff4d7;font:900 clamp(1.3rem,5vw,2rem) 'Orbitron',sans-serif;text-align:center;text-shadow:0 0 22px #ffae43aa}
+.apex-signing-subtitle{margin:0;color:#d9e9d1;font-weight:800;letter-spacing:.08em;text-align:center}
+.apex-player-card.draft-player-card.signing-hero-card{width:min(250px,68vw);min-height:365px;padding:13px 12px 15px;border-width:3px;box-shadow:0 0 0 2px #fff4,0 0 42px #ffc45c77,0 24px 60px #000c;animation:signingCardEntrance 1.1s cubic-bezier(.16,.9,.2,1.2) both}
+.signing-hero-card .apex-card-rating{font-size:2.6rem!important}
+.signing-hero-card .apex-card-name{font-size:1.2rem!important}
+.apex-signing-seal{padding:8px 14px;border:1px solid #d7ff9a77;border-radius:999px;background:#b9f36d18;color:#e1ffb2;font:900 .66rem 'Orbitron',sans-serif;letter-spacing:.09em;text-align:center}
+.apex-signing-continue{min-width:180px;padding:12px 22px;border:1px solid #ffe0a2;border-radius:9px;background:linear-gradient(110deg,#ffd77d,#e88a29);color:#241405;font:900 .78rem 'Orbitron',sans-serif;cursor:pointer;box-shadow:0 8px 24px #ff9d3244}
+.apex-signing-continue:hover{filter:brightness(1.1);transform:translateY(-2px)}
+@keyframes draftBestPulse{0%,100%{filter:brightness(1);box-shadow:0 0 0 1px #ffdc72,0 0 18px #ffcc4e55,0 16px 38px #000b}50%{filter:brightness(1.18);box-shadow:0 0 0 2px #fff0a6,0 0 34px #ffcc4eaa,0 16px 38px #000b}}
+@keyframes signingBackdrop{from{opacity:0}to{opacity:1}}
+@keyframes signingCardEntrance{0%{opacity:0;transform:translateY(80px) rotateY(80deg) scale(.55);filter:brightness(2.5)}55%{opacity:1;transform:translateY(-12px) rotateY(-8deg) scale(1.08);filter:brightness(1.5)}78%{transform:translateY(4px) rotateY(3deg) scale(.98)}100%{opacity:1;transform:translateY(0) rotateY(0) scale(1);filter:brightness(1)}}
+@media(max-width:620px){.apex-player-card.draft-player-card{min-height:268px}.apex-card-rating{font-size:1.7rem!important}.apex-signing-stage{padding:17px 10px}.apex-player-card.draft-player-card.signing-hero-card{min-height:340px}}
+@media(prefers-reduced-motion:reduce){.draft-best-pull-card,.apex-signing-overlay,.signing-hero-card{animation:none!important}}
