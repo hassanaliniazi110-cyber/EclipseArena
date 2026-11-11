@@ -590,3 +590,42 @@ section,.career-hub,.featured-market-section,.youtube-panel{scroll-margin-top:16
 .apex-launch-intro .launch-emblem,.apex-launch-intro .launch-wordmark{filter:drop-shadow(0 0 18px rgba(114,234,255,.35))}
 @media(max-width:760px){body{zoom:.96}.app-shell{padding-left:12px;padding-right:12px}.career-hub-columns{grid-template-columns:minmax(0,1fr)}.apex-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){.draft-choice-grid .player-card:before,.apex-card-grid .player-card:before{animation:none}}
+
+
+/* Green-only Apex Strikers launch identity. Override every former blue/violet accent. */
+.apex-launch-intro{
+ --launch-cyan:#a5ff73!important;--launch-violet:#55e58a!important;
+ background:radial-gradient(ellipse at 50% 45%,#174a2a 0%,#092414 44%,#020a05 84%)!important;
+ color:#f2fff4!important
+}
+.apex-launch-intro:before{
+ background:linear-gradient(115deg,transparent 0 39%,rgba(91,255,125,.16) 49%,transparent 59%),radial-gradient(ellipse at 50% 100%,rgba(42,255,104,.25),transparent 48%)!important
+}
+.apex-launch-intro .launch-skyline{background:repeating-linear-gradient(90deg,transparent 0 3.5%,#9dffad 3.55% 3.7%,transparent 3.8% 5.2%)!important}
+.apex-launch-intro .launch-floodlights{background:linear-gradient(180deg,rgba(135,255,157,.3),transparent 72%)!important}
+.apex-launch-intro .launch-pitch{border-color:rgba(112,255,143,.35)!important;box-shadow:0 -10px 90px rgba(65,255,115,.2)!important;background:repeating-linear-gradient(90deg,transparent 0 12.4%,rgba(131,255,155,.12) 12.5% 12.7%,transparent 12.8% 25%),linear-gradient(180deg,rgba(49,143,76,.22),rgba(7,27,12,.12))!important}
+.apex-launch-intro .launch-pitch:before,.apex-launch-intro .launch-pitch:after{border-color:rgba(151,255,173,.3)!important}
+.apex-launch-intro .launch-crest-ring{border-color:rgba(126,255,147,.55)!important;box-shadow:0 0 28px rgba(66,255,108,.24)!important}
+.apex-launch-intro .launch-crest svg path[stroke]{stroke:#baffc4!important}
+.apex-launch-intro .launch-crest svg path[fill="url(#launchShield)"]{fill:#27b84c!important;stroke:#baffc4!important}
+.apex-launch-intro .launch-crest svg path[fill="#b7a2ff"]{fill:#d4ffd9!important}
+.apex-launch-intro .launch-wordmark,.apex-launch-intro .launch-kicker,.apex-launch-intro .launch-caption{color:#f1fff2!important;text-shadow:0 0 20px rgba(73,255,113,.4)!important}
+.apex-launch-intro .launch-divider i{color:#8dff9e!important}
+.apex-launch-intro .launch-particles i{background:#8cff9c!important;box-shadow:0 0 12px #5aff7b!important}
+.apex-launch-intro .intro-progress span{background:linear-gradient(90deg,#1da84b,#78ff8a,#d1ffd5)!important;box-shadow:0 0 20px rgba(82,255,119,.8)!important}
+.apex-launch-intro .intro-emblem{filter:drop-shadow(0 0 20px rgba(74,255,112,.5))!important}
+.apex-launch-intro .launch-skyline,.apex-launch-intro .launch-pitch{color:#a8ffb4!important}
+.draft-layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(240px,.8fr);gap:18px;align-items:start}
+.draft-main-actions{min-width:0}
+.draft-odds-panel{position:relative;min-width:0;padding:18px;border:1px solid rgba(117,255,151,.28);border-radius:18px;background:linear-gradient(145deg,rgba(19,66,37,.88),rgba(6,18,12,.96));box-shadow:0 14px 36px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.07)}
+.draft-odds-heading{display:flex;align-items:center;gap:11px;margin-bottom:14px}
+.draft-odds-heading>span{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:rgba(74,255,120,.13);color:#a5ffb5;font-size:21px}
+.draft-odds-heading strong{display:block;color:#f1fff3;letter-spacing:.06em}
+.draft-odds-heading small,.draft-odds-info small{display:block;color:#a9cbb0;font-size:.72rem;margin-top:3px}
+.draft-odds-player{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:9px;align-items:center;padding:12px 0;border-top:1px solid rgba(160,255,177,.12)}
+.draft-odds-rank{color:#8effa3;font-weight:900;font-size:.82rem}
+.draft-odds-info{min-width:0}
+.draft-odds-info strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#fff;font-size:.9rem}
+.draft-odds-chance{color:#a7ffb5;font-variant-numeric:tabular-nums;font-size:.88rem}
+.draft-odds-note{display:block;margin-top:12px;color:#a9cbb0;line-height:1.4}
+@media(max-width:760px){.draft-layout{grid-template-columns:minmax(0,1fr)}.draft-odds-panel{order:-1}.draft-odds-player{padding:10px 0}}
