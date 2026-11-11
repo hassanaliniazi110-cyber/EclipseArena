@@ -402,6 +402,7 @@ const goalkeepers = [
   }
   function drawFootballer(cx,cy,size,rotation,jersey,isKeeper,playerName){
     const name=playerName||"",known={
+      "Lllllllll FC":{number:99,hair:"#292018",skin:"#bd8967",shorts:"#302718",trim:"#ffe39a",style:"curly"},
       "Hassan Ali":{number:1,hair:"#171717",skin:"#b77d58",shorts:"#182331",trim:"#c7ff4a",style:"short"},
       "Zayd Quadri":{number:7,hair:"#171717",skin:"#b77d58",shorts:"#182331",trim:"#f5f5ef",style:"curly"},
       "Ehan Ali":{number:8,hair:"#30241d",skin:"#d5a57d",shorts:"#252033",trim:"#bd7bff",style:"short"},
@@ -493,21 +494,109 @@ const goalkeepers = [
     ctx.fillStyle="#c7ff4a";ctx.fillRect(-.32,.43,.12,.025);ctx.fillRect(.19,.415,.12,.025);
     // Short neck only: ears are intentionally omitted.
     ctx.fillStyle=p.skin;ctx.fillRect(-.055,-.53,.11,.13);
-    // Round bald head with a completely blank face.
+    // Face, hair silhouette and tiny facial details for a more lifelike match model.
     ctx.beginPath();ctx.arc(0,-.625,.15,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=p.hair||"#211b18";
+    ctx.beginPath();
+    if(p.style==="curly"){
+      ctx.arc(-.105,-.69,.075,0,Math.PI*2);ctx.arc(-.035,-.735,.075,0,Math.PI*2);
+      ctx.arc(.045,-.735,.075,0,Math.PI*2);ctx.arc(.115,-.68,.07,0,Math.PI*2);
+    }else if(p.style==="long"){
+      ctx.moveTo(-.15,-.65);ctx.quadraticCurveTo(-.12,-.83,0,-.79);
+      ctx.quadraticCurveTo(.15,-.82,.15,-.64);ctx.lineTo(.12,-.52);ctx.lineTo(-.12,-.52);ctx.closePath();
+    }else{
+      ctx.moveTo(-.15,-.64);ctx.quadraticCurveTo(-.13,-.79,0,-.78);
+      ctx.quadraticCurveTo(.14,-.78,.15,-.63);ctx.lineTo(.1,-.68);
+      ctx.quadraticCurveTo(0,-.72,-.1,-.67);ctx.closePath();
+    }
+    ctx.fill();
+    ctx.fillStyle="rgba(35,25,20,.72)";
+    ctx.beginPath();ctx.arc(-.052,-.625,.012,0,Math.PI*2);ctx.arc(.052,-.625,.012,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="rgba(70,35,25,.55)";ctx.lineWidth=.012;
+    ctx.beginPath();ctx.moveTo(-.035,-.565);ctx.quadraticCurveTo(0,-.55,.035,-.565);ctx.stroke();
     ctx.restore();
   }
   function drawFullMatchPitch(){
-    const w=cw,h=ch;const g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,"#17643a");g.addColorStop(1,"#0a3b22");ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
-    for(let i=0;i<12;i++){ctx.fillStyle=i%2?"rgba(0,0,0,.055)":"rgba(220,255,220,.035)";ctx.fillRect(i*w/12,0,w/12,h)}
-    ctx.strokeStyle="rgba(238,255,238,.82)";ctx.lineWidth=2;ctx.strokeRect(w*.055,h*.035,w*.89,h*.93);ctx.beginPath();ctx.moveTo(w*.055,h*.5);ctx.lineTo(w*.945,h*.5);ctx.stroke();ctx.beginPath();ctx.arc(w*.5,h*.5,w*.115,0,Math.PI*2);ctx.stroke();
-    ctx.strokeRect(w*.25,h*.035,w*.5,h*.15);ctx.strokeRect(w*.37,h*.035,w*.26,h*.07);ctx.strokeRect(w*.25,h*.815,w*.5,h*.15);ctx.strokeRect(w*.37,h*.895,w*.26,h*.07);
-    const dot=(x,y,color,label,r)=>{ctx.fillStyle=color;ctx.beginPath();ctx.arc(x*w,y*h,r||Math.max(7,w*.012),0,Math.PI*2);ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=1.5;ctx.stroke();if(label){ctx.fillStyle="#07110f";ctx.font="900 "+Math.max(9,w*.015)+"px sans-serif";ctx.textAlign="center";ctx.fillText(label,x*w,y*h+4)}};
-    [[.24,.7],[.36,.62],[.64,.62],[.76,.7]].forEach((p,i)=>dot(p[0],p[1],"#c7ff4a",i===0?"7":""));[[.24,.3],[.36,.38],[.64,.38],[.76,.3]].forEach((p,i)=>dot(p[0],p[1],"#ed6570",i===0?"9":""));
-    dot(match.rival.x,match.rival.y,"#ff8c42","9",Math.max(10,w*.017));dot(match.player.x,match.player.y,"#f5f7ef",selectedPlayer==="Lionel Messi"?"10":"7",Math.max(11,w*.019));
-    ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(match.ball.x*w,match.ball.y*h,Math.max(4,w*.0075),0,Math.PI*2);ctx.fill();ctx.strokeStyle="#111";ctx.lineWidth=1;ctx.stroke();
-    ctx.fillStyle="rgba(5,15,10,.78)";ctx.fillRect(w*.32,h*.012,w*.36,h*.045);ctx.fillStyle="#fff";ctx.font="800 "+Math.max(10,w*.016)+"px sans-serif";ctx.textAlign="center";ctx.fillText("APEX STRIKERS · 5v5",w*.5,h*.043);
-    if(match.finished){ctx.fillStyle="rgba(0,0,0,.76)";ctx.fillRect(w*.15,h*.36,w*.7,h*.28);ctx.fillStyle="#c7ff4a";ctx.font="900 "+Math.max(20,w*.04)+"px sans-serif";ctx.fillText(match.playerGoals>match.rivalGoals?"VICTORY":match.playerGoals===match.rivalGoals?"DRAW":"FULL TIME",w*.5,h*.46);ctx.fillStyle="#fff";ctx.font="800 "+Math.max(14,w*.025)+"px sans-serif";ctx.fillText(match.playerGoals+"  -  "+match.rivalGoals,w*.5,h*.55)}
+    const w=cw,h=ch;
+    const g=ctx.createLinearGradient(0,0,0,h);
+    g.addColorStop(0,"#237a49");g.addColorStop(.52,"#12643a");g.addColorStop(1,"#08351f");
+    ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+    // Stadium-style pitch lighting and alternating mowing stripes.
+    for(let i=0;i<14;i++){
+      ctx.fillStyle=i%2?"rgba(0,0,0,.065)":"rgba(220,255,220,.045)";
+      ctx.fillRect(i*w/14,0,w/14,h);
+    }
+    const glow=ctx.createRadialGradient(w*.5,h*.5,5,w*.5,h*.5,w*.62);
+    glow.addColorStop(0,"rgba(180,255,190,.08)");glow.addColorStop(1,"rgba(0,0,0,.18)");
+    ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);
+    // Pitch markings, penalty areas and goals.
+    ctx.strokeStyle="rgba(245,255,245,.78)";ctx.lineWidth=Math.max(1.5,w*.0025);
+    ctx.strokeRect(w*.055,h*.035,w*.89,h*.93);
+    ctx.beginPath();ctx.moveTo(w*.055,h*.5);ctx.lineTo(w*.945,h*.5);
+    ctx.arc(w*.5,h*.5,w*.115,0,Math.PI*2);ctx.stroke();
+    ctx.strokeRect(w*.25,h*.035,w*.5,h*.15);ctx.strokeRect(w*.37,h*.035,w*.26,h*.07);
+    ctx.strokeRect(w*.25,h*.815,w*.5,h*.15);ctx.strokeRect(w*.37,h*.895,w*.26,h*.07);
+    ctx.fillStyle="rgba(225,245,255,.12)";
+    ctx.fillRect(w*.405,h*.004,w*.19,h*.03);ctx.fillRect(w*.405,h*.966,w*.19,h*.03);
+    // Tiny stadium lights along the touchlines.
+    for(let i=0;i<8;i++){
+      const yy=h*(.09+i*.115);
+      ctx.fillStyle="rgba(235,255,242,.7)";
+      ctx.beginPath();ctx.arc(w*.025,yy,Math.max(1.5,w*.003),0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(w*.975,yy,Math.max(1.5,w*.003),0,Math.PI*2);ctx.fill();
+    }
+    const playerSize=Math.max(17,w*.043);
+    const drawMatchPlayer=(x,y,name,kit,number,rotation,highlight)=>{
+      const px=x*w,py=y*h;
+      // Ground shadow and a subtle team-coloured selection halo.
+      ctx.save();
+      if(highlight){
+        ctx.fillStyle="rgba(199,255,74,.2)";ctx.beginPath();
+        ctx.ellipse(px,py+playerSize*.32,playerSize*.72,playerSize*.24,0,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle="rgba(220,255,125,.9)";ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.ellipse(px,py+playerSize*.32,playerSize*.78,playerSize*.28,0,0,Math.PI*2);ctx.stroke();
+      }else{
+        ctx.fillStyle="rgba(0,0,0,.22)";ctx.beginPath();
+        ctx.ellipse(px,py+playerSize*.34,playerSize*.58,playerSize*.2,0,0,Math.PI*2);ctx.fill();
+      }
+      ctx.restore();
+      drawFootballer(px,py,playerSize,rotation,kit,false,name);
+      if(highlight){
+        ctx.save();ctx.fillStyle="#f4ffd0";ctx.font="900 "+Math.max(7,w*.012)+"px sans-serif";
+        ctx.textAlign="center";ctx.textBaseline="bottom";
+        ctx.shadowColor="rgba(199,255,74,.9)";ctx.shadowBlur=8;
+        ctx.fillText("YOU",px,py-playerSize*.73);ctx.restore();
+      }
+    };
+    // Four supporting players on each side, plus the two active players.
+    [[.24,.7],[.36,.62],[.64,.62],[.76,.7]].forEach((p,i)=>{
+      drawMatchPlayer(p[0],p[1],["Zayd Quadri","Umar Shoaib","Muhammad Arham","Ehan Ali"][i],"#c7ff4a",[7,10,9,8][i],0,false);
+    });
+    [[.24,.3],[.36,.38],[.64,.38],[.76,.3]].forEach((p,i)=>{
+      drawMatchPlayer(p[0],p[1],["Kylian Mbappé","Erling Haaland","Jude Bellingham","Vinícius Júnior"][i],"#ed6570",[7,9,5,7][i],Math.PI,false);
+    });
+    drawMatchPlayer(match.rival.x,match.rival.y,"Cristiano Ronaldo","#ed6570",9,Math.PI,false);
+    drawMatchPlayer(match.player.x,match.player.y,selectedPlayer,"#c7ff4a",selectedPlayer==="Lionel Messi"?10:7,0,true);
+    // Ball with a small shadow and panel detail.
+    const bx=match.ball.x*w,by=match.ball.y*h,br=Math.max(4,w*.008);
+    ctx.fillStyle="rgba(0,0,0,.3)";ctx.beginPath();ctx.ellipse(bx+2,by+br*1.5,br*1.25,br*.55,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(bx,by,br,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#17251c";ctx.lineWidth=Math.max(1,w*.0018);ctx.stroke();
+    ctx.fillStyle="#17251c";ctx.beginPath();ctx.arc(bx,by,br*.35,0,Math.PI*2);ctx.fill();
+    // Match label and score-friendly header.
+    ctx.fillStyle="rgba(5,15,10,.78)";ctx.fillRect(w*.32,h*.012,w*.36,h*.045);
+    ctx.strokeStyle="rgba(199,255,74,.42)";ctx.lineWidth=1;ctx.strokeRect(w*.32,h*.012,w*.36,h*.045);
+    ctx.fillStyle="#fff";ctx.font="800 "+Math.max(10,w*.016)+"px sans-serif";
+    ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillText("APEX STRIKERS · 5v5",w*.5,h*.034);
+    if(match.finished){
+      ctx.fillStyle="rgba(0,0,0,.78)";ctx.fillRect(w*.15,h*.36,w*.7,h*.28);
+      ctx.strokeStyle="rgba(199,255,74,.8)";ctx.lineWidth=2;ctx.strokeRect(w*.15,h*.36,w*.7,h*.28);
+      ctx.fillStyle="#c7ff4a";ctx.font="900 "+Math.max(20,w*.04)+"px sans-serif";
+      ctx.fillText(match.playerGoals>match.rivalGoals?"VICTORY":match.playerGoals===match.rivalGoals?"DRAW":"FULL TIME",w*.5,h*.46);
+      ctx.fillStyle="#fff";ctx.font="800 "+Math.max(14,w*.025)+"px sans-serif";
+      ctx.fillText(match.playerGoals+"  -  "+match.rivalGoals,w*.5,h*.55);
+    }
   }
   function drawPitch(){
     if(!ctx||!cw||!ch)return;
