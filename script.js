@@ -99,7 +99,7 @@ const goalkeepers = [
     petrcech:"petr-cech",oliverkahn:"oliver-kahn",edwinvandersar:"van-der-sar",keylornavas:"keylor-navas",
     bukayosaka:"bukayo-saka",philfoden:"phil-foden",diegoarmaradona:"maradona",pele:"pele",
     ronaldonazario:"ronaldo-nazario",thierryhenry:"thierry-henry",andreapirlo:"andrea-pirlo",
-    sergioramos:"sergio-ramos",virgilvandijk:"virgil-van-dijk",federicovalverde:"federico-valverde",
+    sergioramos:"ramos",virgilvandijk:"van-dijk",federicovalverde:"federico-valverde",
     endrick:"endrick",gianluigidonnarumma:"gianluigi-donnarumma",ikercasillas:"iker-casillas",
     petrcech:"petr-cech",oliverkahn:"oliver-kahn",peterschmeichel:"peter-schmeichel",
     samirhandanovic:"samir-handanovic",claudiobravo:"claudio-bravo",yannsommer:"yann-sommer",
@@ -107,34 +107,14 @@ const goalkeepers = [
     ederson:"ederson",janoblak:"jan-oblak",mikemaignan:"mike-maignan",emilianomartinez:"emiliano-martinez",
     zaydquadri:"",ehanali:"",umarshoaib:"",muhammadarham:"",hassanali:""
   };
-  // Fixed, verified portrait URLs from GeoFootball Guessr's Wikimedia Commons
-  // photo catalogue. This prevents a different Commons search result appearing
-  // on every reload for the most-used players.
-  const rosterPhotoUrls={
-    cristianoronaldo:"https://geofootballguessr.com/footballers/ronaldo.webp",
-    lionelmessi:"https://geofootballguessr.com/footballers/messi.webp",
-    kylianmbappe:"https://geofootballguessr.com/footballers/mbappe.webp",
-    erlinghaaland:"https://geofootballguessr.com/footballers/haaland.webp",
-    judebellingham:"https://geofootballguessr.com/footballers/bellingham.webp",
-    lamineyamal:"https://geofootballguessr.com/footballers/lamine-yamal.webp",
-    kevindebruyne:"https://geofootballguessr.com/footballers/de-bruyne.webp",
-    mohamedsalah:"https://geofootballguessr.com/footballers/salah.webp",
-    viniciusjunior:"https://geofootballguessr.com/footballers/vinicius.webp",
-    neymarjr:"https://geofootballguessr.com/footballers/neymar.webp",
-    harrykane:"https://geofootballguessr.com/footballers/kane.webp",
-    robertlewandowski:"https://geofootballguessr.com/footballers/lewandowski.webp",
-    zinedinezidane:"https://geofootballguessr.com/footballers/zidane.webp",
-    ronaldinho:"https://geofootballguessr.com/footballers/ronaldinho.webp",
-    andresiniesta:"https://geofootballguessr.com/footballers/iniesta.webp",
-    xavi:"https://geofootballguessr.com/footballers/xavi.webp",
-    pele:"https://geofootballguessr.com/footballers/pele.webp",
-    diegomaradona:"https://geofootballguessr.com/footballers/maradona.webp",
-    sergioramos:"https://geofootballguessr.com/footballers/ramos.webp",
-    virgilvandijk:"https://geofootballguessr.com/footballers/van-dijk.webp",
-    karimbenzema:"https://geofootballguessr.com/footballers/benzema.webp",
-    luisfigo:"https://geofootballguessr.com/footballers/luis-figo.webp",
-    lukamodric:"https://geofootballguessr.com/footballers/modric.webp"
-  };
+  // Build a fixed photo URL for every player with a catalogue slug.
+  // GeoFootball Guessr documents the underlying Wikimedia Commons source and
+  // each individual licence on its photo-credits page.
+  const rosterPhotoUrls=Object.fromEntries(
+    Object.entries(rosterPhotoSlugs)
+      .filter(([,slug])=>Boolean(slug))
+      .map(([key,slug])=>[key,"https://geofootballguessr.com/footballers/"+slug+".webp"])
+  );
   const CUSTOM_PLAYER_KEYS=new Set(["arham","muhammadarham","hassanali","zaydquadri","umarshoaib","ehanali"]);
   function isValidPlayerPhoto(source){
     const value=String(source||"");
@@ -196,14 +176,17 @@ const goalkeepers = [
     box.innerHTML=String(value||"").replace(/<[^>]*>/g," ");
     return box.value.replace(/\s+/g," ").trim();
   }
-  function findWikiPortrait(playerName){
+  function findWikiPortrait(playerName,forceCommonsSearch=false){
     const name=String(playerName||"").trim();
     if(!name)return Promise.resolve(null);
     const key=normalizePlayerName(name);
     if(CUSTOM_PLAYER_KEYS.has(key))return Promise.resolve(null);
-    const stable=getStableWikiPortrait(name);
-    if(stable)return Promise.resolve(stable);
-    if(wikiPortraitCache.has(key))return wikiPortraitCache.get(key);
+    if(!forceCommonsSearch){
+      const stable=getStableWikiPortrait(name);
+      if(stable)return Promise.resolve(stable);
+    }
+    const cacheKey=key+(forceCommonsSearch?"|commons":"");
+    if(wikiPortraitCache.has(cacheKey))return wikiPortraitCache.get(cacheKey);
     const task=(async()=>{
       try{
         const headers={"Accept":"application/json"};
@@ -237,7 +220,7 @@ const goalkeepers = [
         return selected;
       }catch(_){return null;}
     })();
-    wikiPortraitCache.set(key,task);
+    wikiPortraitCache.set(cacheKey,task);
     return task;
   }
   const wikiPhotoCredits=new Map();
@@ -283,6 +266,26 @@ const goalkeepers = [
     // Always keep a visible portrait if a remote photo host is slow or unavailable.
     photo.onerror=()=>{
       photo.onerror=null;
+      const failedSource=photo.src||"";
+      if(photo.dataset.wikiRetry!=="true"&&/geofootballguessr\.com\/footballers\//i.test(failedSource)){
+        photo.dataset.wikiRetry="true";
+        findWikiPortrait(name,true).then(record=>{
+          if(!photo.isConnected)return;
+          if(record&&record.image!==failedSource){
+            photo.onerror=()=>{photo.onerror=null;photo.dataset.wikiResolved="false";photo.dataset.photoFallback="true";photo.src=fallback;};
+            photo.src=record.image;
+            photo.dataset.wikiResolved="true";
+            photo.dataset.wikiSource=record.fileUrl;
+            saveStableWikiPortrait(name,record);
+            const rosterPlayer=[...players,...goalkeepers].find(p=>normalizePlayerName(p.name)===normalizePlayerName(name));
+            if(rosterPlayer)rosterPlayer.image=record.image;
+            showWikiPhotoCredit(photo,record);
+            return;
+          }
+          photo.dataset.wikiResolved="false";photo.dataset.photoFallback="true";photo.src=fallback;
+        }).catch(()=>{if(photo.isConnected){photo.dataset.photoFallback="true";photo.src=fallback;}});
+        return;
+      }
       photo.dataset.wikiResolved="false";
       photo.dataset.photoFallback="true";
       photo.src=fallback;
