@@ -154,10 +154,8 @@ const goalkeepers = [
   }
   function getStableWikiPortrait(name){
     const key=normalizePlayerName(name);
-    const item=readStableWikiPortraits()[key];
-    if(item&&isValidPlayerPhoto(item.image)&&item.fileUrl)return item;
     const fixed=rosterPhotoUrls[key];
-    return fixed?{
+    if(fixed)return{
       image:fixed,
       title:"GeoFootball Guessr footballer photo",
       author:"Attribution listed on the GeoFootball Guessr photo credits page",
@@ -165,7 +163,9 @@ const goalkeepers = [
       license:"See individual photo licence",
       licenseUrl:"https://geofootballguessr.com/image-credits",
       needsCredit:true
-    }:null;
+    };
+    const item=readStableWikiPortraits()[key];
+    return item&&isValidPlayerPhoto(item.image)&&item.fileUrl?item:null;
   }
   function saveStableWikiPortrait(name,record){
     if(!record||!isValidPlayerPhoto(record.image)||!record.fileUrl)return;
