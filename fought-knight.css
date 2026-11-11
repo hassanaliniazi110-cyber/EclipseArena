@@ -735,3 +735,5 @@ section,.career-hub,.featured-market-section,.youtube-panel{scroll-margin-top:16
 .apex-launch-intro .intro-progress span{background:linear-gradient(90deg,#78b900,#b5f500,#e5ff8a)!important;box-shadow:0 0 20px rgba(199,255,53,.78)!important}
 .apex-launch-intro .intro-skip-btn{border-color:rgba(199,255,53,.65)!important;background:rgba(9,15,0,.9)!important}
 .apex-launch-intro .launch-center:before{background:radial-gradient(circle,rgba(199,255,53,.23),rgba(105,145,0,.1) 38%,transparent 70%)!important}
+
+.draft-pity-status{margin-top:14px;padding:12px;border:1px solid rgba(199,255,53,.25);border-radius:12px;background:rgba(199,255,53,.055);color:#c7ff35;font-size:.72rem;line-height:1.6;font-weight:800;letter-spacing:.035em}
