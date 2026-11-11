@@ -107,9 +107,13 @@ const goalkeepers = [
     ederson:"ederson",janoblak:"jan-oblak",mikemaignan:"mike-maignan",emilianomartinez:"emiliano-martinez",
     zaydquadri:"",ehanali:"",umarshoaib:"",muhammadarham:"",hassanali:""
   };
+  const rosterPhotoUrls={
+    sergioramos:"https://a.espncdn.com/i/headshots/soccer/players/full/41579.png",
+    endrick:"https://a.espncdn.com/i/headshots/soccer/players/full/346612.png"
+  };
   function isValidPlayerPhoto(source){
     const value=String(source||"");
-    return /^https:\/\/geofootballguessr\.com\/footballers\/[a-z0-9-]+\.webp$/i.test(value)||
+    return /^https:\/\/geofootballguessr\.com\/footballers\/[a-z0-9-]+\.webp$/i.test(value)||/^https:\/\/a\.espncdn\.com\/i\/headshots\/soccer\/players\/full\/\d+\.png$/i.test(value)||
       /^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(value)||
       /^data:image\/svg\+xml;charset=utf-8,/i.test(value);
   }
@@ -125,9 +129,9 @@ const goalkeepers = [
     const savedPhoto=readSavedProfile().photo||"";
     [...players,...goalkeepers].forEach(player=>{
       if(isValidPlayerPhoto(player.image))return;
-      const slug=rosterPhotoSlugs[normalizePlayerName(player.name)];
-      const sourced=slug?"https://geofootballguessr.com/footballers/"+slug+".webp":"";
       const key=normalizePlayerName(player.name);
+      const slug=rosterPhotoSlugs[key];
+      const sourced=rosterPhotoUrls[key]||(slug?"https://geofootballguessr.com/footballers/"+slug+".webp":"");
       const personal=["muhammadarham","hassanali"].includes(key)&&isValidPlayerPhoto(savedPhoto)?savedPhoto:"";
       player.image=isValidPlayerPhoto(sourced)?sourced:(personal||makePlayerAvatarData(player.name,player.role));
     });
@@ -136,6 +140,10 @@ const goalkeepers = [
     if(!root)return;
     root.querySelectorAll(".player-card-photo").forEach(photo=>{
       photo.addEventListener("error",()=>{
+        if(photo.dataset.sourceRetry!=="true"){
+          const alternate=rosterPhotoUrls[normalizePlayerName(photo.dataset.playerName||"")];
+          if(alternate&&photo.src!==alternate){photo.dataset.sourceRetry="true";photo.src=alternate;return;}
+        }
         if(photo.dataset.fallbackApplied==="true")return;
         photo.dataset.fallbackApplied="true";
         photo.src=makePlayerAvatarData(photo.dataset.playerName||"Apex Player",photo.dataset.playerRole||"PLAYER");
@@ -186,10 +194,10 @@ const goalkeepers = [
     ensureRosterPlayerImages();
     $("playerGrid").innerHTML=players.map(p=>playerCard(p,selectedPlayer,"data-player",false)).join("");
     attachPlayerPortraitFallbacks($("playerGrid"));
-    $("playerGrid").querySelectorAll("[data-player]").forEach(btn=>btn.addEventListener("click",()=>{selectedPlayer=btn.dataset.player;renderPlayers();if(typeof renderCareerHub==="function")renderCareerHub();toast(selectedPlayer+" selected as player");}));
+    $("playerGrid").querySelectorAll("[data-player]").forEach(btn=>btn.addEventListener("click",()=>{const wasOpen=btn.classList.contains("show-stats");$("playerGrid").querySelectorAll(".player-card").forEach(card=>card.classList.remove("show-stats","selected"));selectedPlayer=btn.dataset.player;btn.classList.add("selected");if(!wasOpen)btn.classList.add("show-stats");if(typeof renderCareerHub==="function")renderCareerHub();toast(wasOpen?"PLAYER SELECTED":"PLAYER SELECTED · STATS OPEN");}));
     $("goalkeeperGrid").innerHTML=goalkeepers.map(p=>playerCard(p,selectedGoalkeeper,"data-goalkeeper",true)).join("");
     attachPlayerPortraitFallbacks($("goalkeeperGrid"));
-    $("goalkeeperGrid").querySelectorAll("[data-goalkeeper]").forEach(btn=>btn.addEventListener("click",()=>{selectedGoalkeeper=btn.dataset.goalkeeper;renderPlayers();if(typeof renderCareerHub==="function")renderCareerHub();toast(selectedGoalkeeper+" selected as goalkeeper");}));
+    $("goalkeeperGrid").querySelectorAll("[data-goalkeeper]").forEach(btn=>btn.addEventListener("click",()=>{const wasOpen=btn.classList.contains("show-stats");$("goalkeeperGrid").querySelectorAll(".player-card").forEach(card=>card.classList.remove("show-stats","selected"));selectedGoalkeeper=btn.dataset.goalkeeper;btn.classList.add("selected");if(!wasOpen)btn.classList.add("show-stats");if(typeof renderCareerHub==="function")renderCareerHub();toast(wasOpen?"GOALKEEPER SELECTED":"GOALKEEPER SELECTED · STATS OPEN");}));
     const count=players.filter(p=>isUnlocked(p,false)).length,gcount=goalkeepers.filter(p=>isUnlocked(p,true)).length;
     const counters=document.querySelectorAll(".section-count");if(counters[0])counters[0].textContent=count+" / "+players.length+" UNLOCKED";if(counters[1])counters[1].textContent=gcount+" / "+goalkeepers.length+" UNLOCKED";
   }
@@ -554,7 +562,7 @@ const goalkeepers = [
         card.dataset.player=p.id||"";
         const portrait=document.createElement("div");portrait.className="apex-card-portrait";
         const photo=document.createElement("img");photo.src=isValidPlayerPhoto(info[5])?info[5]:makePlayerAvatarData(info[0],info[2]);photo.alt=info[0]+" player portrait";photo.loading="lazy";photo.referrerPolicy="no-referrer";
-        photo.onerror=()=>{if(photo.dataset.fallbackApplied==="true")return;photo.dataset.fallbackApplied="true";photo.src=makePlayerAvatarData(info[0],info[2]);};
+        photo.onerror=()=>{if(photo.dataset.sourceRetry!=="true"){const alternate=rosterPhotoUrls[normalizePlayerName(info[0])];if(alternate&&photo.src!==alternate){photo.dataset.sourceRetry="true";photo.src=alternate;return;}}if(photo.dataset.fallbackApplied==="true")return;photo.dataset.fallbackApplied="true";photo.src=makePlayerAvatarData(info[0],info[2]);};
         portrait.appendChild(photo);
         const foil=document.createElement("div");foil.className="apex-card-foil";
         const top=document.createElement("div");top.className="apex-card-top";
@@ -583,6 +591,11 @@ const goalkeepers = [
         const brand=document.createElement("small");brand.className="apex-card-brand";brand.textContent="APEX STRIKERS · PLAYER ITEM";
         footer.append(name,country,club,stats,brand);
         card.append(portrait,foil,top,rarity,crest,footer);
+        card.setAttribute("tabindex","0");
+        card.setAttribute("role","button");
+        card.setAttribute("aria-label","Tap to view "+info[0]+" stats");
+        card.addEventListener("click",event=>{if(event.target.closest(".draft-select-btn"))return;card.classList.toggle("show-stats");});
+        card.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();card.classList.toggle("show-stats");}});
         return card;
       };
       const showSigningReveal=pick=>{
@@ -599,7 +612,7 @@ const goalkeepers = [
       const box=$("apexOwnedCards");box.replaceChildren();(data.ownedCards||[]).forEach(id=>{const info=catalog[id];if(!info)return;const level=Number(data.cardLevels?.[id])||0;const card=makeCard({id,name:info[0],ovr:info[1],position:info[2],country:info[3],flag:info[4],rarity:rarityFor(id),level});const upgrade=document.createElement("small");upgrade.className="apex-card-upgrade";upgrade.textContent=level?"UPGRADE LEVEL "+level:"BASE CARD";card.appendChild(upgrade);box.appendChild(card);});
       if(!box.childElementCount)box.textContent="No cards yet. Enter your first draft to sign a player.";
       const choices=$("apexDraftChoices");
-      const renderDraft=draft=>{choices.replaceChildren();if(!draft||!Array.isArray(draft.choices))return;const heading=document.createElement("h4");heading.className="draft-choice-heading";heading.textContent="YOUR TEN PICKS · CHOOSE ONE";choices.appendChild(heading);const bestId=[...draft.choices].sort((a,b)=>(catalog[b]?.[1]||0)-(catalog[a]?.[1]||0))[0];draft.choices.forEach(id=>{const p=catalog[id];if(!p)return;const card=makeCard({id,name:p[0],ovr:p[1],position:p[2],country:p[3],flag:p[4],rarity:rarityFor(id)},"draft-pick-card");if(id===bestId){card.classList.add("draft-best-pull-card");const badge=document.createElement("span");badge.className="draft-best-pull-badge";badge.textContent="★ BEST PULL";card.appendChild(badge);}const odds=document.createElement("small");odds.className="draft-card-odds";const chance=Number(draft.odds?.[id]);odds.textContent="PACK CHANCE · "+(Number.isFinite(chance)?chance.toFixed(2):"—")+"%";card.appendChild(odds);const choose=document.createElement("button");choose.className="draft-select-btn";choose.type="button";choose.textContent="SIGN THIS PLAYER";choose.addEventListener("click",async()=>{choose.disabled=true;$("apexPackStatus").textContent="Preparing your signing reveal...";try{const result=await api("/api/store/draft/choose",{method:"POST",body:JSON.stringify({cardId:id,draftId:draft.id})});$("apexPackStatus").textContent=result.pick.duplicate?(result.pick.upgraded?"DUPLICATE SIGNED · CARD UPGRADED!":"DUPLICATE SIGNED · MAX LEVEL"):"WELCOME TO THE SQUAD · "+result.pick.name.toUpperCase()+"!";updateTopGemBalance(result.gems);showSigningReveal(result.pick);await loadApexStore();}catch(error){$("apexPackStatus").textContent=error.message;choose.disabled=false;}});card.appendChild(choose);choices.appendChild(card);});};
+      const renderDraft=draft=>{choices.replaceChildren();if(!draft||!Array.isArray(draft.choices))return;const heading=document.createElement("h4");heading.className="draft-choice-heading";heading.textContent="YOUR TEN PICKS · CHOOSE ONE";choices.appendChild(heading);choices.dataset.pickCount=String(draft.choices.length);if(draft.choices.length!==10){const warning=document.createElement("p");warning.className="draft-choice-warning";warning.textContent="The server sent "+draft.choices.length+" picks instead of 10. Restart the Apex Strikers backend on Wispbyte, then reopen the draft.";choices.appendChild(warning);$("apexPackStatus").textContent=warning.textContent;}const bestId=[...draft.choices].sort((a,b)=>(catalog[b]?.[1]||0)-(catalog[a]?.[1]||0))[0];draft.choices.forEach(id=>{const p=catalog[id];if(!p)return;const card=makeCard({id,name:p[0],ovr:p[1],position:p[2],country:p[3],flag:p[4],rarity:rarityFor(id)},"draft-pick-card");if(id===bestId){card.classList.add("draft-best-pull-card");const badge=document.createElement("span");badge.className="draft-best-pull-badge";badge.textContent="★ BEST PULL";card.appendChild(badge);}const odds=document.createElement("small");odds.className="draft-card-odds";const chance=Number(draft.odds?.[id]);odds.textContent="PACK CHANCE · "+(Number.isFinite(chance)?chance.toFixed(2):"—")+"%";card.appendChild(odds);const choose=document.createElement("button");choose.className="draft-select-btn";choose.type="button";choose.textContent="SIGN THIS PLAYER";choose.addEventListener("click",async()=>{choose.disabled=true;$("apexPackStatus").textContent="Preparing your signing reveal...";try{const result=await api("/api/store/draft/choose",{method:"POST",body:JSON.stringify({cardId:id,draftId:draft.id})});$("apexPackStatus").textContent=result.pick.duplicate?(result.pick.upgraded?"DUPLICATE SIGNED · CARD UPGRADED!":"DUPLICATE SIGNED · MAX LEVEL"):"WELCOME TO THE SQUAD · "+result.pick.name.toUpperCase()+"!";updateTopGemBalance(result.gems);showSigningReveal(result.pick);await loadApexStore();}catch(error){$("apexPackStatus").textContent=error.message;choose.disabled=false;}});card.appendChild(choose);choices.appendChild(card);});};
       if(data.activeDraft&&data.activeDraft.expiresAt>Date.now())renderDraft(data.activeDraft);
       $("buyDraftVoucher").addEventListener("click",async()=>{const button=$("buyDraftVoucher");button.disabled=true;$("apexPackStatus").textContent="Exchanging gems for a draft voucher...";try{const result=await api("/api/store/vouchers/buy",{method:"POST",body:JSON.stringify({quantity:1})});updateTopGemBalance(result.gems);$("apexPackStatus").textContent="DRAFT VOUCHER ADDED TO YOUR WALLET!";await loadApexStore();}catch(error){$("apexPackStatus").textContent=error.message;button.disabled=false;}});
       $("startPlayerDraft").addEventListener("click",async()=>{const button=$("startPlayerDraft");button.disabled=true;$("apexPackStatus").textContent="The draft room is opening...";try{const result=await api("/api/store/draft/start",{method:"POST",body:JSON.stringify({})});$("apexVoucherCount").textContent="◇ "+result.draftVouchers+" DRAFT VOUCHERS";updateCareerVoucherBalance(result.draftVouchers);$("apexPackStatus").textContent="TEN PLAYERS. ONE SIGNING. MAKE YOUR PICK.";renderDraft(result.draft);}catch(error){$("apexPackStatus").textContent=error.message;}finally{button.disabled=false;}});
