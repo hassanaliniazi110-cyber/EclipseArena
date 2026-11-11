@@ -1160,8 +1160,8 @@ svg line,svg polyline,.chart-line,.stat-line,.player-chart-line,.player-stats sv
   width:100%;
   height:94px;
   margin:0 0 8px;
-  object-fit:cover;
-  object-position:center 14%;
+  object-fit:contain;
+  object-position:center center;
   border:1px solid rgba(255,255,255,.24);
   border-radius:6px;
   background:#142332;
