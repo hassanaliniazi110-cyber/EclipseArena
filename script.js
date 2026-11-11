@@ -687,10 +687,10 @@ const goalkeepers = [
   let cachedAdminTotpCode="";
   function api(path,opts={}){
     if(!onlineCfg.base)return Promise.reject(new Error("Online server is not configured yet."));
-    const needsOwnerCode=/^\/api\/(admin\/audit|admin\/players|youtube\/requests)/.test(path);
+    const needsOwnerCode=path.startsWith("/api/admin/audit")||path.startsWith("/api/admin/players")||path.startsWith("/api/youtube/requests");
     if(needsOwnerCode&&!opts.headers?.["X-Admin-2FA"]){
       const code=window.prompt("OWNER SECURITY CHECK\nEnter the current 6-digit code from your authenticator app:");
-      if(!code||!/^\d{6}$/.test(code.trim()))return Promise.reject(new Error("Owner verification cancelled. Enter a 6-digit authenticator code."));
+      if(!code||code.trim().length!==6||!Array.from(code.trim()).every(char=>char>="0"&&char<="9"))return Promise.reject(new Error("Owner verification cancelled. Enter a 6-digit authenticator code."));
       cachedAdminTotpCode=code.trim();
     }
     const send=()=>{
