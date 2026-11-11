@@ -327,3 +327,54 @@ h2,
 @media(min-width:701px) and (max-width:1100px){
   .draft-choice-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 }
+
+
+/* Shorter cinematic intro with a real skip control. */
+.intro-splash{animation:intro-exit .55s ease-in 1.75s forwards!important;pointer-events:none}
+.intro-progress span{animation:intro-loading .8s cubic-bezier(.65,0,.35,1) .55s forwards!important}
+.intro-skip-btn{
+  position:absolute;right:max(20px,env(safe-area-inset-right));top:max(18px,env(safe-area-inset-top));
+  z-index:20;pointer-events:auto;padding:11px 16px;border:1px solid rgba(145,224,255,.55);
+  border-radius:999px;background:rgba(7,18,34,.72);color:#d9f7ff;font:800 11px 'Orbitron',sans-serif;
+  letter-spacing:.12em;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  box-shadow:0 4px 24px rgba(70,170,255,.18);cursor:pointer;
+}
+.intro-skip-btn:active{transform:scale(.96);background:rgba(75,145,220,.28)}
+.intro-splash.intro-skipped{animation:intro-exit .18s ease-out forwards!important}
+.intro-splash.intro-skipped .intro-skip-btn{display:none}
+
+/* iPad-first layout: predictable grids, safe-area spacing and touch-friendly controls. */
+html{scroll-padding-top:18px;-webkit-text-size-adjust:100%;overscroll-behavior-y:contain}
+body{overflow-x:hidden;touch-action:pan-y}
+.app-shell{width:100%;max-width:1500px;padding-left:clamp(12px,2.8vw,42px);padding-right:clamp(12px,2.8vw,42px);padding-bottom:env(safe-area-inset-bottom)}
+button,.primary-btn,.secondary-btn,.music-play-btn,.back-btn{min-height:42px;touch-action:manipulation}
+input,select,textarea{font-size:16px!important}
+img,canvas,video{max-width:100%}
+.roster-section,.career-hub,.career-hub-columns,.career-hub-top,.career-extra-grid,.mode-grid,.game-layout,.youtube-grid{min-width:0}
+.player-grid,.goalkeeper-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:12px}
+.player-card{min-width:0}
+.career-hub-columns{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.apex-leaderboard-list{max-height:520px;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+.apex-leaderboard-row{display:grid;grid-template-columns:54px minmax(0,1fr);align-items:center;gap:10px;padding:10px 12px;margin:0;border-bottom:1px solid rgba(150,190,225,.12)}
+.apex-leaderboard-row span{min-width:0;overflow-wrap:anywhere}
+.apex-leaderboard-summary{margin:0 0 10px;color:#9ddfff;font:800 10px 'Orbitron',sans-serif;letter-spacing:.1em}
+.leaderboard-more-btn{width:100%;margin:12px 0;padding:12px;border:1px solid rgba(120,220,255,.5);border-radius:10px;background:linear-gradient(100deg,#13304a,#222a53);color:#e9f8ff;font-weight:900;letter-spacing:.08em}
+@media(min-width:760px) and (max-width:1180px){
+  .app-shell{padding-left:22px;padding-right:22px}
+  .topbar{min-height:72px;height:auto;gap:12px;flex-wrap:wrap;padding:10px 0}
+  .mode-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .player-grid,.goalkeeper-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .career-hub-columns{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .draft-choice-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  .game-layout{grid-template-columns:minmax(0,1.5fr) minmax(270px,1fr)}
+}
+@media(max-width:759px){
+  .app-shell{padding-left:12px;padding-right:12px}
+  .topbar{height:auto;min-height:64px;flex-wrap:wrap;gap:8px;padding:8px 0}
+  .career-hub-columns,.career-hub-top{grid-template-columns:minmax(0,1fr)!important}
+  .player-grid,.goalkeeper-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .draft-choice-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(hover:none){
+  .mode-card:hover,.player-card:hover,.primary-btn:hover{transform:none!important}
+}
