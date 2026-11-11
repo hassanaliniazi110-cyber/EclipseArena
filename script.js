@@ -694,15 +694,19 @@ const goalkeepers = [
       (path==="/api/admin/players"&&method==="GET")||
       (path==="/api/youtube/requests"&&method==="GET")||
       (method==="POST"&&/^\/api\/youtube\/requests\/[^/]+\/decision$/.test(path));
-    const headers={"Content-Type":"application/json",...(opts.headers||{})};
-    if(needsOwnerCode&&!headers["X-Admin-2FA"]){
+    let ownerCode=String(opts.headers?.["X-Admin-2FA"]||"").trim();
+    if(needsOwnerCode&&!ownerCode){
       const entered=window.prompt("OWNER SECURITY CHECK\nEnter the current 6-digit code from your authenticator app:");
-      const code=String(entered||"").trim();
-      if(!/^\d{6}$/.test(code))return Promise.reject(new Error("Owner verification cancelled. Enter a 6-digit authenticator code."));
-      headers["X-Admin-2FA"]=code;
+      ownerCode=String(entered||"").trim();
+      if(!/^\d{6}$/.test(ownerCode))return Promise.reject(new Error("Owner verification cancelled. Enter a 6-digit authenticator code."));
     }
-    if(onlineCfg.token)headers.Authorization="Bearer "+onlineCfg.token;
-    const send=()=>fetch(onlineCfg.base+path,{...opts,headers});
+    const send=()=>{
+      const headers={"Content-Type":"application/json",...(opts.headers||{})};
+      if(needsOwnerCode&&!headers["X-Admin-2FA"])headers["X-Admin-2FA"]=ownerCode;
+      // Read the current token on every send so a session refresh is respected.
+      if(onlineCfg.token)headers.Authorization="Bearer "+onlineCfg.token;
+      return fetch(onlineCfg.base+path,{...opts,headers});
+    };
     return send().then(async response=>{
       let data=await response.json().catch(()=>({error:"Invalid server response"}));
       // Refresh a stale player session, but don't mistake a bad 2FA code for
