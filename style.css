@@ -1312,3 +1312,12 @@ svg line,svg polyline,.chart-line,.stat-line,.player-chart-line,.player-stats sv
 .apex-card-portrait .apex-photo-credit-line{position:absolute;left:2px;right:2px;bottom:2px;margin:0;font-size:7px;background:rgba(5,12,18,.88)}
 
 .apex-card-portrait{position:relative}
+
+/* All footballer image credits are collected in one section at the very bottom. */
+.apex-photo-credit-line{display:none!important}
+.apex-photo-credits-footer{margin:28px auto 14px;padding:18px 16px;max-width:1200px;border:1px solid rgba(183,255,91,.22);border-radius:12px;background:linear-gradient(145deg,rgba(15,27,35,.96),rgba(7,12,18,.98));color:#dce9d4}
+.apex-photo-credits-footer h3{margin:0 0 8px;color:#d8ff77;font:900 13px/1.4 Arial,sans-serif;letter-spacing:.12em}
+.apex-photo-credits-footer p{margin:6px 0;color:#aab9b0;font:12px/1.5 Arial,sans-serif}
+.apex-photo-credits-footer .apex-photo-credit-entry{padding:7px 0;border-top:1px solid rgba(255,255,255,.08);overflow-wrap:anywhere}
+.apex-photo-credits-footer a{color:#d8ff77;text-decoration:underline;text-underline-offset:2px}
+.apex-photo-credits-footer .apex-photo-credit-source-note{margin-top:12px;font-size:11px}
