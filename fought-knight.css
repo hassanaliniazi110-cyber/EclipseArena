@@ -686,3 +686,52 @@ section,.career-hub,.featured-market-section,.youtube-panel{scroll-margin-top:16
 .apex-launch-intro .intro-progress span{background:linear-gradient(90deg,#08752d,#39e86b,#b1ffc0)!important;box-shadow:0 0 18px rgba(54,255,105,.65)!important}
 .apex-launch-intro .intro-skip-btn{border-color:rgba(100,255,143,.55)!important;background:rgba(2,15,7,.88)!important}
 .apex-launch-intro .launch-center:before{background:radial-gradient(circle,rgba(45,255,101,.2),rgba(13,115,43,.1) 38%,transparent 70%)!important}
+
+
+/* Lime-green and black launch palette: brighter, sharper lime accents. */
+.apex-launch-intro,
+.apex-launch-intro *{
+  --launch-cyan:#c7ff35!important;
+  --launch-violet:#a8f000!important;
+}
+.apex-launch-intro{background:#020402!important;color:#c7ff35!important}
+.apex-launch-intro:before{
+  background:radial-gradient(ellipse at 50% 48%,rgba(199,255,53,.22),transparent 58%),linear-gradient(115deg,transparent 0 38%,rgba(190,255,42,.15) 50%,transparent 62%)!important;
+}
+.apex-launch-intro .launch-wordmark,
+.apex-launch-intro .launch-wordmark b,
+.apex-launch-intro .launch-kicker,
+.apex-launch-intro .launch-caption,
+.apex-launch-intro .launch-status,
+.apex-launch-intro .launch-status span,
+.apex-launch-intro .launch-status b,
+.apex-launch-intro .launch-footer,
+.apex-launch-intro .launch-footer span,
+.apex-launch-intro .intro-skip-btn,
+.apex-launch-intro .intro-skip-btn b{
+  color:#c7ff35!important;
+  text-shadow:0 0 17px rgba(199,255,53,.42)!important;
+}
+.apex-launch-intro .launch-wordmark b{color:#a8f000!important}
+.apex-launch-intro .launch-divider span{background:linear-gradient(90deg,transparent,#c7ff35,transparent)!important}
+.apex-launch-intro .launch-divider i{color:#e2ff91!important}
+.apex-launch-intro .launch-crest{
+  background:linear-gradient(145deg,#d8ff55,#8bc900 55%,#203000)!important;
+  border-color:#d5ff69!important;
+  box-shadow:0 0 32px rgba(199,255,53,.5),0 0 90px rgba(170,240,0,.24)!important;
+}
+.apex-launch-intro .launch-crest svg path{stroke:#e2ff91!important}
+.apex-launch-intro .launch-crest svg path[fill="#fff"],
+.apex-launch-intro .launch-crest svg path[fill="#b7a2ff"]{fill:#101800!important}
+.apex-launch-intro .launch-crest svg path[fill="url(#launchShield)"]{fill:#a8f000!important}
+.apex-launch-intro .launch-crest-ring,
+.apex-launch-intro .launch-orbit,
+.apex-launch-intro .launch-orbit-ring{border-color:rgba(199,255,53,.62)!important;box-shadow:0 0 26px rgba(199,255,53,.2)!important}
+.apex-launch-intro .launch-skyline{background:repeating-linear-gradient(90deg,transparent 0 3.5%,#c7ff35 3.55% 3.7%,transparent 3.8% 5.2%)!important}
+.apex-launch-intro .launch-floodlights{background:linear-gradient(180deg,rgba(199,255,53,.25),transparent 72%)!important}
+.apex-launch-intro .launch-pitch{border-color:rgba(199,255,53,.42)!important;box-shadow:0 -10px 90px rgba(199,255,53,.2)!important}
+.apex-launch-intro .launch-particles i{background:#d5ff45!important;box-shadow:0 0 14px #c7ff35!important}
+.apex-launch-intro .intro-progress{background:rgba(199,255,53,.16)!important}
+.apex-launch-intro .intro-progress span{background:linear-gradient(90deg,#78b900,#b5f500,#e5ff8a)!important;box-shadow:0 0 20px rgba(199,255,53,.78)!important}
+.apex-launch-intro .intro-skip-btn{border-color:rgba(199,255,53,.65)!important;background:rgba(9,15,0,.9)!important}
+.apex-launch-intro .launch-center:before{background:radial-gradient(circle,rgba(199,255,53,.23),rgba(105,145,0,.1) 38%,transparent 70%)!important}
