@@ -729,7 +729,7 @@ app.post("/api/store/draft/open-ten",auth,draftStartLimiter,(req,res)=>{
   saveData();
   auditEvent(req.player.id,"draft_ten_opened",eventId);
   res.set("Cache-Control","no-store");
-  res.json({eventId,picks,draftVouchers:req.player.draftVouchers,ownedCards:req.player.ownedCards,cardLevels:req.player.cardLevels,draftPity:getDraftPityStatus(req.player)});
+  res.json({eventId,picks,gems:syncAdminGemWallet(req.player),draftVouchers:req.player.draftVouchers,ownedCards:req.player.ownedCards,cardLevels:req.player.cardLevels,draftPity:getDraftPityStatus(req.player)});
 });
 app.post("/api/games/start",auth,gameLimiter,(req,res)=>{req.player.gameSession={id:crypto.randomBytes(16).toString("hex"),startedAt:Date.now(),mode:cleanText(req.body?.mode,24),eventId:cleanText(req.body?.eventId,32)};res.json({sessionId:req.player.gameSession.id});});
 app.post("/api/games/complete",auth,gameLimiter,(req,res)=>{
