@@ -1207,3 +1207,21 @@ svg line,svg polyline,.chart-line,.stat-line,.player-chart-line,.player-stats sv
 .apex-event-art.apex-ascension{color:rgba(151,222,255,.7);border-color:rgba(128,185,255,.7);background:radial-gradient(circle,rgba(85,150,255,.35),rgba(22,34,48,.12) 70%);box-shadow:0 0 0 13px rgba(105,155,255,.06),0 0 34px rgba(95,160,255,.18)}
 .apex-event-card:has(.apex-event-art.apex-ascension){border-color:rgba(126,175,255,.7);background:radial-gradient(circle at 100% 0,rgba(90,133,255,.24),transparent 46%),linear-gradient(145deg,#26365c,#111923 75%);box-shadow:0 0 30px rgba(85,132,255,.12),0 14px 36px rgba(0,0,0,.25)}
 .apex-event-card:has(.apex-event-art.apex-ascension) .apex-event-badge{color:#c5dcff;border-color:rgba(130,175,255,.7)}
+
+/* Apex Ascension spotlight and cleaner roster presentation */
+.featured-event.apex-ascension{border-color:rgba(159,145,255,.68);background:radial-gradient(circle at 78% 48%,rgba(151,111,255,.38),transparent 36%),linear-gradient(115deg,#10172b 0%,#20224a 55%,#11162b 100%)}
+.featured-event.apex-ascension:before{background:linear-gradient(110deg,transparent 20%,rgba(172,155,255,.16) 50%,transparent 76%)}
+.featured-event.apex-ascension .event-copy .eyebrow,.featured-event.apex-ascension .event-meta{color:#c9baff}
+.featured-event.apex-ascension .event-copy h2 em{color:#c9baff}
+.featured-event.apex-ascension .event-card-front{background:linear-gradient(150deg,#f4edff,#a58be9 48%,#40306e);border:2px solid #eee5ff;color:#17102b}
+.featured-event.apex-ascension .event-card-back{background:linear-gradient(145deg,#7556d5,#202044);border-color:#c9baff}
+.apex-event-art.apex-ascension{color:rgba(197,173,255,.65);border-color:rgba(197,173,255,.6);background:radial-gradient(circle,rgba(135,92,255,.34),rgba(22,34,48,.12) 70%)}
+.apex-event-card.event-apex-ascension{border-color:rgba(170,145,255,.72);background:radial-gradient(circle at 100% 0,rgba(143,105,255,.24),transparent 46%),linear-gradient(145deg,#292448,#111923 75%);box-shadow:0 16px 38px rgba(65,40,130,.22)}
+.apex-event-card.event-apex-ascension .apex-event-badge,.apex-event-card.event-apex-ascension .apex-event-subtitle,.apex-event-card.event-apex-ascension .apex-event-rewards{color:#d0c0ff;border-color:rgba(197,173,255,.55)}
+.roster-section{padding:clamp(16px,2.5vw,26px);border:1px solid rgba(199,255,74,.13);border-radius:22px;background:linear-gradient(145deg,rgba(25,39,34,.72),rgba(12,20,19,.72));}
+.roster-section .section-heading{margin-bottom:16px}
+.player-grid{gap:12px}
+.player-card{border-radius:13px;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.player-card:not(:disabled):hover{transform:translateY(-4px);border-color:rgba(199,255,74,.65);box-shadow:0 12px 24px rgba(0,0,0,.24)}
+.player-card-photo{height:112px;object-position:center 18%;border-radius:9px;background:linear-gradient(145deg,#243a4a,#101923)}
+@media(max-width:650px){.player-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.player-card{padding:10px;min-height:145px}.player-card-photo{height:104px}}
