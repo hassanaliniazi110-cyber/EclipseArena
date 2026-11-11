@@ -822,19 +822,19 @@ const goalkeepers = [
   if($("careerMarketBtn"))$("careerMarketBtn").addEventListener("click",async()=>{const panel=$("featuredMarketPanel");if(panel){panel.scrollIntoView({behavior:"smooth",block:"start"});}await loadApexStore();});
   loadApexStore();
   let apexLeaderboardTimer=null,apexLeaderboardLoading=false;
-  let apexLeaderboardData=[],apexLeaderboardVisible=50;
+  let apexLeaderboardData=[],apexLeaderboardVisible=5000;
   function drawApexLeaderboard(boardBox,updatedAt){
     boardBox.replaceChildren();
     const rows=apexLeaderboardData.slice(0,apexLeaderboardVisible);
-    const summary=document.createElement("p");summary.className="apex-leaderboard-summary";summary.textContent="SHOWING "+rows.length+" OF "+Math.min(1000,apexLeaderboardData.length)+" · GLOBAL TOP 1,000";boardBox.appendChild(summary);
+    const summary=document.createElement("p");summary.className="apex-leaderboard-summary";summary.textContent="SHOWING "+rows.length+" OF "+apexLeaderboardData.length+" REGISTERED PLAYERS · GLOBAL LEADERBOARD";boardBox.appendChild(summary);
     const list=document.createElement("div");list.className="apex-leaderboard-list";
     rows.forEach(p=>{const row=document.createElement("p");row.className="apex-leaderboard-row";const rank=document.createElement("strong");rank.textContent="#"+p.rank;const details=document.createElement("span");details.textContent=p.name+" · "+p.wins+" wins · "+p.xp+" XP";row.append(rank,details);list.appendChild(row);});
     if(!rows.length){const empty=document.createElement("p");empty.textContent="No players have joined the leaderboard yet.";list.appendChild(empty);}
     boardBox.appendChild(list);
-    if(apexLeaderboardVisible<apexLeaderboardData.length){const more=document.createElement("button");more.type="button";more.className="leaderboard-more-btn";more.textContent="LOAD NEXT "+Math.min(50,apexLeaderboardData.length-apexLeaderboardVisible)+" PLAYERS";more.addEventListener("click",()=>{apexLeaderboardVisible=Math.min(1000,apexLeaderboardVisible+50);drawApexLeaderboard(boardBox,updatedAt);});boardBox.appendChild(more);}
+    if(apexLeaderboardVisible<apexLeaderboardData.length){const more=document.createElement("button");more.type="button";more.className="leaderboard-more-btn";more.textContent="LOAD NEXT "+Math.min(50,apexLeaderboardData.length-apexLeaderboardVisible)+" PLAYERS";more.addEventListener("click",()=>{apexLeaderboardVisible=Math.min(50000,apexLeaderboardVisible+50);drawApexLeaderboard(boardBox,updatedAt);});boardBox.appendChild(more);}
     const stamp=document.createElement("small");stamp.className="apex-leaderboard-updated";stamp.textContent="UPDATED "+(updatedAt?new Date(updatedAt).toLocaleTimeString():"JUST NOW")+" · AUTO-REFRESHES EVERY 60 SECONDS";boardBox.appendChild(stamp);
   }
-  async function refreshApexLeaderboard(){const boardBox=$("apexLeaderboard");if(!boardBox||!onlineCfg.base||!onlineCfg.token||apexLeaderboardLoading)return;apexLeaderboardLoading=true;try{const boardData=await api("/api/leaderboard?limit=1000",{cache:"no-store"});apexLeaderboardData=(boardData.leaderboard||[]).slice(0,1000);apexLeaderboardVisible=Math.max(50,Math.min(1000,apexLeaderboardVisible));drawApexLeaderboard(boardBox,boardData.updatedAt);}catch(error){const note=document.createElement("small");note.className="apex-leaderboard-updated";note.textContent="Could not refresh leaderboard. Will retry in 60 seconds.";if(boardBox&&!boardBox.querySelector(".apex-leaderboard-updated"))boardBox.appendChild(note);}finally{apexLeaderboardLoading=false;}}
+  async function refreshApexLeaderboard(){const boardBox=$("apexLeaderboard");if(!boardBox||!onlineCfg.base||!onlineCfg.token||apexLeaderboardLoading)return;apexLeaderboardLoading=true;try{const boardData=await api("/api/leaderboard?limit=50000",{cache:"no-store"});apexLeaderboardData=(boardData.leaderboard||[]).slice(0,50000);apexLeaderboardVisible=Math.max(5000,Math.min(50000,apexLeaderboardVisible));drawApexLeaderboard(boardBox,boardData.updatedAt);}catch(error){const note=document.createElement("small");note.className="apex-leaderboard-updated";note.textContent="Could not refresh leaderboard. Will retry in 60 seconds.";if(boardBox&&!boardBox.querySelector(".apex-leaderboard-updated"))boardBox.appendChild(note);}finally{apexLeaderboardLoading=false;}}
   function startApexLeaderboardRefresh(){if(apexLeaderboardTimer)return;apexLeaderboardTimer=setInterval(()=>{if(!document.hidden)refreshApexLeaderboard();},60000);}
   async function loadApexLiveHub(){
     const eventBox=$("apexEvents"),modal=$("eventsModal");
