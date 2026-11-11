@@ -107,13 +107,11 @@ const goalkeepers = [
     ederson:"ederson",janoblak:"jan-oblak",mikemaignan:"mike-maignan",emilianomartinez:"emiliano-martinez",
     zaydquadri:"",ehanali:"",umarshoaib:"",muhammadarham:"",hassanali:""
   };
-  const rosterPhotoUrls={
-    sergioramos:"https://a.espncdn.com/i/headshots/soccer/players/full/41579.png",
-    endrick:"https://a.espncdn.com/i/headshots/soccer/players/full/346612.png"
-  };
+  const rosterPhotoUrls={};
+  const CUSTOM_PLAYER_KEYS=new Set(["arham","muhammadarham","hassanali","zaydquadri","umarshoaib","ehanali"]);
   function isValidPlayerPhoto(source){
     const value=String(source||"");
-    return /^https:\/\/geofootballguessr\.com\/footballers\/[a-z0-9-]+\.webp$/i.test(value)||/^https:\/\/a\.espncdn\.com\/i\/headshots\/soccer\/players\/full\/\d+\.png$/i.test(value)||
+    return /^https:\/\/upload\.wikimedia\.org\/wikipedia\/commons\//i.test(value)||
       /^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(value)||
       /^data:image\/svg\+xml;charset=utf-8,/i.test(value);
   }
@@ -134,8 +132,7 @@ const goalkeepers = [
         return;
       }
       if(isValidPlayerPhoto(player.image))return;
-      const slug=rosterPhotoSlugs[key];
-      const sourced=rosterPhotoUrls[key]||(slug?"https://geofootballguessr.com/footballers/"+slug+".webp":"");
+      const sourced=rosterPhotoUrls[key]||"";
       const personal=["muhammadarham","hassanali"].includes(key)&&isValidPlayerPhoto(savedPhoto)?savedPhoto:"";
       player.image=isValidPlayerPhoto(sourced)?sourced:(personal||makePlayerAvatarData(player.name,player.role));
     });
@@ -145,21 +142,33 @@ const goalkeepers = [
     const name=String(playerName||"").trim();
     if(!name)return Promise.resolve("");
     const key=normalizePlayerName(name);
+    if(CUSTOM_PLAYER_KEYS.has(key))return Promise.resolve("");
     if(wikiPortraitCache.has(key))return wikiPortraitCache.get(key);
     const task=(async()=>{
       try{
-        const query=encodeURIComponent(name);
-        const url="https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch="+query+"&gsrnamespace=0&gsrlimit=8&prop=pageimages&piprop=thumbnail&pithumbsize=520&format=json&origin=*";
-        const response=await fetch(url,{mode:"cors",credentials:"omit",headers:{"Accept":"application/json"}});
-        if(!response.ok)return "";
-        const data=await response.json();
-        const pages=Object.values(data.query?.pages||{}).filter(page=>page.thumbnail?.source);
-        pages.sort((a,b)=>{
+        const headers={"Accept":"application/json"};
+        const searchUrl="https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch="+encodeURIComponent('filetype:bitmap "'+name+'"')+"&srnamespace=6&srlimit=12&format=json&origin=*";
+        const searchResponse=await fetch(searchUrl,{mode:"cors",credentials:"omit",headers});
+        if(!searchResponse.ok)return "";
+        const searchData=await searchResponse.json();
+        const titles=(searchData.query?.search||[]).map(item=>item.title).filter(Boolean);
+        if(!titles.length)return "";
+        const infoUrl="https://commons.wikimedia.org/w/api.php?action=query&titles="+encodeURIComponent(titles.join("|"))+"&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=520&format=json&origin=*";
+        const infoResponse=await fetch(infoUrl,{mode:"cors",credentials:"omit",headers});
+        if(!infoResponse.ok)return "";
+        const infoData=await infoResponse.json();
+        const candidates=Object.values(infoData.query?.pages||{}).map(page=>{
+          const info=page.imageinfo?.[0]||{},meta=info.extmetadata||{};
+          const license=String(meta.LicenseShortName?.value||meta.UsageTerms?.value||"").replace(/<[^>]*>/g," ").trim();
+          const isFree=/^(?:CC0(?:\s*1\.0)?|Public domain|PD(?:-.*)?)$/i.test(license);
+          const image=info.thumburl||info.url||"";
+          return {title:page.title||"",image,isFree};
+        }).filter(item=>item.isFree&&/^https:\/\/upload\.wikimedia\.org\/wikipedia\/commons\//i.test(item.image));
+        candidates.sort((a,b)=>{
           const an=normalizePlayerName(a.title),bn=normalizePlayerName(b.title);
-          return Number(bn===key)-Number(an===key);
+          return Number(bn.includes(key))-Number(an.includes(key));
         });
-        const image=pages[0]?.thumbnail?.source||"";
-        return /^https:\/\/(upload\.wikimedia\.org|.*\.wikipedia\.org)\//i.test(image)?image:"";
+        return candidates[0]?.image||"";
       }catch(_){return "";}
     })();
     wikiPortraitCache.set(key,task);
@@ -666,7 +675,6 @@ const goalkeepers = [
         box.textContent=line("POOL A · 126+ OVR",a)+"  |  "+line("POOL B · 125 OVR & BELOW",b);
       }
       renderDraftPity("apex-ascension");
-      const photoUrl=slug=>"https://geofootballguessr.com/footballers/"+slug+".webp";
       const catalog=Object.fromEntries((data.cardCatalog||[]).map(card=>[card.id,[
         card.name,card.ovr,card.position,card.country,card.flag,card.image||"",
         card.stats||{PAC:Math.max(45,Number(card.ovr||80)-2),SHO:Math.max(45,Number(card.ovr||80)-1),PAS:Math.max(45,Number(card.ovr||80)-4),DRI:Math.max(45,Number(card.ovr||80)-3),DEF:Math.max(35,Number(card.ovr||80)-20),PHY:Math.max(45,Number(card.ovr||80)-7)},
