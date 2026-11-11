@@ -131,6 +131,10 @@ const youtubeRequestLimiter = rateLimit({
   windowMs: 10 * 60 * 1000, limit: 6, standardHeaders: "draft-7", legacyHeaders: false,
   message: { error: "Too many YouTube access requests. Please wait before trying again." }
 });
+const youtubeCommentsLimiter = rateLimit({
+  windowMs: 60 * 1000, limit: 12, standardHeaders: "draft-7", legacyHeaders: false,
+  message: { error: "Too many comments requests. Please wait a moment." }
+});
 const profileLimiter = rateLimit({
   windowMs: 60 * 1000, limit: 30, standardHeaders: "draft-7", legacyHeaders: false,
   message: { error: "Too many profile updates. Please wait a moment." }
@@ -178,7 +182,7 @@ app.use((req, res, next) => { if (req.path.startsWith("/api/")) res.setHeader("C
 app.use(rateLimit({ windowMs: 60 * 1000, limit: 90, standardHeaders: "draft-7", legacyHeaders: false }));
 app.get("/health", (_req, res) => res.json({ ok: true, service: "Eclipse Arena API" }));
 // Public, read-only comments endpoint. Keep YOUTUBE_API_KEY on the server, never in frontend files.
-app.get("/api/youtube/comments", async (req, res) => {
+app.get("/api/youtube/comments", youtubeCommentsLimiter, async (req, res) => {
   const videoId = String(req.query.videoId || "");
   const pageToken = String(req.query.pageToken || "");
   if (!/^[A-Za-z0-9_-]{11}$/.test(videoId)) {
