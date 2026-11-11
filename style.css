@@ -1201,3 +1201,9 @@ svg line,svg polyline,.chart-line,.stat-line,.player-chart-line,.player-stats sv
 .featured-market-section{position:relative;margin:clamp(22px,4vw,42px) 0;padding:clamp(18px,3vw,30px);border:1px solid rgba(255,160,72,.2);border-radius:24px;background:linear-gradient(145deg,rgba(17,25,25,.98),rgba(11,15,21,.98));box-shadow:0 18px 48px rgba(0,0,0,.2)}
 .featured-market-heading{margin:0 0 18px}.featured-market-heading h2{margin:5px 0 8px;font:900 clamp(1.8rem,4vw,2.6rem) Orbitron,sans-serif;letter-spacing:.04em;color:#fff}.featured-market-heading h2 em{color:#ffad55;font-style:normal}.featured-market-heading>p:last-child{margin:0;color:#bdc6c2;max-width:680px}.featured-market-panel{min-width:0;scroll-margin-top:22px}
 @media(max-width:700px){.featured-market-section{padding:16px;border-radius:18px}.featured-market-heading h2{font-size:1.65rem}}
+
+
+/* APEX ASCENSION event identity */
+.apex-event-art.apex-ascension{color:rgba(151,222,255,.7);border-color:rgba(128,185,255,.7);background:radial-gradient(circle,rgba(85,150,255,.35),rgba(22,34,48,.12) 70%);box-shadow:0 0 0 13px rgba(105,155,255,.06),0 0 34px rgba(95,160,255,.18)}
+.apex-event-card:has(.apex-event-art.apex-ascension){border-color:rgba(126,175,255,.7);background:radial-gradient(circle at 100% 0,rgba(90,133,255,.24),transparent 46%),linear-gradient(145deg,#26365c,#111923 75%);box-shadow:0 0 30px rgba(85,132,255,.12),0 14px 36px rgba(0,0,0,.25)}
+.apex-event-card:has(.apex-event-art.apex-ascension) .apex-event-badge{color:#c5dcff;border-color:rgba(130,175,255,.7)}
