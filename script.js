@@ -244,13 +244,16 @@ const goalkeepers = [
   }
   function renderPlayers(){
     ensureRosterPlayerImages();
-    $("playerGrid").innerHTML=players.map(p=>playerCard(p,selectedPlayer,"data-player",false)).join("");
+    const rosterQuery=( $("rosterSearch")?.value||"").trim().toLowerCase();
+    const rosterFilter=$("rosterFilter")?.value||"all";
+    const visiblePlayers=players.filter(p=>{const matches=!rosterQuery||(p.name+" "+p.role+" "+(p.club||"")).toLowerCase().includes(rosterQuery);const role=String(p.role||"").toUpperCase();const group=role==="ST"||role==="LW"||role==="RW"?"attack":role==="CAM"||role==="CM"||role==="CDM"||role==="RM"||role==="LM"?"midfield":role==="CB"||role==="LB"||role==="RB"?"defence":"other";return matches&&(rosterFilter==="all"||group===rosterFilter);}).sort((a,b)=>Number(b.rating||0)-Number(a.rating||0));
+    $("playerGrid").innerHTML=visiblePlayers.map(p=>playerCard(p,selectedPlayer,"data-player",false)).join("");
     attachPlayerPortraitFallbacks($("playerGrid"));
     $("playerGrid").querySelectorAll("[data-player]").forEach(btn=>btn.addEventListener("click",()=>{const wasOpen=btn.classList.contains("show-stats");$("playerGrid").querySelectorAll(".player-card").forEach(card=>card.classList.remove("show-stats","selected"));selectedPlayer=btn.dataset.player;btn.classList.add("selected");if(!wasOpen)btn.classList.add("show-stats");if(typeof renderCareerHub==="function")renderCareerHub();toast(wasOpen?"PLAYER SELECTED":"PLAYER SELECTED · STATS OPEN");}));
     $("goalkeeperGrid").innerHTML=goalkeepers.map(p=>playerCard(p,selectedGoalkeeper,"data-goalkeeper",true)).join("");
     attachPlayerPortraitFallbacks($("goalkeeperGrid"));
     $("goalkeeperGrid").querySelectorAll("[data-goalkeeper]").forEach(btn=>btn.addEventListener("click",()=>{const wasOpen=btn.classList.contains("show-stats");$("goalkeeperGrid").querySelectorAll(".player-card").forEach(card=>card.classList.remove("show-stats","selected"));selectedGoalkeeper=btn.dataset.goalkeeper;btn.classList.add("selected");if(!wasOpen)btn.classList.add("show-stats");if(typeof renderCareerHub==="function")renderCareerHub();toast(wasOpen?"GOALKEEPER SELECTED":"GOALKEEPER SELECTED · STATS OPEN");}));
-    const count=players.filter(p=>isUnlocked(p,false)).length,gcount=goalkeepers.filter(p=>isUnlocked(p,true)).length;
+    const count=players.filter(p=>isUnlocked(p,false)).length,gcount=goalkeepers.filter(p=>isUnlocked(p,true)).length;const visibleCount=$("playerGrid").querySelectorAll("[data-player]").length;if($("rosterResultCount"))$("rosterResultCount").textContent=visibleCount+" PLAYERS SHOWN · "+players.length+" TOTAL";
     const counters=document.querySelectorAll(".section-count");if(counters[0])counters[0].textContent=count+" / "+players.length+" UNLOCKED";if(counters[1])counters[1].textContent=gcount+" / "+goalkeepers.length+" UNLOCKED";
   }
   function toast(message){const el=$("toast");el.textContent=message;el.classList.add("show");clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove("show"),2600)}
@@ -651,15 +654,18 @@ const goalkeepers = [
         return card;
       };
       const showSigningReveal=pick=>{
-        const overlay=document.createElement("div");overlay.className="apex-signing-overlay";overlay.setAttribute("role","dialog");overlay.setAttribute("aria-modal","true");overlay.setAttribute("aria-label","New player signing");
-        const stage=document.createElement("div");stage.className="apex-signing-stage";
-        const kicker=document.createElement("p");kicker.className="apex-signing-kicker";kicker.textContent=pick.duplicate?(pick.upgraded?"DUPLICATE UPGRADE":"SQUAD SIGNING"):"WELCOME TO THE SQUAD";
-        const title=document.createElement("h2");title.textContent=pick.duplicate?(pick.upgraded?"CARD UPGRADED!":"PLAYER SIGNED!"):"NEW PLAYER SIGNED!";
+        const rarity=String(pick.rarity||"").toUpperCase();const golden=Number(pick.ovr)>=124||["ICON","GAME CHANGERS","APEX ASCENSION"].includes(rarity);
+        const overlay=document.createElement("div");overlay.className="apex-signing-overlay"+(golden?" golden-walkout":"");overlay.setAttribute("role","dialog");overlay.setAttribute("aria-modal","true");overlay.setAttribute("aria-label",golden?"Golden player walkout":"New player signing");
+        const stage=document.createElement("div");stage.className="apex-signing-stage"+(golden?" golden-walkout-stage":"");
+        if(golden){const lights=document.createElement("div");lights.className="walkout-lights";const beam=document.createElement("div");beam.className="walkout-beam";const silhouette=document.createElement("div");silhouette.className="walkout-silhouette";silhouette.setAttribute("aria-hidden","true");const intro=document.createElement("p");intro.className="walkout-intro";intro.textContent="A NEW LEGEND IS ARRIVING";stage.append(lights,beam,silhouette,intro);}
+
+        const kicker=document.createElement("p");kicker.className="apex-signing-kicker";kicker.textContent=golden?"ULTIMATE SIGNING EXPERIENCE":(pick.duplicate?(pick.upgraded?"DUPLICATE UPGRADE":"SQUAD SIGNING"):"WELCOME TO THE SQUAD");
+        const title=document.createElement("h2");title.textContent=golden?(pick.duplicate?"GOLDEN UPGRADE!":"GOLDEN WALKOUT!"):(pick.duplicate?(pick.upgraded?"CARD UPGRADED!":"PLAYER SIGNED!"):"NEW PLAYER SIGNED!");
         const subtitle=document.createElement("p");subtitle.className="apex-signing-subtitle";subtitle.textContent=(pick.name||"PLAYER").toUpperCase()+" · "+(Number(pick.ovr)||0)+" OVR";
         const card=makeCard(pick,"signing-hero-card");
         const seal=document.createElement("div");seal.className="apex-signing-seal";seal.textContent=pick.duplicate?(pick.upgraded?"LEVEL "+pick.level+" UPGRADE":"ALREADY OWNED"):"ADDED TO YOUR SQUAD";
         const close=document.createElement("button");close.type="button";close.className="apex-signing-continue";close.textContent="CONTINUE";close.addEventListener("click",()=>overlay.remove());
-        stage.append(kicker,title,subtitle,card,seal,close);overlay.appendChild(stage);document.body.appendChild(overlay);close.focus();
+        stage.append(kicker,title,subtitle,card,seal,close);overlay.appendChild(stage);document.body.appendChild(overlay);if(golden){close.disabled=true;window.setTimeout(()=>{overlay.classList.add("walkout-revealed");close.disabled=false;close.focus();},3400);}else close.focus();
       };
       const box=$("apexOwnedCards");box.replaceChildren();(data.ownedCards||[]).forEach(id=>{const info=catalog[id];if(!info)return;const level=Number(data.cardLevels?.[id])||0;const card=makeCard({id,name:info[0],ovr:info[1],position:info[2],country:info[3],flag:info[4],rarity:rarityFor(id),level});const upgrade=document.createElement("small");upgrade.className="apex-card-upgrade";upgrade.textContent=level?"UPGRADE LEVEL "+level:"BASE CARD";card.appendChild(upgrade);box.appendChild(card);});
       if(!box.childElementCount)box.textContent="No cards yet. Enter your first draft to sign a player.";
