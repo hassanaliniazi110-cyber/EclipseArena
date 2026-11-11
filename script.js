@@ -107,11 +107,41 @@ const goalkeepers = [
     ederson:"ederson",janoblak:"jan-oblak",mikemaignan:"mike-maignan",emilianomartinez:"emiliano-martinez",
     zaydquadri:"",ehanali:"",umarshoaib:"",muhammadarham:"",hassanali:""
   };
-  const rosterPhotoUrls={};
+  // Fixed, verified portrait URLs from GeoFootball Guessr's Wikimedia Commons
+  // photo catalogue. This prevents a different Commons search result appearing
+  // on every reload for the most-used players.
+  const rosterPhotoUrls={
+    cristianoronaldo:"https://geofootballguessr.com/footballers/ronaldo.webp",
+    lionelmessi:"https://geofootballguessr.com/footballers/messi.webp",
+    kylianmbappe:"https://geofootballguessr.com/footballers/mbappe.webp",
+    erlinghaaland:"https://geofootballguessr.com/footballers/haaland.webp",
+    judebellingham:"https://geofootballguessr.com/footballers/bellingham.webp",
+    lamineyamal:"https://geofootballguessr.com/footballers/lamine-yamal.webp",
+    ke debruyne:"https://geofootballguessr.com/footballers/de-bruyne.webp",
+    kevindebruyne:"https://geofootballguessr.com/footballers/de-bruyne.webp",
+    mohamedsalah:"https://geofootballguessr.com/footballers/salah.webp",
+    viniciusjunior:"https://geofootballguessr.com/footballers/vinicius.webp",
+    neymarjr:"https://geofootballguessr.com/footballers/neymar.webp",
+    harrykane:"https://geofootballguessr.com/footballers/kane.webp",
+    robertlewandowski:"https://geofootballguessr.com/footballers/lewandowski.webp",
+    zinedinezidane:"https://geofootballguessr.com/footballers/zidane.webp",
+    ronaldinho:"https://geofootballguessr.com/footballers/ronaldinho.webp",
+    andresiniesta:"https://geofootballguessr.com/footballers/iniesta.webp",
+    xavi:"https://geofootballguessr.com/footballers/xavi.webp",
+    pele:"https://geofootballguessr.com/footballers/pele.webp",
+    diegomaradona:"https://geofootballguessr.com/footballers/maradona.webp",
+    sergioramos:"https://geofootballguessr.com/footballers/ramos.webp",
+    virg ilvandijk:"https://geofootballguessr.com/footballers/van-dijk.webp",
+    virgilvandijk:"https://geofootballguessr.com/footballers/van-dijk.webp",
+    karimbenzema:"https://geofootballguessr.com/footballers/benzema.webp",
+    luisfigo:"https://geofootballguessr.com/footballers/luis-figo.webp",
+    lukamodric:"https://geofootballguessr.com/footballers/modric.webp"
+  };
   const CUSTOM_PLAYER_KEYS=new Set(["arham","muhammadarham","hassanali","zaydquadri","umarshoaib","ehanali"]);
   function isValidPlayerPhoto(source){
     const value=String(source||"");
     return /^https:\/\/upload\.wikimedia\.org\/wikipedia\/commons\//i.test(value)||
+      /^https:\/\/geofootballguessr\.com\/footballers\/[a-z0-9-]+\.webp$/i.test(value)||
       /^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(value)||
       /^data:image\/svg\+xml;charset=utf-8,/i.test(value);
   }
@@ -145,8 +175,19 @@ const goalkeepers = [
     try{const value=JSON.parse(localStorage.getItem(WIKI_PORTRAIT_STORAGE_KEY)||"{}");return value&&typeof value==="object"&&!Array.isArray(value)?value:{};}catch(_){return {};}
   }
   function getStableWikiPortrait(name){
-    const item=readStableWikiPortraits()[normalizePlayerName(name)];
-    return item&&isValidPlayerPhoto(item.image)&&item.fileUrl?item:null;
+    const key=normalizePlayerName(name);
+    const item=readStableWikiPortraits()[key];
+    if(item&&isValidPlayerPhoto(item.image)&&item.fileUrl)return item;
+    const fixed=rosterPhotoUrls[key];
+    return fixed?{
+      image:fixed,
+      title:"GeoFootball Guessr footballer photo",
+      author:"Attribution listed on the GeoFootball Guessr photo credits page",
+      fileUrl:"https://geofootballguessr.com/image-credits",
+      license:"See individual photo licence",
+      licenseUrl:"https://geofootballguessr.com/image-credits",
+      needsCredit:true
+    }:null;
   }
   function saveStableWikiPortrait(name,record){
     if(!record||!isValidPlayerPhoto(record.image)||!record.fileUrl)return;
