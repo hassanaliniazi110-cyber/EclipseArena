@@ -684,27 +684,34 @@ const goalkeepers = [
     })();
     try{return await authRefreshPromise;}finally{authRefreshPromise=null;}
   }
-  let cachedAdminTotpCode="";
   function api(path,opts={}){
     if(!onlineCfg.base)return Promise.reject(new Error("Online server is not configured yet."));
-    const needsOwnerCode=path.startsWith("/api/admin/audit")||path.startsWith("/api/admin/players")||path.startsWith("/api/youtube/requests");
-    if(needsOwnerCode&&!opts.headers?.["X-Admin-2FA"]){
-      const code=window.prompt("OWNER SECURITY CHECK\nEnter the current 6-digit code from your authenticator app:");
-      if(!code||code.trim().length!==6||!Array.from(code.trim()).every(char=>char>="0"&&char<="9"))return Promise.reject(new Error("Owner verification cancelled. Enter a 6-digit authenticator code."));
-      cachedAdminTotpCode=code.trim();
+    const method=String(opts.method||"GET").toUpperCase();
+    // Only owner-only endpoints require a code. A normal player's POST to
+    // /api/youtube/requests must remain available without owner verification.
+    const needsOwnerCode=
+      (path==="/api/admin/audit"&&method==="GET")||
+      (path==="/api/admin/players"&&method==="GET")||
+      (path==="/api/youtube/requests"&&method==="GET")||
+      (method==="POST"&&/^\/api\/youtube\/requests\/[^/]+\/decision$/.test(path));
+    const headers={"Content-Type":"application/json",...(opts.headers||{})};
+    if(needsOwnerCode&&!headers["X-Admin-2FA"]){
+      const entered=window.prompt("OWNER SECURITY CHECK\\nEnter the current 6-digit code from your authenticator app:");
+      const code=String(entered||"").trim();
+      if(!/^\d{6}$/.test(code))return Promise.reject(new Error("Owner verification cancelled. Enter a 6-digit authenticator code."));
+      headers["X-Admin-2FA"]=code;
     }
-    const send=()=>{
-      const headers={"Content-Type":"application/json",...(opts.headers||{})};
-      if(needsOwnerCode&&!headers["X-Admin-2FA"])headers["X-Admin-2FA"]=cachedAdminTotpCode;
-      if(onlineCfg.token)headers.Authorization="Bearer "+onlineCfg.token;
-      return fetch(onlineCfg.base+path,{...opts,headers});
-    };
+    if(onlineCfg.token)headers.Authorization="Bearer "+onlineCfg.token;
+    const send=()=>fetch(onlineCfg.base+path,{...opts,headers});
     return send().then(async response=>{
-      if(response.status===401&&path!=="/api/register"){
+      let data=await response.json().catch(()=>({error:"Invalid server response"}));
+      // Refresh a stale player session, but don't mistake a bad 2FA code for
+      // an expired login and silently retry it.
+      if(response.status===401&&data.error==="Authentication required. Reconnect to the server."&&path!=="/api/register"){
         await refreshOnlineAuth();
         response=await send();
+        data=await response.json().catch(()=>({error:"Invalid server response"}));
       }
-      const data=await response.json().catch(()=>({error:"Invalid server response"}));
       if(!response.ok)throw new Error(data.error||"Server error "+response.status);
       return data;
     });
