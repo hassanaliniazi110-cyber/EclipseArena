@@ -567,3 +567,6 @@ body .apex-launch-intro .launch-pitch{filter:drop-shadow(0 0 18px rgba(86,210,25
 body .apex-launch-intro .launch-crest{filter:drop-shadow(0 0 22px rgba(109,218,255,.48))}
 @media(hover:none){.apex-player-card.draft-player-card:active .apex-card-portrait img{transform:scale(1.035)}}
 @media(prefers-reduced-motion:reduce){.draft-choice-grid .apex-player-card,.apex-player-card.draft-player-card:after,.apex-player-card.draft-player-card .apex-card-portrait:after,body .apex-launch-intro:after,body .apex-launch-intro .launch-center:after{animation:none!important;transition:none!important}}
+
+/* Keep card details above the animated foil layer for clear readability. */
+.apex-player-card.draft-player-card>.apex-card-top,.apex-player-card.draft-player-card>.apex-card-rarity,.apex-player-card.draft-player-card>.apex-card-crest,.apex-player-card.draft-player-card>.apex-card-footer{position:relative;z-index:5}
