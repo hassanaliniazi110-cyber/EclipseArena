@@ -597,6 +597,7 @@ const goalkeepers = [
         photo.onerror=()=>{if(photo.dataset.sourceRetry!=="true"){const alternate=rosterPhotoUrls[normalizePlayerName(info[0])];if(alternate&&photo.src!==alternate){photo.dataset.sourceRetry="true";photo.src=alternate;return;}}hydrateWikiPortrait(photo,info[0],info[2]);};
         if(!isValidPlayerPhoto(info[5])){photo.dataset.needsWiki="true";}
         portrait.appendChild(photo);
+        if(photo.dataset.needsWiki==="true")hydrateWikiPortrait(photo,info[0],info[2]);
         const foil=document.createElement("div");foil.className="apex-card-foil";
         const top=document.createElement("div");top.className="apex-card-top";
         const ratingGroup=document.createElement("div");ratingGroup.className="apex-card-rating-group";
