@@ -50,7 +50,7 @@ const tokenToPlayer = new Map();
 const DATA_FILE = process.env.ECLIPSE_DATA_FILE || path.join(__dirname, "eclipse-data.json");
 function hashToken(token) { return crypto.createHash("sha256").update(String(token)).digest("hex"); }
 function saveData() {
-  const data = [...players.values()].map(p => ({ id: p.id, tokenHash: p.tokenHash, profile: p.profile, friends: [...p.friends], gems: p.gems, ownedCards: p.ownedCards, cardLevels: p.cardLevels, draftVouchers: p.draftVouchers, activeDraft: p.activeDraft, rewardDay: p.rewardDay, rewardGemsToday: p.rewardGemsToday, lastGameClaimAt: p.lastGameClaimAt, eventClaims: p.eventClaims }));
+  const data = [...players.values()].map(p => ({ id: p.id, tokenHash: p.tokenHash, deviceKey: p.deviceKey || "", profile: p.profile, friends: [...p.friends], gems: p.gems, ownedCards: p.ownedCards, cardLevels: p.cardLevels, draftVouchers: p.draftVouchers, activeDraft: p.activeDraft, rewardDay: p.rewardDay, rewardGemsToday: p.rewardGemsToday, lastGameClaimAt: p.lastGameClaimAt, eventClaims: p.eventClaims }));
   const temp = DATA_FILE + ".tmp";
   fs.writeFileSync(temp, JSON.stringify({ version: 1, players: data }), { mode: 0o600 });
   fs.renameSync(temp, DATA_FILE);
@@ -61,7 +61,7 @@ function loadData() {
     if (data.version !== 1 || !Array.isArray(data.players)) return;
     for (const p of data.players.slice(0, MAX_PLAYERS)) {
       if (!validPlayerId(p.id) || !/^[a-f0-9]{64}$/i.test(p.tokenHash || "")) continue;
-      const player = { id: p.id, tokenHash: p.tokenHash, profile: normalizeProfile(p.profile), friends: new Set(Array.isArray(p.friends) ? p.friends.filter(validPlayerId).slice(0, 100) : []), gems: p.gems === undefined ? 250 : Math.max(0, Math.floor(Number(p.gems) || 0)), ownedCards: Array.isArray(p.ownedCards) ? [...new Set(p.ownedCards.filter(x => typeof x === 'string').slice(0, 100))] : ['arham'], cardLevels: p.cardLevels && typeof p.cardLevels === 'object' ? p.cardLevels : {}, draftVouchers: Math.max(0,Math.min(99,Number(p.draftVouchers)||0)), activeDraft: p.activeDraft && typeof p.activeDraft==="object" ? p.activeDraft : null, rewardDay: String(p.rewardDay || ''), rewardGemsToday: Math.max(0, Number(p.rewardGemsToday) || 0), lastGameClaimAt: Math.max(0, Number(p.lastGameClaimAt) || 0), eventClaims: p.eventClaims && typeof p.eventClaims === "object" ? p.eventClaims : {}, gameSession: null };
+      const player = { id: p.id, tokenHash: p.tokenHash, deviceKey: /^[a-f0-9]{64}$/i.test(p.deviceKey || "") ? p.deviceKey.toLowerCase() : "", profile: normalizeProfile(p.profile), friends: new Set(Array.isArray(p.friends) ? p.friends.filter(validPlayerId).slice(0, 100) : []), gems: p.gems === undefined ? 250 : Math.max(0, Math.floor(Number(p.gems) || 0)), ownedCards: Array.isArray(p.ownedCards) ? [...new Set(p.ownedCards.filter(x => typeof x === 'string').slice(0, 100))] : ['arham'], cardLevels: p.cardLevels && typeof p.cardLevels === 'object' ? p.cardLevels : {}, draftVouchers: Math.max(0,Math.min(99,Number(p.draftVouchers)||0)), activeDraft: p.activeDraft && typeof p.activeDraft==="object" ? p.activeDraft : null, rewardDay: String(p.rewardDay || ''), rewardGemsToday: Math.max(0, Number(p.rewardGemsToday) || 0), lastGameClaimAt: Math.max(0, Number(p.lastGameClaimAt) || 0), eventClaims: p.eventClaims && typeof p.eventClaims === "object" ? p.eventClaims : {}, gameSession: null };
       players.set(player.id, player); tokenToPlayer.set(player.tokenHash, player.id);
     }
   } catch (e) { if (e.code !== "ENOENT") console.error("Could not load player data:", e.message); }
@@ -310,10 +310,13 @@ function normalizeProfile(input = {}) {
 app.post("/api/register", registerLimiter, (req, res) => {
   const profile = normalizeProfile(req.body?.profile);
   const bearer = /^Bearer\s+([a-f0-9]{64})$/i.exec(req.get("authorization") || "");
-  const existingId = bearer && tokenToPlayer.get(hashToken(bearer[1]));
+  const deviceKey = /^[a-f0-9]{64}$/i.test(String(req.body?.deviceKey || "")) ? String(req.body.deviceKey).toLowerCase() : "";
+  const deviceMatch = deviceKey && [...players.values()].find(p => p.deviceKey === deviceKey);
+  const existingId = (bearer && tokenToPlayer.get(hashToken(bearer[1]))) || deviceMatch?.id;
   if (existingId && players.has(existingId)) {
     const existing = players.get(existingId);
     existing.profile = { ...existing.profile, name: profile.name, player: profile.player, goalkeeper: profile.goalkeeper, ovr: profile.ovr };
+    if (deviceKey && (!existing.deviceKey || existing.deviceKey === deviceKey)) existing.deviceKey = deviceKey;
     tokenToPlayer.delete(existing.tokenHash);
     const rotatedToken = crypto.randomBytes(32).toString("hex");
     existing.tokenHash = hashToken(rotatedToken);
@@ -326,7 +329,7 @@ app.post("/api/register", registerLimiter, (req, res) => {
   do { id = "EA-" + crypto.randomBytes(3).toString("hex").toUpperCase() + "-" + crypto.randomBytes(3).toString("hex").toUpperCase(); } while (players.has(id));
   const token = crypto.randomBytes(32).toString("hex");
   const safeNewProfile = normalizeProfile({ name: profile.name, player: profile.player, goalkeeper: profile.goalkeeper, ovr: profile.ovr });
-  const player = { id, tokenHash: hashToken(token), profile: safeNewProfile, friends: new Set(), gems: 250, draftVouchers: 0, activeDraft: null, ownedCards: ['arham'], cardLevels: { arham: 0 }, rewardDay: '', rewardGemsToday: 0, lastGameClaimAt: 0, eventClaims: {}, gameSession: null };
+  const player = { id, tokenHash: hashToken(token), deviceKey, profile: safeNewProfile, friends: new Set(), gems: 250, draftVouchers: 0, activeDraft: null, ownedCards: ['arham'], cardLevels: { arham: 0 }, rewardDay: '', rewardGemsToday: 0, lastGameClaimAt: 0, eventClaims: {}, gameSession: null };
   players.set(id, player);
   tokenToPlayer.set(player.tokenHash, id);
   saveData();
@@ -334,7 +337,7 @@ app.post("/api/register", registerLimiter, (req, res) => {
 });
 app.put("/api/profile", auth, profileLimiter, (req, res) => {
   const incoming = normalizeProfile(req.body?.profile);
-  req.player.profile = { ...req.player.profile, name: incoming.name, player: incoming.player, goalkeeper: incoming.goalkeeper, ovr: incoming.ovr };
+  req.player.profile = incoming;
   saveData();
   res.json({ profile: publicProfile(req.player) });
 });
@@ -674,7 +677,10 @@ app.post("/api/games/complete",auth,gameLimiter,(req,res)=>{
 app.get("/api/leaderboard", auth, (req, res) => {
   const requested=Math.floor(Number(req.query.limit)||1000);
   const limit=Math.max(1,Math.min(1000,requested));
+  const seenProfiles = new Set();
   const board = [...players.values()].map(publicProfile)
+    .filter(p => (p.xp || 0) > 0 || (p.wins || 0) > 0 || (p.goals || 0) > 0 || (p.saves || 0) > 0)
+    .filter(p => { const key = [p.name, p.player, p.goalkeeper, p.xp, p.wins, p.goals, p.saves, p.best].map(v => String(v ?? "").trim().toLowerCase()).join("|"); if (seenProfiles.has(key)) return false; seenProfiles.add(key); return true; })
     .sort((a, b) => b.wins - a.wins || b.xp - a.xp || b.goals - a.goals)
     .slice(0, limit)
     .map((p, index) => ({ rank: index + 1, ...p }));
