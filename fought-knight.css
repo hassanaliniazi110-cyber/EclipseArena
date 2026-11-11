@@ -570,3 +570,23 @@ body .apex-launch-intro .launch-crest{filter:drop-shadow(0 0 22px rgba(109,218,2
 
 /* Keep card details above the animated foil layer for clear readability. */
 .apex-player-card.draft-player-card>.apex-card-top,.apex-player-card.draft-player-card>.apex-card-rarity,.apex-player-card.draft-player-card>.apex-card-crest,.apex-player-card.draft-player-card>.apex-card-footer{position:relative;z-index:5}
+
+
+/* Apex Strikers: vertical-first browsing and a calmer, zoomed-out layout. */
+html,body{max-width:100%;overflow-x:clip;overscroll-behavior-x:none}
+body{touch-action:pan-y pinch-zoom;zoom:.94}
+.app-shell{max-width:1540px;margin-inline:auto}
+section,.career-hub,.featured-market-section,.youtube-panel{scroll-margin-top:16px}
+.player-grid,.apex-card-grid,.mode-grid,.career-hub-columns{min-width:0}
+.apex-card-grid{gap:clamp(10px,1.5vw,18px)}
+.apex-card-grid>*{min-width:0}
+.profile-photo-preview{object-fit:cover;transform-origin:center center;transition:transform .12s ease-out}
+#profilePhotoZoom{width:100%;accent-color:#a9edff;touch-action:pan-x}
+#profilePhotoZoom+ .profile-photo-buttons{margin-top:12px}
+.draft-choice-grid,.apex-card-grid{align-items:stretch}
+.draft-choice-grid .player-card,.apex-card-grid .player-card{isolation:isolate;overflow:hidden;box-shadow:0 12px 34px rgba(0,0,0,.32),0 0 0 1px rgba(126,220,255,.14)}
+.draft-choice-grid .player-card:before,.apex-card-grid .player-card:before{content:"";position:absolute;inset:-40%;pointer-events:none;background:linear-gradient(112deg,transparent 35%,rgba(255,255,255,.2) 48%,rgba(120,225,255,.12) 52%,transparent 65%);transform:translateX(-65%) rotate(8deg);animation:apex-card-foil 4.8s ease-in-out infinite}
+@keyframes apex-card-foil{0%,58%{transform:translateX(-65%) rotate(8deg)}100%{transform:translateX(65%) rotate(8deg)}}
+.apex-launch-intro .launch-emblem,.apex-launch-intro .launch-wordmark{filter:drop-shadow(0 0 18px rgba(114,234,255,.35))}
+@media(max-width:760px){body{zoom:.96}.app-shell{padding-left:12px;padding-right:12px}.career-hub-columns{grid-template-columns:minmax(0,1fr)}.apex-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){.draft-choice-grid .player-card:before,.apex-card-grid .player-card:before{animation:none}}
