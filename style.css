@@ -1187,3 +1187,11 @@ svg line,svg polyline,.chart-line,.stat-line,.player-chart-line,.player-stats sv
   background:#7c341b;
 }
 .player-card-signed .player-rating{color:#ffd18b}
+
+/* Ten-player Icon Reborn draft layout. */
+.draft-choice-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,155px),1fr));gap:14px;align-items:stretch}
+.draft-choice-grid .draft-pick-card{width:100%;min-width:0;min-height:310px}
+.draft-choice-grid .apex-card-portrait{width:100%;height:124px;max-width:150px;overflow:hidden}
+.draft-choice-grid .apex-card-portrait img{width:100%;height:100%;object-fit:cover;object-position:center 15%}
+.draft-choice-grid .draft-choice-heading{grid-column:1/-1}
+@media(max-width:520px){.draft-choice-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.draft-choice-grid .draft-pick-card{min-height:295px;padding:9px}.draft-choice-grid .apex-card-portrait{height:108px}}
