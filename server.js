@@ -83,8 +83,46 @@ const youtubeAdminPlayers = new Set(youtubeAdminPlayerIdConfig
   .filter(value => /^EA-[A-Z0-9]{3,8}-[A-Z0-9]{3,8}$/.test(value)));
 const YOUTUBE_ACCESS_FILE = process.env.YOUTUBE_ACCESS_FILE || path.join(__dirname, "eclipse-youtube-access.json");
 const AUDIT_FILE = process.env.APEX_AUDIT_FILE || path.join(__dirname, "apex-security-audit.jsonl");
+function base32Decode(value) {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  const clean = String(value || "").toUpperCase().replace(/=+$/g, "").replace(/\\s+/g, "");
+  let bits = "";
+  for (const char of clean) {
+    const index = alphabet.indexOf(char);
+    if (index < 0) return null;
+    bits += index.toString(2).padStart(5, "0");
+  }
+  const bytes = [];
+  for (let i = 0; i + 8 <= bits.length; i += 8) bytes.push(parseInt(bits.slice(i, i + 8), 2));
+  return Buffer.from(bytes);
+}
+function verifyAdminTotp(code) {
+  const secret = process.env.APEX_ADMIN_2FA_SECRET || "";
+  if (!/^[A-Z2-7]{32,64}$/i.test(secret)) return false;
+  if (!/^\\d{6}$/.test(String(code || ""))) return false;
+  const key = base32Decode(secret);
+  if (!key || key.length < 20) return false;
+  const counter = Math.floor(Date.now() / 30000);
+  for (let offset = -1; offset <= 1; offset++) {
+    const message = Buffer.alloc(8);
+    message.writeBigUInt64BE(BigInt(counter + offset));
+    const digest = crypto.createHmac("sha1", key).update(message).digest();
+    const position = digest[digest.length - 1] & 15;
+    const binary = ((digest[position] & 127) << 24) |
+      ((digest[position + 1] & 255) << 16) |
+      ((digest[position + 2] & 255) << 8) |
+      (digest[position + 3] & 255);
+    if (String(binary % 1000000).padStart(6, "0") === String(code)) return true;
+  }
+  return false;
+}
 function requireOwner(req, res, next) {
   if (!youtubeAdminPlayers.has(req.player.id)) return res.status(403).json({ error: "Owner access required." });
+  if (!process.env.APEX_ADMIN_2FA_SECRET) return res.status(503).json({ error: "Owner 2FA is not configured. Add APEX_ADMIN_2FA_SECRET in the backend environment." });
+  if (!verifyAdminTotp(req.get("X-Admin-2FA"))) {
+    auditEvent(req.player.id, "owner_2fa_failed");
+    return res.status(401).json({ error: "A valid 6-digit authenticator code is required." });
+  }
   next();
 }
 const ADMIN_GEM_BALANCE = 999999999999999;
@@ -437,10 +475,7 @@ app.post("/api/friends/remove", auth,friendLimiter, (req, res) => {
   res.json({ ok: true });
 });
 // Admin can inspect public player profiles only. Authentication tokens and private account secrets are never returned.
-app.get("/api/admin/players", auth, adminLimiter, (req, res) => {
-  if (!youtubeAdminPlayers.has(req.player.id)) {
-    return res.status(403).json({ error: "Admin access required." });
-  }
+app.get("/api/admin/players", auth, requireOwner, adminLimiter, (req, res) => {
   const all = [...players.values()].map(publicProfile)
     .sort((a, b) => Number(b.online) - Number(a.online) || b.xp - a.xp || a.name.localeCompare(b.name));
   res.json({ players: all, total: all.length, online: all.filter(p => p.online).length });
