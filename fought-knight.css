@@ -756,3 +756,20 @@ section,.career-hub,.featured-market-section,.youtube-panel{scroll-margin-top:16
 .walkout-skip-btn:active{transform:scale(.96);background:rgba(35,54,8,.96)}
 .walkout-skip-btn:focus-visible{outline:3px solid #fff;outline-offset:3px}
 .walkout-skip-btn[hidden]{display:none!important}
+
+/* Full Pool A gallery: complete player items with portraits and visible six-stat panels. */
+.pool-a-gallery{grid-column:1/-1;min-width:0;margin-top:22px;padding:clamp(14px,2.5vw,24px);border:1px solid rgba(199,255,53,.32);border-radius:20px;background:linear-gradient(145deg,rgba(17,31,13,.96),rgba(5,10,8,.98));box-shadow:0 16px 38px rgba(0,0,0,.3)}
+.pool-a-gallery-heading{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:18px}
+.pool-a-gallery-heading span{color:#c7ff35;font:900 .68rem 'Orbitron',sans-serif;letter-spacing:.15em}
+.pool-a-gallery-heading h3{margin:7px 0;color:#f5ffe8;font:1000 clamp(1rem,2.4vw,1.45rem) 'Orbitron',sans-serif}
+.pool-a-gallery-heading p{margin:0;color:#b9c7ad;font-size:.86rem;line-height:1.5}
+.pool-a-gallery-heading>strong{flex:none;padding:9px 12px;border:1px solid rgba(199,255,53,.4);border-radius:999px;color:#d8ff75;font:900 .72rem 'Orbitron',sans-serif}
+.pool-a-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));align-items:start;gap:16px}
+.pool-a-gallery-card{width:100%;min-width:0;cursor:pointer}
+.pool-a-gallery-card .apex-card-stats{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:8px;padding:8px 5px;border-top:1px solid rgba(199,255,53,.3);border-radius:7px;background:rgba(5,15,10,.72)}
+.pool-a-gallery-card .apex-card-stat strong{color:#d7ff65!important}
+.pool-a-gallery-card .apex-card-stat small{color:#d1e4b7!important}
+.pool-a-gallery-card{min-height:370px}
+.pool-a-gallery-card .apex-card-footer{padding-bottom:10px}
+.pool-a-empty{grid-column:1/-1;color:#d6e7c8;text-align:center;padding:22px}
+@media(max-width:620px){.pool-a-card-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.pool-a-gallery-card{min-height:350px}.pool-a-gallery-heading{align-items:flex-start;flex-direction:column}}
