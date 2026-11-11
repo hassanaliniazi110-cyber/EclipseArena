@@ -40,22 +40,38 @@ This starter stores profiles and friends in memory, so data can be lost when the
 - After updating `server.js`, upload/redeploy the backend on Wispbyte and restart it. GitHub Pages changes alone do not update the API.
 
 
-## Apex Strikers security and events update
+## Apex Strikers owner security update
 
-- Owner moderation actions for YouTube access requests now require authenticator-based two-step verification. The authenticator secret is encrypted at rest with AES-256-GCM, and successful verification creates a short-lived 10-minute admin session.
-- Add `APEX_2FA_ENCRYPTION_KEY` to the backend host environment before enrolling. It must be exactly 64 hexadecimal characters (32 random bytes). Generate a fresh value on the server with:
-  ```sh
-  node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-  ```
-  Keep the value private, store it in the host's environment settings, and never commit it to GitHub. Keep `apex-admin-2fa.json` on persistent private server storage; losing the key or file can prevent authenticator decryption.
-- In the YouTube Area owner panel, choose **SET UP AUTHENTICATOR**, add the displayed setup key to an authenticator app, then enter its current six-digit code and press **VERIFY**. Owner request review and approval are locked until this succeeds.
-- The app already applies a global API rate limit, registration/invite/profile limits, strict CORS, Helmet, small JSON request limits, audit logging, and limits on concurrent Socket.IO connections and state packets. These are application-level protections, not OS-level Fail2ban. Installing Fail2ban itself requires supported Linux host access and administrator privileges.
+### Owner two-factor authentication (2FA)
+
+Owner-only actions, including viewing pending YouTube access requests and accepting or declining them, require a current six-digit authenticator code (TOTP). The server reads the private secret from the backend environment variable `APEX_ADMIN_2FA_SECRET`. This implementation uses a Base32 secret, not a hexadecimal key.
+
+1. On a trusted computer, generate a fresh secret with Node.js:
+   ```sh
+   node -e "const b=require('crypto').randomBytes(20),a='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';let bits=[...b].map(x=>x.toString(2).padStart(8,'0')).join(''),s='';for(let i=0;i<bits.length;i+=5)s+=a[parseInt(bits.slice(i,i+5).padEnd(5,'0'),2)];console.log(s)"
+   ```
+2. In Wispbyte, open the backend server's **Environment Variables** (or Startup environment) settings. Add `APEX_ADMIN_2FA_SECRET` and paste the generated Base32 value as its value. Do not add quotes or spaces.
+3. In the same settings, set `YOUTUBE_ADMIN_PLAYER_IDS` to the owner player ID, for example `EA-4CD88B-8126BD`. Use commas to separate multiple owner IDs.
+4. Open an authenticator app, choose **Add account** / **Enter setup key**, name it **Apex Strikers Owner**, paste the same Base32 secret, and select **Time-based** (TOTP).
+5. Save the environment variables and restart the Wispbyte backend.
+6. Reconnect to Apex Strikers using the configured owner player ID. When the owner request queue or an owner action is opened, enter the current six-digit code shown by the authenticator app.
+
+Codes normally change every 30 seconds. Keep the authenticator device's date and time set automatically. Never put the secret in `config.js`, frontend code, a public repository, a screenshot, or a chat message. Do not share the six-digit codes.
+
+**Important:** a hexadecimal value generated with `crypto.randomBytes(32).toString('hex')` is not the right format for this implementation. Use the Base32 generator above and the exact variable name `APEX_ADMIN_2FA_SECRET`. There is no in-game secret-enrollment button in this version. Normal players can still submit a YouTube access request without entering the owner's code.
+
+This protects owner moderation/admin actions. It does not add email-and-password sign-in or require 2FA for every regular player account. Keep two-factor authentication enabled on the GitHub account that can edit this repository as well.
+
+### Other security and gameplay protections
+
+- The app applies a global API rate limit, registration/invite/profile limits, strict CORS, Helmet, small JSON request limits, audit logging, and limits on concurrent Socket.IO connections and state packets. These are application-level protections, not OS-level Fail2ban. Installing Fail2ban itself requires supported Linux host access and administrator privileges.
 - Gem packs use guaranteed, non-random player unlocks; duplicates increase card upgrade levels. Gems are earned through completed game sessions and have a daily cap. Packs do not accept real-money payments.
 - Featured event entry sends the selected event ID to the server. Event bonuses are only issued for the matching selected event, not simply for playing the same mode elsewhere.
 - Player portraits are real photos from Wikimedia Commons. Their photographer and licence credits are shown in the Apex Market. Each image remains subject to its individual licence and attribution terms.
 - Match rewards have server-side session timing, cooldowns, and daily caps, but this is not full anti-cheat: authoritative gameplay validation still requires server-simulated match actions.
 
 After updating `server.js`, `script.js`, `index.html`, or `style.css`, redeploy the frontend and restart/redeploy the Wispbyte backend. GitHub commits do not automatically deploy the Wispbyte API.
+
 
 
 ## Apex Draft Room
@@ -65,5 +81,5 @@ After updating `server.js`, `script.js`, `index.html`, or `style.css`, redeploy 
 - The server stores voucher balances and active drafts, checks that the selected card was actually offered, and upgrades duplicate picks.
 - An active draft expires after five minutes. If a player leaves and returns before expiry, the same draft remains available.
 - Voucher purchases and draft picks are logged in the server audit trail.
-- Owner two-step verification uses standard TOTP (6 digits, 30-second period), compatible with Google Authenticator and Microsoft Authenticator. In either app, choose to add an account using a setup key, enter the secret shown once, then type the current six-digit code in Apex Strikers.
+- Owner two-step verification uses the Base32 secret configured in the Wispbyte environment variable `APEX_ADMIN_2FA_SECRET`. Enter that same key manually into a TOTP authenticator app; Apex Strikers prompts for the current six-digit code during owner-only actions.
 - The opening cinematic now uses staggered letter fades and runs for about 8.35 seconds before fading away.
