@@ -644,13 +644,13 @@ const goalkeepers = [
       const catalog=Object.fromEntries((data.cardCatalog||[]).map(card=>[card.id,[
         card.name,card.ovr,card.position,card.country,card.flag,card.image||"",
         card.stats||{PAC:Math.max(45,Number(card.ovr||80)-2),SHO:Math.max(45,Number(card.ovr||80)-1),PAS:Math.max(45,Number(card.ovr||80)-4),DRI:Math.max(45,Number(card.ovr||80)-3),DEF:Math.max(35,Number(card.ovr||80)-20),PHY:Math.max(45,Number(card.ovr||80)-7)},
-        card.club||"APEX FC"
+        card.club||"Club unverified",card.careerStatus||"Needs verification"
       ]]));
       if(catalog.arham){const savedPhoto=readSavedProfile().photo||"";catalog.arham[5]=isValidPlayerPhoto(savedPhoto)?savedPhoto:makePlayerAvatarData(catalog.arham[0],catalog.arham[2]);}
       const cardRarityMap=Object.fromEntries((data.cardCatalog||[]).map(card=>[card.id,card.rarity]));
       const rarityFor=id=>cardRarityMap[id]||(["messi","ronaldo","figo"].includes(id)?"ICON":"ELITE");
       const makeCard=(p,extraClass="")=>{
-        const info=catalog[p.id]||[p.name,p.ovr,p.position,p.country,p.flag,"",{},"APEX FC"];
+        const info=catalog[p.id]||[p.name,p.ovr,p.position,p.country,p.flag,"",{},"Club unverified","Needs verification"];
         const card=document.createElement("article");
         card.className="apex-player-card draft-player-card "+(p.rarity==="ICON"?"icon ":p.rarity==="GAME CHANGERS"?"game-changers ":"elite ")+(extraClass||"");
         card.dataset.player=p.id||"";
@@ -676,7 +676,8 @@ const goalkeepers = [
         const country=document.createElement("small");country.className="apex-card-country";
         const flagMap={SA:"🇸🇦",AR:"🇦🇷",PT:"🇵🇹",FR:"🇫🇷",ES:"🇪🇸",NO:"🇳🇴",EN:"🏴",EG:"🇪🇬",BE:"🇧🇪",BR:"🇧🇷",HR:"🇭🇷",KR:"🇰🇷",PL:"🇵🇱",SE:"🇸🇪",UY:"🇺🇾",WA:"🏴",DE:"🇩🇪"};
         country.textContent=(flagMap[info[4]]||"⚽")+"  "+info[3];
-        const club=document.createElement("small");club.className="apex-card-club";club.textContent=info[7]||"APEX FC";
+        const club=document.createElement("small");club.className="apex-card-club";club.textContent=info[7]||"Club unverified";
+        const playerStatus=document.createElement("small");playerStatus.className="apex-card-status";playerStatus.textContent=info[8]||"Needs verification";
         const stats=document.createElement("div");stats.className="apex-card-stats";
         const statData=info[6]||{};
         ["PAC","SHO","PAS","DRI","DEF","PHY"].forEach(label=>{
@@ -685,7 +686,7 @@ const goalkeepers = [
           const key=document.createElement("small");key.textContent=label;item.append(value,key);stats.appendChild(item);
         });
         const brand=document.createElement("small");brand.className="apex-card-brand";brand.textContent="APEX STRIKERS · PLAYER ITEM";
-        footer.append(name,country,club,stats,brand);
+        footer.append(name,country,club,playerStatus,stats,brand);
         card.append(portrait,foil,top,rarity,crest,footer);
         card.setAttribute("tabindex","0");
         card.setAttribute("role","button");
@@ -695,10 +696,9 @@ const goalkeepers = [
         return card;
       };
       const showSigningReveal=pick=>{
-        const info=catalog[pick.id]||[pick.name,pick.ovr,pick.position,pick.country,pick.flag,"",{},"APEX FC"];
-        const name=String(info[0]||pick.name||"PLAYER"),club=String(info[7]||pick.club||"CLUB"),countryName=String(info[3]||pick.country||"COUNTRY"),positionName=String(pick.position||info[2]||"PLAYER");
+        const info=catalog[pick.id]||[pick.name,pick.ovr,pick.position,pick.country,pick.flag,"",{},"Club unverified"];
+        const name=String(info[0]||pick.name||"PLAYER"),club=String(info[7]||pick.club||"Club unverified"),careerStatus=String(info[8]||"Needs verification"),countryName=String(info[3]||pick.country||"COUNTRY"),positionName=String(pick.position||info[2]||"PLAYER");
         const flagMap={SA:"🇸🇦",AR:"🇦🇷",PT:"🇵🇹",FR:"🇫🇷",ES:"🇪🇸",NO:"🇳🇴",EN:"🏴",EG:"🇪🇬",BE:"🇧🇪",BR:"🇧🇷",HR:"🇭🇷",KR:"🇰🇷",PL:"🇵🇱",SE:"🇸🇪",UY:"🇺🇾",WA:"🏴",DE:"🇩🇪",IT:"🇮🇹",NL:"🇳🇱",SU:"☭"};
-        const icon=String(pick.rarity||"").toUpperCase()==="ICON";
         const overlay=document.createElement("div");overlay.className="apex-signing-overlay apex-fullscreen-walkout apex-walkout-cinema";overlay.setAttribute("role","dialog");overlay.setAttribute("aria-modal","true");overlay.setAttribute("aria-label","Player pack cinematic reveal");
         const stage=document.createElement("div");stage.className="apex-signing-stage apex-fullscreen-stage apex-cinema-stage";
         const stadium=document.createElement("div");stadium.className="walkout-stadium";const roof=document.createElement("div");roof.className="walkout-roof";const crowd=document.createElement("div");crowd.className="walkout-crowd";const pitch=document.createElement("div");pitch.className="walkout-pitch";const spotlight=document.createElement("div");spotlight.className="walkout-spotlight";const flash=document.createElement("div");flash.className="walkout-flash";
@@ -706,7 +706,7 @@ const goalkeepers = [
         const kicker=document.createElement("p");kicker.className="walkout-cinema-kicker";kicker.textContent="A NEW LEGEND ENTERS THE ARENA";const phase=document.createElement("div");phase.className="walkout-phase";phase.textContent="THE REVEAL";
         const headline=document.createElement("h2");headline.className="walkout-headline";headline.textContent="WHO'S THE PLAYER?";const detail=document.createElement("div");detail.className="walkout-identity";
         const makeReveal=(cls,label,value)=>{const el=document.createElement("div");el.className=cls+" walkout-reveal-line";const small=document.createElement("span");small.className="walkout-mini-label";small.textContent=label;const strong=document.createElement("strong");strong.textContent=value;el.append(small,strong);return el;};
-        const country=makeReveal("walkout-country","NATIONALITY",(flagMap[info[4]]||"🌍")+"  "+countryName),team=makeReveal("walkout-team","CLUB / TEAM",club),status=makeReveal("walkout-status","PLAYER STATUS",icon?"ICON / FOOTBALL LEGEND":"ACTIVE PLAYER"),position=makeReveal("walkout-position","POSITION",positionName);
+        const country=makeReveal("walkout-country","NATIONALITY",(flagMap[info[4]]||"🌍")+"  "+countryName),team=makeReveal("walkout-team","CLUB / TEAM",club),status=makeReveal("walkout-status","PLAYER STATUS",careerStatus),position=makeReveal("walkout-position","POSITION",positionName);
         const silhouette=document.createElement("div");silhouette.className="walkout-player-silhouette";silhouette.innerHTML="<span></span><i></i><b>?</b>";
         const card=makeCard(pick,"signing-hero-card walkout-final-card");card.hidden=true;const reward=document.createElement("div");reward.className="walkout-reward-stamp";reward.textContent=pick.duplicate?(pick.upgraded?"DUPLICATE · LEVEL "+pick.level:"DUPLICATE PLAYER"):"NEW PLAYER SIGNED";
         const close=document.createElement("button");close.type="button";close.className="apex-signing-continue walkout-continue";close.textContent="CLAIM PLAYER  ↗";close.addEventListener("click",()=>overlay.remove());
