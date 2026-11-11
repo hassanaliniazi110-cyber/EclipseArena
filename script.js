@@ -696,7 +696,7 @@ const goalkeepers = [
       (method==="POST"&&/^\/api\/youtube\/requests\/[^/]+\/decision$/.test(path));
     const headers={"Content-Type":"application/json",...(opts.headers||{})};
     if(needsOwnerCode&&!headers["X-Admin-2FA"]){
-      const entered=window.prompt("OWNER SECURITY CHECK\\nEnter the current 6-digit code from your authenticator app:");
+      const entered=window.prompt("OWNER SECURITY CHECK\nEnter the current 6-digit code from your authenticator app:");
       const code=String(entered||"").trim();
       if(!/^\d{6}$/.test(code))return Promise.reject(new Error("Owner verification cancelled. Enter a 6-digit authenticator code."));
       headers["X-Admin-2FA"]=code;
