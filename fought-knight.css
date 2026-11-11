@@ -182,3 +182,148 @@ h2,
 .fc-attributes,.fc-attributes *,.player-rating,.player-role,.player-special,.player-stats,.player-stats *,.player-stat,.player-stat *,.stat-value,.stat-label,.player-card .stats,.player-card .stats *{color:#c7ff4a!important;border-color:rgba(199,255,74,.55)!important;accent-color:#c7ff4a!important}
 .fc-attributes i,.fc-attributes em,.stat-bar-fill,.player-stat-fill,.stat-fill,.attribute-fill,.player-card .fill{background:#c7ff4a!important;background-image:none!important}
 .player-card,.player-collect-card,.mode-card,.freekick,.longshot,.goalie{--player-glow:rgba(199,255,74,.12)!important;--card-glow:rgba(199,255,74,.12)!important}
+
+
+/* APEX SEASON POLISH: cinematic blue-violet intro and premium player items. */
+.intro-splash{
+  background:radial-gradient(ellipse at 50% 44%,#102d50 0%,#0a1022 42%,#03050d 82%)!important;
+}
+.intro-splash:before{
+  background:radial-gradient(ellipse at 50% 48%,rgba(68,205,255,.2),transparent 38%),radial-gradient(ellipse at 50% 90%,rgba(133,99,255,.13),transparent 48%)!important;
+}
+.intro-particles,.intro-pitch-grid,.intro-featured-card{display:none!important}
+.intro-orbit,.intro-orbit-a,.intro-orbit-b{
+  border-color:rgba(92,222,255,.45)!important;
+  box-shadow:0 0 32px rgba(69,193,255,.16),inset 0 0 26px rgba(122,115,255,.1)!important;
+}
+.intro-emblem{
+  background:linear-gradient(145deg,#a7f5ff,#5fcaff 48%,#7478ff)!important;
+  color:#061322!important;
+  box-shadow:0 0 42px rgba(77,210,255,.55),0 0 100px rgba(104,103,255,.25)!important;
+}
+.intro-wordmark{color:#f2f7ff!important;text-shadow:0 0 24px rgba(76,210,255,.28)!important}
+.intro-wordmark b{color:#80eaff!important}
+.intro-caption{color:#c4d9f5!important}
+.intro-event-line{color:#c1aaff!important}
+.intro-final-line{color:#83eaff!important}
+.intro-skip-line{color:#a9b7d2!important}
+.intro-progress{background:rgba(139,177,220,.15)!important}
+.intro-progress span{background:linear-gradient(90deg,#62e6ff,#8580ff)!important;box-shadow:0 0 16px rgba(98,230,255,.55)!important}
+
+/* Player selection: clean portrait cards; attributes appear only after tapping. */
+.player-card{
+  display:grid!important;grid-template-columns:minmax(76px,34%) minmax(0,1fr);
+  align-items:stretch;gap:12px;min-height:150px!important;padding:10px!important;
+  border:1px solid rgba(104,207,255,.28)!important;border-radius:14px!important;
+  background:linear-gradient(145deg,#14263b 0%,#0a1424 62%,#101a31 100%)!important;
+  box-shadow:0 10px 28px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.07)!important;
+  transition:transform .2s,border-color .2s,box-shadow .2s!important;
+}
+.player-card:hover{transform:translateY(-3px);border-color:rgba(105,226,255,.72)!important}
+.player-card.selected{border-color:#76e8ff!important;box-shadow:0 0 0 1px #76e8ff,0 0 22px rgba(85,207,255,.2)!important}
+.player-card-photo{
+  position:relative!important;width:100%!important;height:100%!important;min-height:126px;
+  object-fit:cover!important;object-position:center 20%;border-radius:9px!important;
+  background:linear-gradient(150deg,#294c6a,#111b30)!important;
+}
+.player-card-copy{position:relative;z-index:2;min-width:0;text-align:left}
+.player-rating{color:#8cecff!important;font:900 30px 'Orbitron',sans-serif!important}
+.player-role{color:#b5c9e2!important}
+.player-name{color:#f5f8ff!important}
+.player-special{color:#9eafd0!important}
+.fc-attributes{display:none!important}
+.player-card.show-stats .fc-attributes{
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:5px;margin-top:10px;padding-top:9px;border-top:1px solid rgba(116,207,255,.25);
+}
+.player-card.show-stats .fc-attributes span{
+  display:flex;justify-content:space-between;gap:4px;padding:4px 5px;
+  border-radius:5px;background:rgba(93,175,230,.1);font-size:9px;
+}
+.player-card.show-stats .fc-attributes b{color:#9eb7d8!important}
+.player-card.show-stats .fc-attributes strong{color:#91edff!important}
+.player-card:not(.show-stats) .player-special:after{
+  content:' · TAP FOR STATS';color:#72dff5;font-size:8px;font-weight:800;letter-spacing:.04em;
+}
+.player-card.show-stats{min-height:196px!important}
+.player-card:after{display:none!important}
+
+/* FC-inspired draft items: darker chrome, layered portrait and rarity-specific glow. */
+.apex-player-card.draft-player-card{
+  position:relative;isolation:isolate;overflow:hidden;
+  border:1.5px solid rgba(108,220,255,.72)!important;border-radius:16px!important;
+  color:#eff8ff!important;
+  background:linear-gradient(155deg,#254b6d 0%,#12253d 38%,#091426 78%,#18233e 100%)!important;
+  box-shadow:0 14px 34px rgba(0,0,0,.48),inset 0 1px rgba(255,255,255,.18),0 0 20px rgba(73,190,255,.12)!important;
+  transform-style:preserve-3d;
+}
+.apex-player-card.draft-player-card:before{
+  content:"";position:absolute;inset:5px;border:1px solid rgba(166,233,255,.3);
+  border-radius:11px;pointer-events:none;z-index:4;
+}
+.apex-player-card.draft-player-card.elite{
+  background:linear-gradient(155deg,#285b83 0%,#17334f 42%,#091426 100%)!important;
+  border-color:#75d8ff!important;
+}
+.apex-player-card.draft-player-card.icon{
+  background:linear-gradient(155deg,#fff1c7 0%,#b99c62 32%,#554b3b 72%,#17243a 100%)!important;
+  border-color:#f4dfa2!important;color:#111c2a!important;
+  box-shadow:0 14px 36px #0008,0 0 26px rgba(255,218,133,.2)!important;
+}
+.apex-player-card.draft-player-card.game-changers{
+  background:linear-gradient(150deg,#d7c4ff 0%,#7257b9 23%,#24365d 58%,#091426 100%)!important;
+  border-color:#c4a8ff!important;
+  box-shadow:0 14px 38px #0009,0 0 30px rgba(166,117,255,.3)!important;
+}
+.apex-card-top{color:#f4fbff!important}
+.apex-card-rating{color:#fff!important;text-shadow:0 2px 12px rgba(40,180,255,.4)!important}
+.apex-card-position{background:#091b31!important;color:#b8f4ff!important;border:1px solid rgba(142,224,255,.5)}
+.apex-card-rarity{color:#b8edff!important;letter-spacing:.16em!important}
+.apex-card-portrait{
+  background:radial-gradient(ellipse at 50% 20%,#9ec8dc,#344f69 60%,#14263b)!important;
+  border:1px solid rgba(220,245,255,.2)!important;
+}
+.apex-card-portrait img{
+  width:100%!important;height:100%!important;object-fit:cover!important;object-position:center 18%;
+  mix-blend-mode:normal;mask-image:linear-gradient(to bottom,#000 76%,rgba(0,0,0,.88) 88%,transparent 100%);
+}
+.apex-card-footer{color:#f4f8ff!important}
+.apex-card-name{color:#fff!important;text-shadow:0 2px 8px #0008}
+.apex-card-country,.apex-card-club{color:#c2d5eb!important}
+.apex-card-stats{display:none!important}
+.apex-player-card.show-stats .apex-card-stats{
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;
+  margin-top:8px;padding:8px 5px;border-top:1px solid rgba(170,220,255,.28);
+  border-radius:7px;background:rgba(5,15,30,.68);
+}
+.apex-card-stat strong{color:#9beaff!important;font:900 .8rem 'Orbitron',sans-serif!important}
+.apex-card-stat small{color:#b8cce2!important;font-weight:800}
+.apex-card-tap-hint{display:block;color:#9deaff;font:800 .48rem 'Orbitron',sans-serif;letter-spacing:.1em;text-align:center}
+.apex-player-card.show-stats{min-height:340px}
+.draft-choice-grid{
+  grid-template-columns:repeat(auto-fit,minmax(170px,1fr))!important;
+  align-items:start;gap:16px!important;
+}
+.draft-choice-grid .draft-pick-card{min-height:392px!important}
+.draft-choice-warning{
+  grid-column:1/-1;padding:12px;border:1px solid #ffcf75;border-radius:9px;
+  color:#ffe4ae;background:rgba(255,190,80,.08);font-weight:800;
+}
+.draft-choice-grid .draft-select-btn{
+  border:1px solid #a9efff!important;
+  background:linear-gradient(110deg,#a8f3ff,#5ab8f5 52%,#8584ff)!important;
+  color:#07182a!important;box-shadow:0 5px 18px rgba(71,194,255,.18);
+}
+.draft-choice-grid .draft-select-btn:hover{filter:brightness(1.12);box-shadow:0 8px 24px rgba(71,194,255,.32)}
+.draft-best-pull-card{border-color:#fff0ae!important;box-shadow:0 0 0 1px #fff0ae,0 0 30px rgba(255,221,133,.35),0 16px 38px #000b!important}
+.draft-best-pull-badge{background:linear-gradient(100deg,#fff1ba,#f1c76e)!important;color:#1b2230!important}
+@media(max-width:700px){
+  .player-card{grid-template-columns:76px minmax(0,1fr);gap:9px}
+  .player-card-photo{min-height:116px}
+  .draft-choice-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+  .apex-player-card.draft-player-card{width:100%!important;min-height:270px!important}
+  .draft-choice-grid .draft-pick-card{min-height:370px!important}
+}
+@media(min-width:701px) and (max-width:1100px){
+  .draft-choice-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
