@@ -368,9 +368,29 @@ app.post("/api/register", registerLimiter, (req, res) => {
   res.status(201).json({ playerId: id, token });
 });
 app.put("/api/profile", auth, profileLimiter, (req, res) => {
-  const incoming = normalizeProfile(req.body?.profile);
-  req.player.profile = incoming;
+  const rawProfile = req.body?.profile && typeof req.body.profile === "object" ? req.body.profile : {};
+  const incoming = normalizeProfile(rawProfile);
+
+  // Progress and leaderboard statistics are server-owned. Never let a browser
+  // write XP, goals, saves, wins, best score, or OVR directly.
+  const protectedFields = ["xp", "goals", "saves", "wins", "best", "ovr"];
+  const attemptedStatEdit = protectedFields.some(field =>
+    Object.prototype.hasOwnProperty.call(rawProfile, field) &&
+    Number(rawProfile[field]) !== Number(req.player.profile[field])
+  );
+  if (attemptedStatEdit) {
+    auditEvent(req.player.id, "blocked_profile_stat_edit");
+  }
+
+  // Only allow ordinary profile choices to be changed by the player.
+  req.player.profile = {
+    ...req.player.profile,
+    name: incoming.name,
+    player: incoming.player,
+    goalkeeper: incoming.goalkeeper
+  };
   saveData();
+  res.set("Cache-Control", "no-store");
   res.json({ profile: publicProfile(req.player) });
 });
 app.get("/api/friends", auth, (req, res) => {
