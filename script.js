@@ -252,7 +252,7 @@ const goalkeepers = [
   function playCue(kind){if(!soundOn)return;const ac=getMusicContext();if(!ac)return;try{ac.resume();const t=ac.currentTime+.01;if(kind==="goal"){tone(523,.12,"triangle",.05,t);tone(659,.16,"triangle",.045,t+.12);tone(784,.22,"triangle",.04,t+.25);}else{tone(220,.14,"sine",.035,t);tone(165,.18,"sine",.025,t+.12);}}catch(_){}}
   function resizeCanvas(){
     const rect=canvas.getBoundingClientRect();if(!rect.width)return;
-    const dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.width/1.36*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);cw=rect.width;ch=rect.width/1.36;drawPitch();
+    const dpr=Math.min(window.devicePixelRatio||1,1.75);canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.width/1.36*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);cw=rect.width;ch=rect.width/1.36;drawPitch();
   }
   function drawFootballer(cx,cy,size,rotation,jersey,isKeeper,playerName){
     const name=playerName||"",known={
@@ -533,13 +533,13 @@ const goalkeepers = [
       const safeScore=Math.max(0,Math.min(5000,Math.floor(Number(finalScore)||0)));
       const data=await api("/api/games/complete",{method:"POST",body:JSON.stringify({sessionId,score:safeScore})});
       activeRewardSessionId=null;activeRewardSessionPromise=null;
-      updateTopGemBalance(data.gems);
-      const storeBalance=$("apexGemCount");if(storeBalance)storeBalance.textContent="◇ "+Number(data.gems).toLocaleString()+" GEMS";
+      updateTopGemBalance(data.gems,data.unlimitedGems);
+      const storeBalance=$("apexGemCount");if(storeBalance)storeBalance.textContent=data.unlimitedGems?"∞ GEMS · ADMIN WALLET":"◇ "+Number(data.gems).toLocaleString()+" GEMS";
       if(data.eventXp){career.xp+=data.eventXp;career.unlockXP=(career.unlockXP||0)+data.eventXp;saveCareer();api("/api/profile",{method:"PUT",body:JSON.stringify({profile:onlineProfile()})}).catch(()=>{});}
       if(data.eventCard){
         syncOwnedCardsToRoster(data.ownedCards,[data.eventCard]);
         renderCareerHub();
-        toast("GAME CHANGERS SIGNED · "+data.eventCard.name+" · "+data.eventCard.ovr+" OVR");
+        toast((data.eventId==="apex-ascension"?"APEX ASCENSION SIGNED · ":"GAME CHANGERS SIGNED · ")+data.eventCard.name+" · "+data.eventCard.ovr+" OVR");
       }else{
         renderCareerHub();
         toast("+"+data.reward+" GEMS EARNED · "+data.gems+" TOTAL");
@@ -577,8 +577,8 @@ const goalkeepers = [
   if($("saveProfilePhotoBtn"))$("saveProfilePhotoBtn").addEventListener("click",()=>{if(!pendingPhoto){setServerStatus("Choose a photo first.");return;}try{const img=pendingPhoto,w=img.naturalWidth||img.width,h=img.naturalHeight||img.height,side=Math.min(w,h),zoom=Math.max(1,Math.min(2.5,Number(photoZoom.value||1))),crop=side/zoom,canvas=document.createElement("canvas");canvas.width=256;canvas.height=256;const ctx=canvas.getContext("2d");if(!ctx)throw new Error("Photo editor unavailable");ctx.drawImage(img,(w-crop)/2,(h-crop)/2,crop,crop,0,0,256,256);const p=readSavedProfile();p.photo=canvas.toDataURL("image/jpeg",.78);p.name=currentDisplayName();if(!writeSavedProfile(p))throw new Error("Storage full or blocked");displayPhoto(p.photo);photoPreview.style.transform="";pendingPhoto=null;photoInput.value="";setServerStatus("Profile photo saved on this device.");}catch(e){setServerStatus("Could not save photo: "+e.message);}});
   if($("removeProfilePhotoBtn"))$("removeProfilePhotoBtn").addEventListener("click",()=>{const p=readSavedProfile();p.photo="";if(!writeSavedProfile(p)){setServerStatus("Could not update browser storage.");return;}pendingPhoto=null;if(photoInput)photoInput.value="";displayPhoto("");setServerStatus("Profile photo removed.");});
   function onlineProfile(){return {name:currentDisplayName(),xp:career.xp,goals:career.goals,saves:career.saves,wins:career.tournamentWins,best:career.bestScore,player:selectedPlayer,goalkeeper:selectedGoalkeeper,ovr:Math.min(99,92+Math.floor(career.xp/500))};}
-  function updateTopGemBalance(value){const badge=$("topGemBalance");if(badge&&Number.isFinite(Number(value)))badge.textContent="◇ "+Number(value).toLocaleString()+" GEMS";}
-  async function refreshTopGemBalance(){if(!onlineCfg.base||!onlineCfg.token){updateTopGemBalance("--");return;}try{const data=await api("/api/store");updateTopGemBalance(data.gems);}catch(_){const badge=$("topGemBalance");if(badge)badge.textContent="◇ GEMS";}}
+  function updateTopGemBalance(value,unlimited=false){const badge=$("topGemBalance");if(!badge)return;if(unlimited){badge.textContent="∞ GEMS";badge.setAttribute("aria-label","Admin wallet: unlimited gems");return;}if(Number.isFinite(Number(value)))badge.textContent="◇ "+Number(value).toLocaleString()+" GEMS";}
+  async function refreshTopGemBalance(){if(!onlineCfg.base||!onlineCfg.token){updateTopGemBalance("--");return;}try{const data=await api("/api/store");updateTopGemBalance(data.gems,data.unlimitedGems);}catch(_){const badge=$("topGemBalance");if(badge)badge.textContent="◇ GEMS";}}
   function updateCareerVoucherBalance(value){const badge=$("careerDraftVoucherBalance");if(badge)badge.textContent="◇ DRAFT VOUCHERS: "+(Number.isFinite(Number(value))?Number(value):0);}
   async function refreshCareerVoucherBalance(){const badge=$("careerDraftVoucherBalance");if(!onlineCfg.base||!onlineCfg.token){if(badge)badge.textContent="◇ DRAFT VOUCHERS: CONNECT ONLINE";return;}try{const data=await api("/api/store");updateCareerVoucherBalance(data.draftVouchers||0);}catch(_){if(badge)badge.textContent="◇ DRAFT VOUCHERS: UNAVAILABLE";}}
   async function loadApexStore(){
@@ -586,7 +586,7 @@ const goalkeepers = [
     panel.innerHTML='<section class="apex-draft-market"><div class="draft-market-kicker">APEX STRIKERS · PLAYER EXCHANGE</div><h3>THE DRAFT ROOM</h3><p>Exchange gems for a Draft Voucher. Each voucher reveals ten player cards. Choose ONE to sign. Duplicate picks upgrade your existing card.</p><div class="apex-store-head"><strong>YOUR WALLET</strong><span class="apex-gem-count" id="apexGemCount">Loading...</span></div><div class="draft-wallet-line"><span id="apexVoucherCount">◇ -- DRAFT VOUCHERS</span><span>150 GEMS = 1 VOUCHER</span></div><div class="apex-pack-row draft-voucher-actions"><button class="apex-pack draft-buy" id="buyDraftVoucher"><strong>GET DRAFT VOUCHER</strong><span>150 GEMS · 1 VOUCHER</span><small>Build your next signing shortlist.</small></button><button class="apex-pack draft-start" id="startPlayerDraft"><strong>ENTER THE DRAFT</strong><span>1 VOUCHER · 10 PLAYER PICKS</span><small>Choose one card to add to your squad.</small></button></div><p id="apexPackStatus" class="career-hub-status" aria-live="polite"></p><div id="apexDraftChoices" class="apex-card-grid draft-choice-grid"></div><div id="apexPackReveal" class="apex-card-grid"></div></section><p class="apex-photo-credit">Player photographs: Wikimedia Commons. Credits and licence information are listed here: <a href="https://geofootballguessr.com/image-credits" target="_blank" rel="noopener noreferrer">photo credits</a>.</p><h4>YOUR SIGNED PLAYERS</h4><div id="apexOwnedCards" class="apex-card-grid"></div>';
     if(!onlineCfg.base||!onlineCfg.token){$("apexGemCount").textContent="Connect online to sync gems";$("apexVoucherCount").textContent="Connect to view vouchers";updateCareerVoucherBalance("CONNECT ONLINE");return;}
     try{
-      const data=await api("/api/store");$("apexGemCount").textContent="◇ "+data.gems+" GEMS";updateTopGemBalance(data.gems);updateCareerVoucherBalance(data.draftVouchers||0);$("apexVoucherCount").textContent="◇ "+(data.draftVouchers||0)+" DRAFT VOUCHERS";syncOwnedCardsToRoster(data.ownedCards,data.cardCatalog);
+      const data=await api("/api/store");$("apexGemCount").textContent=data.unlimitedGems?"∞ GEMS · ADMIN WALLET":"◇ "+Number(data.gems).toLocaleString()+" GEMS";updateTopGemBalance(data.gems,data.unlimitedGems);updateCareerVoucherBalance(data.draftVouchers||0);$("apexVoucherCount").textContent="◇ "+(data.draftVouchers||0)+" DRAFT VOUCHERS";syncOwnedCardsToRoster(data.ownedCards,data.cardCatalog);
       const photoUrl=slug=>"https://geofootballguessr.com/footballers/"+slug+".webp";
       const catalog=Object.fromEntries((data.cardCatalog||[]).map(card=>[card.id,[
         card.name,card.ovr,card.position,card.country,card.flag,card.image||"",
@@ -677,11 +677,12 @@ const goalkeepers = [
     const stamp=document.createElement("small");stamp.className="apex-leaderboard-updated";stamp.textContent="UPDATED "+(updatedAt?new Date(updatedAt).toLocaleTimeString():"JUST NOW")+" · AUTO-REFRESHES EVERY 60 SECONDS";boardBox.appendChild(stamp);
   }
   async function refreshApexLeaderboard(){const boardBox=$("apexLeaderboard");if(!boardBox||!onlineCfg.base||!onlineCfg.token||apexLeaderboardLoading)return;apexLeaderboardLoading=true;try{const boardData=await api("/api/leaderboard?limit=1000",{cache:"no-store"});apexLeaderboardData=(boardData.leaderboard||[]).slice(0,1000);apexLeaderboardVisible=Math.max(50,Math.min(1000,apexLeaderboardVisible));drawApexLeaderboard(boardBox,boardData.updatedAt);}catch(error){const note=document.createElement("small");note.className="apex-leaderboard-updated";note.textContent="Could not refresh leaderboard. Will retry in 60 seconds.";if(boardBox&&!boardBox.querySelector(".apex-leaderboard-updated"))boardBox.appendChild(note);}finally{apexLeaderboardLoading=false;}}
-  function startApexLeaderboardRefresh(){if(apexLeaderboardTimer)return;apexLeaderboardTimer=setInterval(refreshApexLeaderboard,60000);}
+  function startApexLeaderboardRefresh(){if(apexLeaderboardTimer)return;apexLeaderboardTimer=setInterval(()=>{if(!document.hidden)refreshApexLeaderboard();},60000);}
   async function loadApexLiveHub(){
     const eventBox=$("apexEvents"),modal=$("eventsModal");
     const localEvents=[
       {id:"game-changers",title:"GAME CHANGERS",subtitle:"ICON REBORN",type:"FEATURED",description:"Win the event to sign a featured Game Changers player, plus gems and XP.",mode:"vsattack",rewardGems:45,rewardXp:300,rewardPlayer:"1 GAME CHANGERS PLAYER"},
+      {id:"apex-ascension",title:"APEX ASCENSION",subtitle:"200 LEGENDS. ONE THRONE.",type:"ULTIMATE EVENT",description:"Enter the ultimate showdown. Pick up one player from a 200-player event pool, plus 100 gems and 750 XP.",mode:"vsattack",rewardGems:100,rewardXp:750,rewardPlayer:"1 OF 200 PLAYERS",playerCount:200},
       {id:"neon-derby",title:"NEON DERBY",subtitle:"LIGHTS. CROWD. KICK-OFF.",type:"WEEKLY",description:"Hit the target in a high-energy crossbar challenge.",mode:"crossbar",rewardGems:25,rewardXp:180},
       {id:"last-line",title:"LAST LINE",subtitle:"THE WALL NEVER FALLS",type:"DAILY",description:"Read the shot and protect your goal in the keeper challenge.",mode:"goalkeeping",rewardGems:15,rewardXp:90}
     ];
@@ -689,7 +690,7 @@ const goalkeepers = [
     if(onlineCfg.base&&onlineCfg.token){
       try{
         const eventData=await api("/api/events");
-        if(Array.isArray(eventData.events)&&eventData.events.some(e=>["game-changers","neon-derby","last-line"].includes(e.id)))events=eventData.events;
+        if(Array.isArray(eventData.events)&&eventData.events.some(e=>["game-changers","apex-ascension","neon-derby","last-line"].includes(e.id)))events=eventData.events;
         const featured=events.find(e=>e.id==="game-changers")||localEvents[0];
         if($("featuredEventTitle"))$("featuredEventTitle").textContent=featured.title+": "+(featured.subtitle||"");
         if($("featuredEventSubtitle"))$("featuredEventSubtitle").textContent=featured.description;
@@ -702,7 +703,7 @@ const goalkeepers = [
       eventBox.replaceChildren();
       events.forEach((event,index)=>{
         const card=document.createElement("article");card.className="apex-event-card"+(index===0?" featured":"");
-        const art=document.createElement("div");art.className="apex-event-art "+(event.id||"");art.setAttribute("aria-hidden","true");art.textContent=event.id==="game-changers"?"GC":event.id==="neon-derby"?"ND":"LL";
+        const art=document.createElement("div");art.className="apex-event-art "+(event.id||"");art.setAttribute("aria-hidden","true");art.textContent=event.id==="game-changers"?"GC":event.id==="apex-ascension"?"AA":event.id==="neon-derby"?"ND":"LL";
         const badge=document.createElement("span");badge.className="apex-event-badge";badge.textContent=String(event.type||"LIMITED EVENT").toUpperCase();
         const title=document.createElement("h3");title.textContent=event.title;
         const subtitle=document.createElement("strong");subtitle.className="apex-event-subtitle";subtitle.textContent=event.subtitle||"LIMITED-TIME CHALLENGE";
