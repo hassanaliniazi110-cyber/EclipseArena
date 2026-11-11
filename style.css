@@ -1195,3 +1195,9 @@ svg line,svg polyline,.chart-line,.stat-line,.player-chart-line,.player-stats sv
 .draft-choice-grid .apex-card-portrait img{width:100%;height:100%;object-fit:cover;object-position:center 15%}
 .draft-choice-grid .draft-choice-heading{grid-column:1/-1}
 @media(max-width:520px){.draft-choice-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.draft-choice-grid .draft-pick-card{min-height:295px;padding:9px}.draft-choice-grid .apex-card-portrait{height:108px}}
+
+
+/* Featured market directly beneath the Game Changers event. */
+.featured-market-section{position:relative;margin:clamp(22px,4vw,42px) 0;padding:clamp(18px,3vw,30px);border:1px solid rgba(255,160,72,.2);border-radius:24px;background:linear-gradient(145deg,rgba(17,25,25,.98),rgba(11,15,21,.98));box-shadow:0 18px 48px rgba(0,0,0,.2)}
+.featured-market-heading{margin:0 0 18px}.featured-market-heading h2{margin:5px 0 8px;font:900 clamp(1.8rem,4vw,2.6rem) Orbitron,sans-serif;letter-spacing:.04em;color:#fff}.featured-market-heading h2 em{color:#ffad55;font-style:normal}.featured-market-heading>p:last-child{margin:0;color:#bdc6c2;max-width:680px}.featured-market-panel{min-width:0;scroll-margin-top:22px}
+@media(max-width:700px){.featured-market-section{padding:16px;border-radius:18px}.featured-market-heading h2{font-size:1.65rem}}
