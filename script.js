@@ -164,6 +164,11 @@ const goalkeepers = [
   function hydrateWikiPortrait(photo,name,role){
     if(!photo||photo.dataset.wikiAttempted==="true")return;
     photo.dataset.wikiAttempted="true";
+    if(normalizePlayerName(name)==="ehanali"){
+      photo.dataset.fallbackApplied="true";
+      photo.src=makePlayerAvatarData(name,role);
+      return;
+    }
     const original=photo.src;
     findWikiPortrait(name).then(url=>{
       if(!photo.isConnected)return;
