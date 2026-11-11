@@ -136,18 +136,53 @@ const goalkeepers = [
       player.image=isValidPlayerPhoto(sourced)?sourced:(personal||makePlayerAvatarData(player.name,player.role));
     });
   }
+  const wikiPortraitCache=new Map();
+  function findWikiPortrait(playerName){
+    const name=String(playerName||"").trim();
+    if(!name)return Promise.resolve("");
+    const key=normalizePlayerName(name);
+    if(wikiPortraitCache.has(key))return wikiPortraitCache.get(key);
+    const task=(async()=>{
+      try{
+        const query=encodeURIComponent(name);
+        const url="https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch="+query+"&gsrnamespace=0&gsrlimit=8&prop=pageimages&piprop=thumbnail&pithumbsize=520&format=json&origin=*";
+        const response=await fetch(url,{mode:"cors",credentials:"omit",headers:{"Accept":"application/json"}});
+        if(!response.ok)return "";
+        const data=await response.json();
+        const pages=Object.values(data.query?.pages||{}).filter(page=>page.thumbnail?.source);
+        pages.sort((a,b)=>{
+          const an=normalizePlayerName(a.title),bn=normalizePlayerName(b.title);
+          return Number(bn===key)-Number(an===key);
+        });
+        const image=pages[0]?.thumbnail?.source||"";
+        return /^https:\/\/(upload\.wikimedia\.org|.*\.wikipedia\.org)\//i.test(image)?image:"";
+      }catch(_){return "";}
+    })();
+    wikiPortraitCache.set(key,task);
+    return task;
+  }
+  function hydrateWikiPortrait(photo,name,role){
+    if(!photo||photo.dataset.wikiAttempted==="true")return;
+    photo.dataset.wikiAttempted="true";
+    const original=photo.src;
+    findWikiPortrait(name).then(url=>{
+      if(!photo.isConnected)return;
+      if(url){photo.src=url;photo.dataset.wikiResolved="true";}
+      else{photo.dataset.fallbackApplied="true";photo.src=makePlayerAvatarData(name,role);}
+    }).catch(()=>{if(photo.isConnected){photo.dataset.fallbackApplied="true";photo.src=makePlayerAvatarData(name,role);}});
+  }
   function attachPlayerPortraitFallbacks(root){
     if(!root)return;
     root.querySelectorAll(".player-card-photo").forEach(photo=>{
+      const name=photo.dataset.playerName||photo.alt||"Apex Player",role=photo.dataset.playerRole||"PLAYER";
       photo.addEventListener("error",()=>{
         if(photo.dataset.sourceRetry!=="true"){
-          const alternate=rosterPhotoUrls[normalizePlayerName(photo.dataset.playerName||"")];
+          const alternate=rosterPhotoUrls[normalizePlayerName(name)];
           if(alternate&&photo.src!==alternate){photo.dataset.sourceRetry="true";photo.src=alternate;return;}
         }
-        if(photo.dataset.fallbackApplied==="true")return;
-        photo.dataset.fallbackApplied="true";
-        photo.src=makePlayerAvatarData(photo.dataset.playerName||"Apex Player",photo.dataset.playerRole||"PLAYER");
-      },{once:true});
+        hydrateWikiPortrait(photo,name,role);
+      });
+      if(photo.src.startsWith("data:image/svg+xml")||photo.dataset.needsWiki==="true")hydrateWikiPortrait(photo,name,role);
     });
   }
 
@@ -478,8 +513,7 @@ const goalkeepers = [
   const onlineCfg={base:(()=>{try{return String(window.ECLIPSE_CONFIG?.backendUrl||"").trim().replace(/\/$/,"");}catch(_){return "";}})(),token:(()=>{try{return localStorage.getItem("eclipseDeviceToken")||"";}catch(_){return "";}})(),socket:null,roomId:null,onlineMatch:false,lastStateAt:0};
   let connectPromise=null,activeRewardSessionId=null,activeRewardSessionPromise=null,rewardClaimedThisGame=false,pendingApexEventId='',activeRewardEventId='';
   function setServerStatus(message){const el=$("serverStatus");if(el)el.textContent=message;} function setFriendStatus(message){const el=$("friendStatus");if(el)el.textContent=message;}
-  let admin2FAToken="";
-  function api(path,opts={}){if(!onlineCfg.base)return Promise.reject(new Error("Online server is not configured yet."));const headers={"Content-Type":"application/json",...(opts.headers||{})};if(onlineCfg.token)headers.Authorization="Bearer "+onlineCfg.token;if(admin2FAToken)headers["X-Admin-2FA"]=admin2FAToken;return fetch(onlineCfg.base+path,{...opts,headers}).then(async r=>{const d=await r.json().catch(()=>({error:"Invalid server response"}));if(!r.ok)throw new Error(d.error||"Server error "+r.status);return d;});}
+  function api(path,opts={}){if(!onlineCfg.base)return Promise.reject(new Error("Online server is not configured yet."));const headers={"Content-Type":"application/json",...(opts.headers||{})};if(onlineCfg.token)headers.Authorization="Bearer "+onlineCfg.token;return fetch(onlineCfg.base+path,{...opts,headers}).then(async r=>{const d=await r.json().catch(()=>({error:"Invalid server response"}));if(!r.ok)throw new Error(d.error||"Server error "+r.status);return d;});}
   async function claimGameReward(finalScore){
     if(rewardClaimedThisGame)return;
     if(!onlineCfg.base||!onlineCfg.token){toast("Connect online to collect your match gems.");return;}
@@ -513,11 +547,9 @@ const goalkeepers = [
       const response=await fetch(onlineCfg.base.replace(/\/$/,"")+"/api/youtube/access",{headers:{Authorization:"Bearer "+onlineCfg.token}});
       if(!response.ok)return;
       const data=await response.json();
-      if(data.isAdmin&&!apexAdminMode){apexAdminMode=true;renderPlayers();toast("ADMIN MODE · all players and goalkeepers unlocked");}if(data.isAdmin){const ownerPanel=$("youtubeOwnerRequests");ownerPanel?.classList.remove("hidden");try{const status=await api("/api/admin/2fa/status");const label=$("admin2FAStatus");if(label)label.textContent=status.enrolled?"Authenticator enrolled. Enter a current code to unlock owner actions for 10 minutes.":status.encryptionKeyConfigured?"Two-step verification is ready to set up.":"Server setup needed: add APEX_2FA_ENCRYPTION_KEY in the hosting environment.";const setup=$("admin2FASetupBtn");if(setup)setup.disabled=status.enrolled||!status.encryptionKeyConfigured;}catch(error){const label=$("admin2FAStatus");if(label)label.textContent=error.message;}}
+      if(data.isAdmin&&!apexAdminMode){apexAdminMode=true;renderPlayers();toast("ADMIN MODE · all players and goalkeepers unlocked");}if(data.isAdmin){const ownerPanel=$("youtubeOwnerRequests");ownerPanel?.classList.remove("hidden");}
     }catch(_){}
   }
-  if($("admin2FASetupBtn"))$("admin2FASetupBtn").addEventListener("click",async()=>{const message=$("admin2FAMessage"),secret=$("admin2FASecret");message.textContent="Creating your secure authenticator setup...";try{const result=await api("/api/admin/2fa/setup",{method:"POST",body:JSON.stringify({})});secret.textContent="MANUAL SETUP KEY: "+result.secret+" · In Google Authenticator or Microsoft Authenticator, add an account using the setup key. Keep it private.";message.textContent="Now enter the current six-digit code from your authenticator app.";const button=$("admin2FASetupBtn");button.disabled=true;}catch(error){message.textContent=error.message;}});
-  if($("admin2FAVerifyBtn"))$("admin2FAVerifyBtn").addEventListener("click",async()=>{const input=$("admin2FACode"),message=$("admin2FAMessage");const code=String(input?.value||"").replace(/\D/g,"");if(code.length!==6){message.textContent="Enter all six digits.";return;}message.textContent="Checking code...";try{const result=await api("/api/admin/2fa/verify",{method:"POST",body:JSON.stringify({code})});admin2FAToken=result.adminToken;input.value="";message.textContent="Verified. Owner actions are unlocked for 10 minutes.";await refreshYouTubeRequests();}catch(error){message.textContent=error.message;}});
   if($("youtubeRefreshRequests"))$("youtubeRefreshRequests").addEventListener("click",()=>refreshYouTubeRequests());
   const nicknameInput=$("nicknameInput");
   const PROFILE_STORAGE_KEY="eclipseProfileV1";
@@ -562,7 +594,8 @@ const goalkeepers = [
         card.dataset.player=p.id||"";
         const portrait=document.createElement("div");portrait.className="apex-card-portrait";
         const photo=document.createElement("img");photo.src=isValidPlayerPhoto(info[5])?info[5]:makePlayerAvatarData(info[0],info[2]);photo.alt=info[0]+" player portrait";photo.loading="lazy";photo.referrerPolicy="no-referrer";
-        photo.onerror=()=>{if(photo.dataset.sourceRetry!=="true"){const alternate=rosterPhotoUrls[normalizePlayerName(info[0])];if(alternate&&photo.src!==alternate){photo.dataset.sourceRetry="true";photo.src=alternate;return;}}if(photo.dataset.fallbackApplied==="true")return;photo.dataset.fallbackApplied="true";photo.src=makePlayerAvatarData(info[0],info[2]);};
+        photo.onerror=()=>{if(photo.dataset.sourceRetry!=="true"){const alternate=rosterPhotoUrls[normalizePlayerName(info[0])];if(alternate&&photo.src!==alternate){photo.dataset.sourceRetry="true";photo.src=alternate;return;}}hydrateWikiPortrait(photo,info[0],info[2]);};
+        if(!isValidPlayerPhoto(info[5])){photo.dataset.needsWiki="true";}
         portrait.appendChild(photo);
         const foil=document.createElement("div");foil.className="apex-card-foil";
         const top=document.createElement("div");top.className="apex-card-top";
@@ -620,7 +653,19 @@ const goalkeepers = [
   }
   if($("careerMarketBtn"))$("careerMarketBtn").addEventListener("click",async()=>{const panel=$("careerExtraPanel");if(panel){panel.scrollIntoView({behavior:"smooth",block:"start"});}await loadApexStore();});
   let apexLeaderboardTimer=null,apexLeaderboardLoading=false;
-  async function refreshApexLeaderboard(){const boardBox=$("apexLeaderboard");if(!boardBox||!onlineCfg.base||!onlineCfg.token||apexLeaderboardLoading)return;apexLeaderboardLoading=true;try{const boardData=await api("/api/leaderboard",{cache:"no-store"});boardBox.replaceChildren();(boardData.leaderboard||[]).slice(0,10).forEach(p=>{const row=document.createElement("p");row.className="apex-leaderboard-row";const rank=document.createElement("strong");rank.textContent="#"+p.rank;const details=document.createElement("span");details.textContent=p.name+" · "+p.wins+" wins · "+p.xp+" XP";row.append(rank,details);boardBox.appendChild(row);});if(!boardBox.childElementCount)boardBox.textContent="No players have joined the leaderboard yet.";const stamp=document.createElement("small");stamp.className="apex-leaderboard-updated";stamp.textContent="UPDATED "+(boardData.updatedAt?new Date(boardData.updatedAt).toLocaleTimeString():"JUST NOW")+" · AUTO-REFRESHES EVERY 60 SECONDS";boardBox.appendChild(stamp);}catch(error){const note=document.createElement("small");note.className="apex-leaderboard-updated";note.textContent="Could not refresh leaderboard. Will retry in 60 seconds.";if(boardBox&&!boardBox.querySelector(".apex-leaderboard-updated"))boardBox.appendChild(note);}finally{apexLeaderboardLoading=false;}}
+  let apexLeaderboardData=[],apexLeaderboardVisible=50;
+  function drawApexLeaderboard(boardBox,updatedAt){
+    boardBox.replaceChildren();
+    const rows=apexLeaderboardData.slice(0,apexLeaderboardVisible);
+    const summary=document.createElement("p");summary.className="apex-leaderboard-summary";summary.textContent="SHOWING "+rows.length+" OF "+Math.min(1000,apexLeaderboardData.length)+" · GLOBAL TOP 1,000";boardBox.appendChild(summary);
+    const list=document.createElement("div");list.className="apex-leaderboard-list";
+    rows.forEach(p=>{const row=document.createElement("p");row.className="apex-leaderboard-row";const rank=document.createElement("strong");rank.textContent="#"+p.rank;const details=document.createElement("span");details.textContent=p.name+" · "+p.wins+" wins · "+p.xp+" XP";row.append(rank,details);list.appendChild(row);});
+    if(!rows.length){const empty=document.createElement("p");empty.textContent="No players have joined the leaderboard yet.";list.appendChild(empty);}
+    boardBox.appendChild(list);
+    if(apexLeaderboardVisible<apexLeaderboardData.length){const more=document.createElement("button");more.type="button";more.className="leaderboard-more-btn";more.textContent="LOAD NEXT "+Math.min(50,apexLeaderboardData.length-apexLeaderboardVisible)+" PLAYERS";more.addEventListener("click",()=>{apexLeaderboardVisible=Math.min(1000,apexLeaderboardVisible+50);drawApexLeaderboard(boardBox,updatedAt);});boardBox.appendChild(more);}
+    const stamp=document.createElement("small");stamp.className="apex-leaderboard-updated";stamp.textContent="UPDATED "+(updatedAt?new Date(updatedAt).toLocaleTimeString():"JUST NOW")+" · AUTO-REFRESHES EVERY 60 SECONDS";boardBox.appendChild(stamp);
+  }
+  async function refreshApexLeaderboard(){const boardBox=$("apexLeaderboard");if(!boardBox||!onlineCfg.base||!onlineCfg.token||apexLeaderboardLoading)return;apexLeaderboardLoading=true;try{const boardData=await api("/api/leaderboard?limit=1000",{cache:"no-store"});apexLeaderboardData=(boardData.leaderboard||[]).slice(0,1000);apexLeaderboardVisible=Math.max(50,Math.min(1000,apexLeaderboardVisible));drawApexLeaderboard(boardBox,boardData.updatedAt);}catch(error){const note=document.createElement("small");note.className="apex-leaderboard-updated";note.textContent="Could not refresh leaderboard. Will retry in 60 seconds.";if(boardBox&&!boardBox.querySelector(".apex-leaderboard-updated"))boardBox.appendChild(note);}finally{apexLeaderboardLoading=false;}}
   function startApexLeaderboardRefresh(){if(apexLeaderboardTimer)return;apexLeaderboardTimer=setInterval(refreshApexLeaderboard,60000);}
   async function loadApexLiveHub(){
     const eventBox=$("apexEvents"),modal=$("eventsModal");
