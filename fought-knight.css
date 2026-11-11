@@ -498,4 +498,9 @@ img,canvas,video{max-width:100%}
 .apex-cinema-stage .walkout-final-card:not([hidden]){visibility:visible}
 /* Keep the APEX wordmark sharp throughout the intro. */
 .apex-launch-intro .launch-wordmark{filter:none!important;-webkit-filter:none!important;text-rendering:geometricPrecision}
-@keyframes launch-title-in{from{opacity:0;transform:translateY(30px) scale(.88)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes apex-wordmark-crisp{from{opacity:0}to{opacity:1}}
+
+
+/* APEX wordmark: opacity-only entrance, with no blur, glow haze or scaling. */
+body .apex-launch-intro .launch-center .launch-wordmark{filter:none!important;-webkit-filter:none!important;text-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;transform:none!important;animation:apex-wordmark-crisp .75s ease .8s both!important}
+body .apex-launch-intro .launch-center .launch-wordmark,body .apex-launch-intro .launch-center .launch-wordmark *{filter:none!important;-webkit-filter:none!important;text-shadow:none!important;-webkit-font-smoothing:antialiased}
