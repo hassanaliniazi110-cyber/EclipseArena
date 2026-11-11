@@ -183,22 +183,29 @@ const goalkeepers = [
     wikiPortraitCache.set(key,task);
     return task;
   }
+  const wikiPhotoCredits=new Map();
+  function renderWikiPhotoCredits(){
+    const panel=document.getElementById("apexPhotoCreditsList");
+    if(!panel)return;
+    panel.replaceChildren();
+    if(!wikiPhotoCredits.size){
+      const empty=document.createElement("p");empty.textContent="Photo credits will appear here as verified player photos load.";panel.appendChild(empty);return;
+    }
+    [...wikiPhotoCredits.values()].sort((a,b)=>a.player.localeCompare(b.player)).forEach(item=>{
+      const row=document.createElement("p");row.className="apex-photo-credit-entry";
+      const player=document.createElement("strong");player.textContent=item.player+" · ";
+      const author=document.createElement("span");author.textContent=item.author?item.author+" · ":"";
+      const source=document.createElement("a");source.href=item.fileUrl;source.target="_blank";source.rel="noopener noreferrer";source.textContent=item.title||"Original photo";
+      const license=document.createElement("a");license.href=item.licenseUrl||item.fileUrl;license.target="_blank";license.rel="noopener noreferrer";license.textContent=item.license||"Source licence";
+      row.append(player,author,source,document.createTextNode(" · "),license);
+      panel.appendChild(row);
+    });
+  }
   function showWikiPhotoCredit(photo,credit){
     if(!photo||!credit)return;
-    let line=photo.parentElement?.querySelector(":scope > .apex-photo-credit-line");
-    if(!line){
-      line=document.createElement("span");
-      line.className="apex-photo-credit-line";
-      photo.insertAdjacentElement("afterend",line);
-    }
-    const label=(credit.author?credit.author+" · ":"")+credit.license+" · Wikimedia Commons";
-    line.textContent="PHOTO CREDIT: "+label;
-    line.title=credit.title+" · "+label;
-    line.setAttribute("role","link");
-    line.setAttribute("tabindex","0");
-    line.setAttribute("aria-label","Open photo source and licence details for "+(photo.dataset.playerName||photo.alt));
-    line.onclick=event=>{event.preventDefault();event.stopPropagation();window.open(credit.fileUrl,"_blank","noopener,noreferrer");};
-    line.onkeydown=event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();event.stopPropagation();window.open(credit.fileUrl,"_blank","noopener,noreferrer");}};
+    const player=photo.dataset.playerName||photo.alt||"Footballer";
+    wikiPhotoCredits.set(player+"|"+credit.fileUrl,{player,author:credit.author||"",title:credit.title||"",fileUrl:credit.fileUrl,license:credit.license,licenseUrl:credit.licenseUrl});
+    renderWikiPhotoCredits();
   }
   function showMissingWikiPhoto(photo,name){
     if(!photo||!photo.isConnected||photo.dataset.wikiMissing==="true")return;
@@ -206,10 +213,7 @@ const goalkeepers = [
     photo.dataset.wikiMissing="true";
     photo.alt=name+" · no verified licensed photo found";
     photo.title="No verified licensed photograph was found for this player.";
-    const line=document.createElement("span");
-    line.className="apex-photo-credit-line apex-photo-missing";
-    line.textContent="PHOTO NOT VERIFIED";
-    photo.insertAdjacentElement("afterend",line);
+
   }
   function hydrateWikiPortrait(photo,name,role){
     if(!photo||photo.dataset.wikiAttempted==="true")return;
@@ -677,7 +681,7 @@ const goalkeepers = [
   async function loadApexStore(){
     const panel=$("featuredMarketPanel");if(!panel)return;
     let selectedDraftEvent="apex-ascension";
-    panel.innerHTML='<section class="apex-draft-market"><div class="draft-market-kicker">APEX STRIKERS · PLAYER EXCHANGE</div><h3>THE DRAFT ROOM</h3><p>Exchange gems for a Draft Voucher, then choose which event pool to draft from. Each voucher reveals one random player from that event. You will not see who it is until the final reveal.</p><div class="draft-event-picker" role="group" aria-label="Choose draft event"><button type="button" class="draft-event-option selected" data-draft-event="apex-ascension"><strong>APEX ASCENSION</strong><small>200-player elite pool</small></button><button type="button" class="draft-event-option" data-draft-event="game-changers"><strong>GAME CHANGERS</strong><small>10 special players</small></button></div><div class="apex-store-head"><strong>YOUR WALLET</strong><span class="apex-gem-count" id="apexGemCount">Loading...</span></div><div class="draft-wallet-line"><span id="apexVoucherCount">◇ -- DRAFT VOUCHERS</span><span>150 GEMS = 1 VOUCHER</span></div><div class="draft-layout"><div class="draft-main-actions"><div class="apex-pack-row draft-voucher-actions"><button class="apex-pack draft-buy" id="buyDraftVoucher"><strong>GET 1 VOUCHER</strong><span>150 GEMS · 1 VOUCHER</span><small>One sealed player. One big reveal.</small></button><button class="apex-pack draft-buy draft-buy-ten" id="buyTenDraftVouchers"><strong>GET 10 VOUCHERS</strong><span>1,500 GEMS · 10 VOUCHERS</span><small>Stock up for a 10-player opening.</small></button><button class="apex-pack draft-start" id="startPlayerDraft"><strong>ENTER THE DRAFT</strong><span>1 VOUCHER · 1 MYSTERY PLAYER</span><small>Open one mystery player pack. The result is revealed at the end.</small></button><button class="apex-pack draft-start draft-open-ten" id="openTenDrafts"><strong>OPEN 10 DRAFTS</strong><span>10 VOUCHERS · 10 PLAYERS</span><small>Use 10 vouchers instantly and reveal all 10 players.</small></button></div><p id="apexPackStatus" class="career-hub-status" aria-live="polite"></p><div id="apexDraftChoices" class="apex-card-grid draft-choice-grid"></div><div id="apexPackReveal" class="apex-card-grid"></div></div><aside class="draft-odds-panel" id="draftOddsPanel" aria-live="polite"><div class="draft-odds-heading"><span>✦</span><div><strong>TOP 3 PACKABLE</strong><small>BEST PLAYERS IN THIS EVENT</small></div></div><div id="draftOddsList"><p>Loading real pack odds...</p></div><small class="draft-odds-note">Chance per voucher · based on actual pack weights</small><div id="draftPityStatus" class="draft-pity-status" aria-live="polite">Loading guaranteed pools...</div></aside></div><section class="pool-a-gallery" aria-labelledby="poolAHeading"><div class="pool-a-gallery-heading"><div><span>✦ ELITE GUARANTEE POOL</span><h3 id="poolAHeading">POOL A · ALL 126+ OVR PLAYERS</h3><p>Browse every player eligible for the Pool A guarantee. Tap a card to expand its attributes.</p></div><strong id="poolACount">LOADING...</strong></div><div id="poolACards" class="pool-a-card-grid"><p>Loading Pool A cards...</p></div></section></section><p class="apex-photo-credit">Player photo credits appear beside each verified photograph, including photographer, licence, and Wikimedia Commons source. Custom players use their own profile photos.</p>';
+    panel.innerHTML='<section class="apex-draft-market"><div class="draft-market-kicker">APEX STRIKERS · PLAYER EXCHANGE</div><h3>THE DRAFT ROOM</h3><p>Exchange gems for a Draft Voucher, then choose which event pool to draft from. Each voucher reveals one random player from that event. You will not see who it is until the final reveal.</p><div class="draft-event-picker" role="group" aria-label="Choose draft event"><button type="button" class="draft-event-option selected" data-draft-event="apex-ascension"><strong>APEX ASCENSION</strong><small>200-player elite pool</small></button><button type="button" class="draft-event-option" data-draft-event="game-changers"><strong>GAME CHANGERS</strong><small>10 special players</small></button></div><div class="apex-store-head"><strong>YOUR WALLET</strong><span class="apex-gem-count" id="apexGemCount">Loading...</span></div><div class="draft-wallet-line"><span id="apexVoucherCount">◇ -- DRAFT VOUCHERS</span><span>150 GEMS = 1 VOUCHER</span></div><div class="draft-layout"><div class="draft-main-actions"><div class="apex-pack-row draft-voucher-actions"><button class="apex-pack draft-buy" id="buyDraftVoucher"><strong>GET 1 VOUCHER</strong><span>150 GEMS · 1 VOUCHER</span><small>One sealed player. One big reveal.</small></button><button class="apex-pack draft-buy draft-buy-ten" id="buyTenDraftVouchers"><strong>GET 10 VOUCHERS</strong><span>1,500 GEMS · 10 VOUCHERS</span><small>Stock up for a 10-player opening.</small></button><button class="apex-pack draft-start" id="startPlayerDraft"><strong>ENTER THE DRAFT</strong><span>1 VOUCHER · 1 MYSTERY PLAYER</span><small>Open one mystery player pack. The result is revealed at the end.</small></button><button class="apex-pack draft-start draft-open-ten" id="openTenDrafts"><strong>OPEN 10 DRAFTS</strong><span>10 VOUCHERS · 10 PLAYERS</span><small>Use 10 vouchers instantly and reveal all 10 players.</small></button></div><p id="apexPackStatus" class="career-hub-status" aria-live="polite"></p><div id="apexDraftChoices" class="apex-card-grid draft-choice-grid"></div><div id="apexPackReveal" class="apex-card-grid"></div></div><aside class="draft-odds-panel" id="draftOddsPanel" aria-live="polite"><div class="draft-odds-heading"><span>✦</span><div><strong>TOP 3 PACKABLE</strong><small>BEST PLAYERS IN THIS EVENT</small></div></div><div id="draftOddsList"><p>Loading real pack odds...</p></div><small class="draft-odds-note">Chance per voucher · based on actual pack weights</small><div id="draftPityStatus" class="draft-pity-status" aria-live="polite">Loading guaranteed pools...</div></aside></div><section class="pool-a-gallery" aria-labelledby="poolAHeading"><div class="pool-a-gallery-heading"><div><span>✦ ELITE GUARANTEE POOL</span><h3 id="poolAHeading">POOL A · ALL 126+ OVR PLAYERS</h3><p>Browse every player eligible for the Pool A guarantee. Tap a card to expand its attributes.</p></div><strong id="poolACount">LOADING...</strong></div><div id="poolACards" class="pool-a-card-grid"><p>Loading Pool A cards...</p></div></section></section><p class="apex-photo-credit">Player photo credits are listed in the credits section at the bottom of Apex Strikers. Custom players use their own profile photos.</p>';
     if(!onlineCfg.base||!onlineCfg.token){$("apexGemCount").textContent="Connect online to sync gems";$("apexVoucherCount").textContent="Connect to view vouchers";updateCareerVoucherBalance("CONNECT ONLINE");return;}
     try{
       const data=await api("/api/store");$("apexGemCount").textContent=data.unlimitedGems?"∞ GEMS · ADMIN WALLET":"◇ "+Number(data.gems).toLocaleString()+" GEMS";updateTopGemBalance(data.gems,data.unlimitedGems);updateCareerVoucherBalance(data.draftVouchers||0);$("apexVoucherCount").textContent="◇ "+(data.draftVouchers||0)+" DRAFT VOUCHERS";syncOwnedCardsToRoster(data.ownedCards,data.cardCatalog);
