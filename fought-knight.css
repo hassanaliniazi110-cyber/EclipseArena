@@ -629,3 +629,60 @@ section,.career-hub,.featured-market-section,.youtube-panel{scroll-margin-top:16
 .draft-odds-chance{color:#a7ffb5;font-variant-numeric:tabular-nums;font-size:.88rem}
 .draft-odds-note{display:block;margin-top:12px;color:#a9cbb0;line-height:1.4}
 @media(max-width:760px){.draft-layout{grid-template-columns:minmax(0,1fr)}.draft-odds-panel{order:-1}.draft-odds-player{padding:10px 0}}
+
+
+/* FINAL PALETTE LOCK: the entire launch intro is strictly black + green, including every letter. */
+.apex-launch-intro,
+.apex-launch-intro *{
+  --launch-cyan:#72ff91!important;
+  --launch-violet:#39d96b!important;
+  color:#8cff9f!important;
+}
+.apex-launch-intro{
+  background:#020503!important;
+  color:#8cff9f!important;
+}
+.apex-launch-intro:before{
+  background:radial-gradient(ellipse at 50% 48%,rgba(34,255,91,.2),transparent 58%),linear-gradient(115deg,transparent 0 38%,rgba(58,255,105,.12) 50%,transparent 62%)!important;
+}
+.apex-launch-intro:after{
+  background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(93,255,126,.035) 4px)!important;
+}
+.apex-launch-intro .launch-wordmark,
+.apex-launch-intro .launch-wordmark b,
+.apex-launch-intro .launch-kicker,
+.apex-launch-intro .launch-caption,
+.apex-launch-intro .launch-status,
+.apex-launch-intro .launch-status span,
+.apex-launch-intro .launch-status b,
+.apex-launch-intro .launch-footer,
+.apex-launch-intro .launch-footer span,
+.apex-launch-intro .intro-skip-btn,
+.apex-launch-intro .intro-skip-btn b{
+  color:#8cff9f!important;
+  text-shadow:0 0 16px rgba(54,255,105,.35)!important;
+}
+.apex-launch-intro .launch-wordmark b{color:#39e86b!important}
+.apex-launch-intro .launch-divider span{background:linear-gradient(90deg,transparent,#43f477,transparent)!important}
+.apex-launch-intro .launch-divider i{color:#b1ffc0!important}
+.apex-launch-intro .launch-crest{
+  background:linear-gradient(145deg,#39e86b,#08752d 55%,#031b0b)!important;
+  border-color:#8cff9f!important;
+  color:#020503!important;
+  box-shadow:0 0 30px rgba(46,255,104,.42),0 0 85px rgba(35,220,86,.2)!important;
+}
+.apex-launch-intro .launch-crest svg path{stroke:#b1ffc0!important}
+.apex-launch-intro .launch-crest svg path[fill="#fff"]{fill:#020503!important}
+.apex-launch-intro .launch-crest svg path[fill="#b7a2ff"]{fill:#020503!important}
+.apex-launch-intro .launch-crest svg path[fill="url(#launchShield)"]{fill:#19a947!important}
+.apex-launch-intro .launch-crest-ring,
+.apex-launch-intro .launch-orbit,
+.apex-launch-intro .launch-orbit-ring{border-color:rgba(84,255,128,.48)!important;box-shadow:0 0 24px rgba(54,255,105,.16)!important}
+.apex-launch-intro .launch-skyline{background:repeating-linear-gradient(90deg,transparent 0 3.5%,#59ff83 3.55% 3.7%,transparent 3.8% 5.2%)!important}
+.apex-launch-intro .launch-floodlights{background:linear-gradient(180deg,rgba(75,255,117,.2),transparent 72%)!important}
+.apex-launch-intro .launch-pitch{border-color:rgba(87,255,132,.35)!important;box-shadow:0 -10px 90px rgba(48,255,104,.16)!important}
+.apex-launch-intro .launch-particles i{background:#75ff91!important;box-shadow:0 0 12px #39e86b!important}
+.apex-launch-intro .intro-progress{background:rgba(75,255,117,.13)!important}
+.apex-launch-intro .intro-progress span{background:linear-gradient(90deg,#08752d,#39e86b,#b1ffc0)!important;box-shadow:0 0 18px rgba(54,255,105,.65)!important}
+.apex-launch-intro .intro-skip-btn{border-color:rgba(100,255,143,.55)!important;background:rgba(2,15,7,.88)!important}
+.apex-launch-intro .launch-center:before{background:radial-gradient(circle,rgba(45,255,101,.2),rgba(13,115,43,.1) 38%,transparent 70%)!important}
