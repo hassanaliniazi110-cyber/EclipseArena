@@ -507,3 +507,25 @@ body .apex-launch-intro .launch-center .launch-wordmark,body .apex-launch-intro 
  /* Keep APEX and STRIKERS at exactly the same typographic size and weight. */
  body .apex-launch-intro .launch-center .launch-wordmark>.intro-letter,
  body .apex-launch-intro .launch-center .launch-wordmark>b{font-family:inherit!important;font-size:inherit!important;font-weight:1000!important;line-height:1!important;letter-spacing:inherit!important;transform:none!important;vertical-align:baseline!important}
+
+
+/* APEX INTRO: stadium-scale cinematic polish, with crisp typography preserved. */
+@keyframes apex-intro-halo{0%,100%{opacity:.28;transform:translate(-50%,-50%) scale(.92)}50%{opacity:.78;transform:translate(-50%,-50%) scale(1.08)}}
+@keyframes apex-crest-arrive{0%{opacity:0;transform:translateY(22px) scale(.78) rotate(-9deg)}65%{opacity:1;transform:translateY(-4px) scale(1.04) rotate(2deg)}100%{opacity:1;transform:translateY(0) scale(1) rotate(0)}}
+@keyframes apex-ring-orbit{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes apex-wordmark-sweep{0%,18%{transform:translateX(-130%);opacity:0}35%{opacity:.7}70%,100%{transform:translateX(140%);opacity:0}}
+@keyframes apex-divider-pulse{0%,100%{opacity:.55;filter:brightness(1)}50%{opacity:1;filter:brightness(1.8)}}
+@keyframes apex-pitch-scan{0%{transform:translateY(110%);opacity:0}20%{opacity:.6}80%{opacity:.35}100%{transform:translateY(-110%);opacity:0}}
+body .apex-launch-intro .launch-center{position:relative;isolation:isolate}
+body .apex-launch-intro .launch-center::before{content:"";position:absolute;z-index:-1;left:50%;top:43%;width:min(82vw,650px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(96,218,255,.22) 0,rgba(110,104,255,.12) 34%,transparent 69%);animation:apex-intro-halo 3.4s ease-in-out infinite;pointer-events:none}
+body .apex-launch-intro .launch-crest-wrap{animation:apex-crest-arrive 1.15s cubic-bezier(.2,.8,.2,1) .25s both}
+body .apex-launch-intro .launch-ring-one{animation:apex-ring-orbit 13s linear infinite}
+body .apex-launch-intro .launch-ring-two{animation:apex-ring-orbit 19s linear infinite reverse}
+body .apex-launch-intro .launch-wordmark{overflow:hidden;isolation:isolate}
+body .apex-launch-intro .launch-wordmark::after{content:"";position:absolute;inset:-15% auto -15% 0;width:24%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),rgba(110,225,255,.35),transparent);transform:translateX(-130%);pointer-events:none;animation:apex-wordmark-sweep 3.8s ease-in-out 1.35s infinite}
+body .apex-launch-intro .launch-divider{animation:apex-divider-pulse 2.4s ease-in-out infinite}
+body .apex-launch-intro .launch-pitch::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent,rgba(123,225,255,.22),transparent);animation:apex-pitch-scan 4.5s ease-in-out infinite}
+body .apex-launch-intro .launch-floodlights{filter:brightness(1.35) saturate(1.2)}
+body .apex-launch-intro .launch-particles i{box-shadow:0 0 12px rgba(122,226,255,.75),0 0 28px rgba(122,120,255,.28)}
+.apex-card-status{display:block;margin-top:2px;font-size:.68rem;letter-spacing:.09em;text-transform:uppercase;opacity:.82}
+@media(prefers-reduced-motion:reduce){body .apex-launch-intro .launch-center::before,body .apex-launch-intro .launch-crest-wrap,body .apex-launch-intro .launch-ring-one,body .apex-launch-intro .launch-ring-two,body .apex-launch-intro .launch-wordmark::after,body .apex-launch-intro .launch-divider,body .apex-launch-intro .launch-pitch::after{animation:none!important}}
