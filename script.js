@@ -35,7 +35,8 @@
 {name:"Hassan Ali",rating:300,role:"GK",special:"Custom · Elite reflexes",unlockXP:2200,unlockWins:8,glow:"rgba(199,255,74,.22)"},
 {name:"Federico Valverde",rating:121,role:"CM",special:"Stamina · Long shots",unlockXP:450,unlockWins:2,glow:"rgba(199,255,74,.2)"},
 {name:"Rodri",rating:122,role:"CDM",special:"Positioning · Passing",unlockXP:700,unlockWins:3,glow:"rgba(199,255,74,.2)"},
-{name:"Endrick",rating:116,role:"ST",special:"Explosive pace · Finishing",unlockXP:450,unlockWins:2,glow:"rgba(199,255,74,.2)"}
+{name:"Endrick",rating:116,role:"ST",special:"Explosive pace · Finishing",unlockXP:450,unlockWins:2,glow:"rgba(199,255,74,.2)"},
+{name:"Lllllllll FC",rating:999,role:"ST",special:"Keyboard Legend · Keyboard Vibration",stats:{PAC:999,SHO:999,PAS:999,DRI:999,DEF:999,PHY:999},unlockXP:0,unlockWins:0,glow:"rgba(255,214,92,.55)"}
 ];
 const goalkeepers = [
 {name:"David Raya",rating:117,role:"GOALKEEPER",special:"Quick distribution",unlockXP:0,unlockWins:0,glow:"rgba(100,220,130,.2)"},
@@ -115,7 +116,7 @@ const goalkeepers = [
       .filter(([,slug])=>Boolean(slug))
       .map(([key,slug])=>[key,"https://geofootballguessr.com/footballers/"+slug+".webp"])
   );
-  const CUSTOM_PLAYER_KEYS=new Set(["arham","muhammadarham","hassanali","zaydquadri","umarshoaib","ehanali"]);
+  const CUSTOM_PLAYER_KEYS=new Set(["arham","muhammadarham","hassanali","zaydquadri","umarshoaib","ehanali","llllllllfc"]);
   function isValidPlayerPhoto(source){
     const value=String(source||"");
     return /^https:\/\/upload\.wikimedia\.org\/wikipedia\/commons\//i.test(value)||
@@ -364,7 +365,7 @@ const goalkeepers = [
     const unlocked=isUnlocked(p,isKeeper),xp=career.players[p.name]||0,level=1+Math.floor(xp/100);
     const rawRating=(p.rating||60)+Math.min(4,Math.floor(xp/250));
     const rating=Math.min(199,Math.max(60,rawRating));
-    const displayRating=(p.name==="Cristiano Ronaldo"?999:(p.name==="Hassan Ali"&&(isKeeper||p.role==="GK")?300:rating));
+    const displayRating=(p.name==="Cristiano Ronaldo"||p.name==="Lllllllll FC"?999:(p.name==="Hassan Ali"&&(isKeeper||p.role==="GK")?300:rating));
     const xpNeeded=Math.max(0,(p.unlockXP||0)-(career.unlockXP||0)),winsNeeded=Math.max(0,(p.unlockWins||0)-(career.unlockWins||0));
     const lockLabel=unlocked?"LVL "+level:"🔒 "+xpNeeded+" XP + "+winsNeeded+" MATCH WINS TO UNLOCK";
     const labels=isKeeper?["DIV","HAN","KIC","REF","SPD","POS"]:["PAC","SHO","PAS","DRI","DEF","PHY"];
@@ -374,7 +375,7 @@ const goalkeepers = [
     const safeImage=normalizePlayerName(p.name)==="ehanali"?makePlayerAvatarData(p.name,isKeeper?"GOALKEEPER":p.role):(isValidPlayerPhoto(p.image)?p.image:makePlayerAvatarData(p.name,isKeeper?"GOALKEEPER":p.role));
     const portrait='<img class="player-card-photo" src="'+safeImage+'" data-player-name="'+safeName+'" data-player-role="'+(isKeeper?"GOALKEEPER":String(p.role||"PLAYER"))+'" alt="'+safeName+' portrait" loading="lazy">';
     const signedTag=p.cardId&&ownedDraftCardIds.has(p.cardId)?'<span class="player-signed-tag">SIGNED CARD</span>':"";
-    return '<button class="player-card '+(p.name===selected?'selected ':'')+(signedTag?'player-card-signed ':'')+(!unlocked?'player-locked':'')+'" '+(unlocked?'':'disabled aria-label="Locked player '+safeName+'" ')+attr+'="'+safeName.replace(/"/g,"&quot;")+'" style="--player-glow:'+p.glow+'">'+portrait+'<div class="player-card-copy">'+signedTag+'<div class="player-rating">'+displayRating+'</div><div class="player-role">'+p.role+' · OVR</div><div class="player-name">'+safeName+'</div><div class="player-special">'+(unlocked?p.special:lockLabel)+'</div><div class="fc-attributes">'+attributes+'</div><div class="ovr-meter"><i><span style="width:'+Math.min(100,rating)+'%"></span></i></div></div></button>';
+    return '<button class="player-card '+(p.name===selected?'selected ':'')+(p.name==="Lllllllll FC"?'keyboard-master-card ':'')+(signedTag?'player-card-signed ':'')+(!unlocked?'player-locked':'')+'" '+(unlocked?'':'disabled aria-label="Locked player '+safeName+'" ')+attr+'="'+safeName.replace(/"/g,"&quot;")+'" style="--player-glow:'+p.glow+'">'+portrait+'<div class="player-card-copy">'+signedTag+'<div class="player-rating">'+displayRating+'</div><div class="player-role">'+p.role+' · OVR</div><div class="player-name">'+safeName+'</div><div class="player-special">'+(unlocked?p.special:lockLabel)+'</div><div class="fc-attributes">'+attributes+'</div><div class="ovr-meter"><i><span style="width:'+Math.min(100,rating)+'%"></span></i></div></div></button>';
   }
   function renderPlayers(){
     ensureRosterPlayerImages();
