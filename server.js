@@ -270,7 +270,7 @@ app.post("/api/youtube/requests", auth, youtubeRequestLimiter, (req, res) => {
   saveYoutubeAccess();
   res.status(201).json({ status: "pending", message: "Your request was sent to the owner." });
 });
-app.get("/api/admin/audit", auth, adminLimiter, requireOwner, (req, res) => {
+app.get("/api/admin/audit", auth, requireOwner, adminLimiter, (req, res) => {
   try {
     const lines = fs.readFileSync(AUDIT_FILE, "utf8").trim().split(/\r?\n/).filter(Boolean).slice(-100);
     res.json({ events: lines.map(line => { try { return JSON.parse(line); } catch (_) { return null; } }).filter(Boolean) });
@@ -403,7 +403,7 @@ app.post("/api/friends/remove", auth,friendLimiter, (req, res) => {
   res.json({ ok: true });
 });
 // Admin can inspect public player profiles only. Authentication tokens and private account secrets are never returned.
-app.get("/api/admin/players", auth, (req, res) => {
+app.get("/api/admin/players", auth, adminLimiter, (req, res) => {
   if (!youtubeAdminPlayers.has(req.player.id)) {
     return res.status(403).json({ error: "Admin access required." });
   }
