@@ -1250,3 +1250,40 @@ svg line,svg polyline,.chart-line,.stat-line,.player-chart-line,.player-stats sv
 .intro-emblem{width:100px;height:108px;padding:5px;clip-path:none;background:linear-gradient(135deg,#dffaff,#718eff 48%,#b28cff);border:1px solid rgba(255,255,255,.7);border-radius:25px 25px 32px 32px;box-shadow:0 0 35px rgba(120,157,255,.55),0 0 90px rgba(142,111,255,.25),inset 0 1px 4px #fff}
 .intro-emblem svg{width:100%;height:100%;filter:drop-shadow(0 0 8px rgba(134,218,255,.65))}
 @media(max-width:520px){.draft-event-picker{grid-template-columns:1fr 1fr;gap:8px}.draft-event-option{padding:12px 10px;min-height:82px}.draft-event-option strong{font-size:.68rem}.brand-mark{width:44px;height:44px;flex-basis:44px}}
+
+/* Squad browser: quick search, position filters and OVR-first organisation */
+.roster-tools{display:grid;grid-template-columns:minmax(180px,1fr) minmax(145px,190px) auto;align-items:center;gap:12px;margin:16px 0 20px;padding:12px;border:1px solid rgba(160,185,220,.18);border-radius:16px;background:linear-gradient(120deg,rgba(18,29,44,.94),rgba(22,28,43,.84));box-shadow:0 12px 30px rgba(0,0,0,.18)}
+.roster-search-wrap{display:flex;align-items:center;gap:9px;min-width:0;padding:0 12px;border:1px solid rgba(170,190,220,.2);border-radius:10px;background:#0c1420;color:#a9c6e6}
+.roster-search-wrap span{font-size:22px}.roster-search-wrap input{width:100%;min-width:0;padding:12px 0;border:0;outline:0;background:transparent;color:#fff;font:600 .85rem 'DM Sans',sans-serif}
+.roster-tools select{width:100%;padding:13px 10px;border:1px solid rgba(170,190,220,.22);border-radius:10px;background:#111c2b;color:#eaf3ff;font:800 .7rem 'DM Sans',sans-serif;letter-spacing:.06em}
+#rosterResultCount{color:#a8b9d0;font-size:.62rem;font-weight:900;letter-spacing:.08em;text-align:right;white-space:nowrap}
+.player-grid{align-items:stretch}
+.player-card{backdrop-filter:blur(8px);box-shadow:0 12px 28px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.1)}
+.player-card:hover{filter:brightness(1.1) saturate(1.08);box-shadow:0 18px 38px rgba(0,0,0,.34),0 0 22px var(--player-glow)}
+/* Golden walkout: stadium blackout, sweeping spotlights, silhouette, then card reveal */
+.apex-signing-overlay.golden-walkout{overflow:hidden;background:radial-gradient(ellipse at 50% 18%,rgba(255,206,111,.2),transparent 42%),linear-gradient(180deg,#03050b 0%,#080b15 60%,#100d19 100%)}
+.golden-walkout .apex-signing-stage{position:relative;isolation:isolate;min-height:90vh;justify-content:center;overflow:hidden;border:1px solid rgba(255,206,117,.34);background:radial-gradient(ellipse at 50% 42%,rgba(255,183,65,.13),transparent 52%),linear-gradient(180deg,rgba(13,18,31,.94),rgba(5,8,15,.98));box-shadow:0 0 90px rgba(255,175,65,.12),inset 0 0 80px rgba(255,192,91,.07)}
+.walkout-lights{position:absolute;inset:-30% -10% 15%;z-index:-1;pointer-events:none;background:conic-gradient(from 240deg at 50% 0%,transparent 0 18deg,rgba(255,210,128,.13) 22deg,transparent 34deg 62deg,rgba(255,255,255,.09) 70deg,transparent 84deg 360deg);filter:blur(3px);animation:walkoutLights 3.2s ease-in-out infinite alternate}
+.walkout-beam{position:absolute;z-index:-1;top:-30%;left:50%;width:44%;height:120%;transform:translateX(-50%);transform-origin:top center;background:linear-gradient(180deg,rgba(255,223,159,.32),rgba(255,193,83,.07) 55%,transparent);clip-path:polygon(42% 0,58% 0,100% 100%,0 100%);filter:blur(12px);opacity:.65;animation:walkoutBeam 2.8s ease-in-out infinite alternate}
+.walkout-silhouette{position:absolute;z-index:-1;top:23%;left:50%;width:112px;height:190px;transform:translateX(-50%);opacity:.6;filter:drop-shadow(0 0 25px rgba(255,193,87,.4));background:radial-gradient(ellipse at 50% 17%,#05070d 0 17px,transparent 18px),radial-gradient(ellipse at 50% 70%,#05070d 0 47px,transparent 48px);animation:walkoutSilhouette 3.4s ease-in-out both}
+.walkout-intro{position:relative;margin:0;color:#f7d99e;font:900 clamp(.65rem,2vw,.85rem) 'Orbitron',sans-serif;letter-spacing:.25em;text-align:center;text-shadow:0 0 18px #ffbd58;animation:walkoutText 3.4s ease both}
+.golden-walkout .apex-signing-kicker{color:#f5ce82;letter-spacing:.22em}
+.golden-walkout .apex-signing-stage h2{color:#fff2d5;text-shadow:0 0 28px rgba(255,188,82,.45);opacity:0;animation:walkoutText .7s ease 3.35s forwards}
+.golden-walkout .apex-signing-subtitle,.golden-walkout .apex-signing-seal,.golden-walkout .apex-signing-continue{opacity:0;animation:walkoutText .7s ease 4.05s forwards}
+.golden-walkout .signing-hero-card{opacity:0;transform:translateY(60px) scale(.7);filter:brightness(1.8);box-shadow:0 0 0 1px #ffe0a0,0 0 32px rgba(255,193,87,.55),0 0 100px rgba(255,174,66,.22)}
+.golden-walkout.walkout-revealed .signing-hero-card{animation:goldenCardReveal 1.15s cubic-bezier(.16,.84,.22,1.1) forwards}
+.golden-walkout .signing-hero-card.icon{border-color:#ffe5a0;background:radial-gradient(circle at 50% 35%,#fff4d4,#d49a42 48%,#422a12)}
+.golden-walkout .apex-signing-continue{border-color:#e8bc70;background:linear-gradient(120deg,#fff0c9,#d59b43);color:#211304}
+@keyframes walkoutLights{from{transform:rotate(-8deg) scale(1)}to{transform:rotate(8deg) scale(1.12)}}
+@keyframes walkoutBeam{from{opacity:.25;transform:translateX(-50%) rotate(-5deg)}to{opacity:.9;transform:translateX(-50%) rotate(5deg)}}
+@keyframes walkoutSilhouette{0%,65%{opacity:.8;filter:brightness(.1) drop-shadow(0 0 8px #e4ac52)}100%{opacity:0;transform:translate(-50%,-18px) scale(1.08)}}
+@keyframes walkoutText{0%{opacity:0;transform:translateY(12px);letter-spacing:.3em}100%{opacity:1;transform:translateY(0);letter-spacing:inherit}}
+@keyframes goldenCardReveal{0%{opacity:0;transform:translateY(70px) rotateY(24deg) scale(.68);filter:brightness(2.4)}70%{opacity:1;transform:translateY(-8px) rotateY(-4deg) scale(1.05);filter:brightness(1.35)}100%{opacity:1;transform:translateY(0) rotateY(0) scale(1);filter:brightness(1)}}
+/* Richer pitch and match presentation */
+.pitch-wrap{position:relative;border:1px solid rgba(151,206,255,.22);border-radius:22px;background:radial-gradient(ellipse at 50% 0,rgba(86,159,211,.16),transparent 55%),linear-gradient(145deg,#101d2a,#07111b);box-shadow:0 22px 55px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.08)}
+#pitch{display:block;border-radius:16px;box-shadow:0 0 32px rgba(70,180,130,.12)}
+.game-header{background:linear-gradient(110deg,rgba(17,29,43,.96),rgba(26,29,53,.92));border:1px solid rgba(160,190,230,.16);border-radius:18px;box-shadow:0 12px 32px rgba(0,0,0,.22)}
+.mode-card,.primary-btn,.back-btn{transition:transform .2s ease,filter .2s ease,box-shadow .2s ease}
+.mode-card:hover,.primary-btn:hover{transform:translateY(-3px);filter:brightness(1.1);box-shadow:0 16px 35px rgba(0,0,0,.25)}
+@media(max-width:650px){.roster-tools{grid-template-columns:minmax(0,1fr) minmax(118px,42%);gap:8px;padding:9px}.roster-tools #rosterResultCount{grid-column:1/-1;text-align:left;padding:2px 3px}.roster-search-wrap input{font-size:.78rem}.golden-walkout .apex-signing-stage{min-height:84vh;padding:18px}.walkout-silhouette{top:22%}}
+@media(prefers-reduced-motion:reduce){.walkout-lights,.walkout-beam,.walkout-silhouette,.walkout-intro{animation:none!important}.golden-walkout.walkout-revealed .signing-hero-card{animation:none;opacity:1;transform:none}}
