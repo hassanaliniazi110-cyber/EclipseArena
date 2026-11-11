@@ -1225,3 +1225,28 @@ svg line,svg polyline,.chart-line,.stat-line,.player-chart-line,.player-stats sv
 .player-card:not(:disabled):hover{transform:translateY(-4px);border-color:rgba(199,255,74,.65);box-shadow:0 12px 24px rgba(0,0,0,.24)}
 .player-card-photo{height:112px;object-position:center 18%;border-radius:9px;background:linear-gradient(145deg,#243a4a,#101923)}
 @media(max-width:650px){.player-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.player-card{padding:10px;min-height:145px}.player-card-photo{height:104px}}
+
+/* Event-specific draft selector */
+.draft-event-picker{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0 20px}
+.draft-event-option{display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-height:76px;padding:14px 16px;border:1px solid rgba(178,190,210,.24);border-radius:14px;background:linear-gradient(145deg,#202b3c,#111923);color:#fff;text-align:left;cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s}
+.draft-event-option strong{font:900 .8rem Orbitron,sans-serif;letter-spacing:.04em}
+.draft-event-option small{color:#aebbd0;font-size:.72rem}
+.draft-event-option.selected{border-color:#a995ff;background:radial-gradient(circle at 100% 0,rgba(157,124,255,.22),transparent 60%),linear-gradient(145deg,#29234b,#151a2b);box-shadow:0 0 0 1px rgba(169,149,255,.24),0 10px 28px rgba(76,52,145,.2)}
+.draft-event-option[data-draft-event="game-changers"].selected{border-color:#ffad55;background:radial-gradient(circle at 100% 0,rgba(255,159,72,.2),transparent 60%),linear-gradient(145deg,#49301e,#1b1b22);box-shadow:0 0 0 1px rgba(255,173,85,.2),0 10px 28px rgba(120,65,24,.2)}
+.draft-event-option:active{transform:scale(.985)}
+/* Center portraits consistently inside every FC-style card */
+.apex-player-card{align-items:center}
+.apex-card-portrait{position:relative;align-self:center;flex:0 0 auto;margin:8px auto 10px;overflow:hidden;display:grid;place-items:center}
+.apex-card-portrait img{position:absolute;inset:0;display:block;width:100%;height:100%;max-width:none;max-height:none;margin:0 auto;object-fit:cover;object-position:50% 50%!important;transform:none!important}
+.apex-card-footer{width:100%;text-align:center;align-items:center}
+.player-card-photo{object-position:50% 50%!important;margin-left:auto;margin-right:auto}
+.draft-choice-grid .apex-card-portrait{align-self:center;margin-left:auto;margin-right:auto}
+/* Apex crest refresh: metallic shield, electric A and orbit glow */
+.brand-mark{width:50px;height:50px;flex:0 0 50px;padding:3px;clip-path:none;background:linear-gradient(135deg,#d9faff,#718eff 48%,#b28cff);border-radius:15px 15px 19px 19px;box-shadow:0 0 0 1px rgba(205,235,255,.3),0 0 22px rgba(111,145,255,.32),inset 0 1px 2px #fff}
+.brand-mark svg{display:block;width:100%;height:100%;filter:drop-shadow(0 0 5px rgba(134,218,255,.5))}
+.brand{gap:13px}
+.brand:hover .brand-mark{transform:translateY(-2px) rotate(-3deg);box-shadow:0 0 0 1px rgba(205,235,255,.45),0 0 30px rgba(111,145,255,.52)}
+.brand-mark{transition:transform .2s ease,box-shadow .2s ease}
+.intro-emblem{width:100px;height:108px;padding:5px;clip-path:none;background:linear-gradient(135deg,#dffaff,#718eff 48%,#b28cff);border:1px solid rgba(255,255,255,.7);border-radius:25px 25px 32px 32px;box-shadow:0 0 35px rgba(120,157,255,.55),0 0 90px rgba(142,111,255,.25),inset 0 1px 4px #fff}
+.intro-emblem svg{width:100%;height:100%;filter:drop-shadow(0 0 8px rgba(134,218,255,.65))}
+@media(max-width:520px){.draft-event-picker{grid-template-columns:1fr 1fr;gap:8px}.draft-event-option{padding:12px 10px;min-height:82px}.draft-event-option strong{font-size:.68rem}.brand-mark{width:44px;height:44px;flex-basis:44px}}
