@@ -654,6 +654,7 @@ const goalkeepers = [
         const card=document.createElement("article");
         card.className="apex-player-card draft-player-card "+(p.rarity==="ICON"?"icon ":p.rarity==="GAME CHANGERS"?"game-changers ":"elite ")+(extraClass||"");
         card.dataset.player=p.id||"";
+        card.dataset.rarity=String(p.rarity||"ELITE").toLowerCase().replace(/[^a-z0-9-]/g,"-");
         const portrait=document.createElement("div");portrait.className="apex-card-portrait";
         const photo=document.createElement("img");photo.src=isValidPlayerPhoto(info[5])?info[5]:makePlayerAvatarData(info[0],info[2]);photo.alt=info[0]+" player portrait";photo.loading="lazy";photo.referrerPolicy="no-referrer";
         photo.onerror=()=>{if(photo.dataset.sourceRetry!=="true"){const alternate=rosterPhotoUrls[normalizePlayerName(info[0])];if(alternate&&photo.src!==alternate){photo.dataset.sourceRetry="true";photo.src=alternate;return;}}hydrateWikiPortrait(photo,info[0],info[2]);};
@@ -691,8 +692,8 @@ const goalkeepers = [
         card.setAttribute("tabindex","0");
         card.setAttribute("role","button");
         card.setAttribute("aria-label","Tap to view "+info[0]+" stats");
-        card.addEventListener("click",event=>{if(event.target.closest(".draft-select-btn"))return;card.classList.toggle("show-stats");});
-        card.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();card.classList.toggle("show-stats");}});
+        card.addEventListener("click",event=>{if(event.target.closest(".draft-select-btn"))return;const expanded=card.classList.toggle("show-stats");card.setAttribute("aria-expanded",String(expanded));});
+        card.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();const expanded=card.classList.toggle("show-stats");card.setAttribute("aria-expanded",String(expanded));}});
         return card;
       };
       const showSigningReveal=pick=>{
