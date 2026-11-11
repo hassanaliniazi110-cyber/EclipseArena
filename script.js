@@ -166,7 +166,15 @@ const goalkeepers = [
     return task;
   }
   function hydrateWikiPortrait(photo,name,role){
-    if(!photo||photo.dataset.wikiAttempted==="true")return;
+    if(!photo)return;
+    if(photo.dataset.wikiAttempted==="true"){
+      if(photo.dataset.wikiResolved==="true"||photo.dataset.wikiFailed==="true"){
+        photo.onerror=null;
+        photo.dataset.fallbackApplied="true";
+        photo.src=makePlayerAvatarData(name,role);
+      }
+      return;
+    }
     photo.dataset.wikiAttempted="true";
     if(normalizePlayerName(name)==="ehanali"){
       photo.dataset.fallbackApplied="true";
@@ -177,7 +185,7 @@ const goalkeepers = [
     findWikiPortrait(name).then(url=>{
       if(!photo.isConnected)return;
       if(url){photo.src=url;photo.dataset.wikiResolved="true";}
-      else{photo.dataset.fallbackApplied="true";photo.src=makePlayerAvatarData(name,role);}
+      else{photo.dataset.wikiFailed="true";photo.dataset.fallbackApplied="true";photo.src=makePlayerAvatarData(name,role);}
     }).catch(()=>{if(photo.isConnected){photo.dataset.fallbackApplied="true";photo.src=makePlayerAvatarData(name,role);}});
   }
   function attachPlayerPortraitFallbacks(root){
@@ -691,14 +699,15 @@ const goalkeepers = [
       try{
         const eventData=await api("/api/events");
         if(Array.isArray(eventData.events)&&eventData.events.some(e=>["game-changers","apex-ascension","neon-derby","last-line"].includes(e.id)))events=eventData.events;
-        const featured=events.find(e=>e.id==="game-changers")||localEvents[0];
+        events=[...events].sort((a,b)=>(a.id==="apex-ascension"?-1:b.id==="apex-ascension"?1:0));
+        const featured=events.find(e=>e.id==="apex-ascension")||localEvents[1];
         if($("featuredEventTitle"))$("featuredEventTitle").textContent=featured.title+": "+(featured.subtitle||"");
         if($("featuredEventSubtitle"))$("featuredEventSubtitle").textContent=featured.description;
-        if($("featuredEventReward"))$("featuredEventReward").textContent="UP TO "+featured.rewardGems+" GEMS + "+featured.rewardXp+" XP"+(featured.rewardPlayer?" + "+featured.rewardPlayer:"");
+        if($("featuredEventReward"))$("featuredEventReward").textContent=featured.playerCount+" PLAYERS · "+featured.rewardGems+" GEMS + "+featured.rewardXp+" XP";
       }catch(_){}
     }
     const enterEvent=event=>{const allowed=["vsattack","crossbar","goalkeeping"];if(!event||!allowed.includes(event.mode)){toast("This event is being prepared. Please try another challenge.");return;}if(modal)modal.classList.add("hidden");pendingApexEventId=event.id;startMode(event.mode);$("controlHeading").textContent=event.title+" · "+(event.subtitle||"EVENT");$("controlText").textContent=event.description+" Complete the challenge to earn the event reward.";toast(event.title+" EVENT STARTED");};
-    if($("featuredEventPlay"))$("featuredEventPlay").onclick=()=>enterEvent(events.find(e=>e.id==="game-changers")||localEvents[0]);
+    if($("featuredEventPlay"))$("featuredEventPlay").onclick=()=>enterEvent(events.find(e=>e.id==="apex-ascension")||localEvents[1]);
     if(eventBox){
       eventBox.replaceChildren();
       events.forEach((event,index)=>{
@@ -708,7 +717,7 @@ const goalkeepers = [
         const title=document.createElement("h3");title.textContent=event.title;
         const subtitle=document.createElement("strong");subtitle.className="apex-event-subtitle";subtitle.textContent=event.subtitle||"LIMITED-TIME CHALLENGE";
         const desc=document.createElement("p");desc.textContent=event.description;
-        const rewards=document.createElement("div");rewards.className="apex-event-rewards";rewards.textContent="◇ "+event.rewardGems+" GEMS   ·   "+event.rewardXp+" XP"+(event.rewardPlayer?"   ·   "+event.rewardPlayer:"");
+        const rewards=document.createElement("div");rewards.className="apex-event-rewards";rewards.textContent="◇ "+event.rewardGems+" GEMS   ·   "+event.rewardXp+" XP"+(event.rewardPlayer?"   ·   "+event.rewardPlayer:"")+(event.playerCount?"   ·   "+event.playerCount+" PLAYER POOL":"");
         const button=document.createElement("button");button.type="button";button.className="primary-btn apex-event-play";button.textContent="ENTER EVENT";
         button.addEventListener("click",()=>enterEvent(event));
         card.append(art,badge,title,subtitle,desc,rewards,button);eventBox.appendChild(card);
