@@ -504,3 +504,6 @@ img,canvas,video{max-width:100%}
 /* APEX wordmark: opacity-only entrance, with no blur, glow haze or scaling. */
 body .apex-launch-intro .launch-center .launch-wordmark{filter:none!important;-webkit-filter:none!important;text-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;transform:none!important;animation:apex-wordmark-crisp .75s ease .8s both!important}
 body .apex-launch-intro .launch-center .launch-wordmark,body .apex-launch-intro .launch-center .launch-wordmark *{filter:none!important;-webkit-filter:none!important;text-shadow:none!important;-webkit-font-smoothing:antialiased}
+ /* Keep APEX and STRIKERS at exactly the same typographic size and weight. */
+ body .apex-launch-intro .launch-center .launch-wordmark>.intro-letter,
+ body .apex-launch-intro .launch-center .launch-wordmark>b{font-family:inherit!important;font-size:inherit!important;font-weight:1000!important;line-height:1!important;letter-spacing:inherit!important;transform:none!important;vertical-align:baseline!important}
