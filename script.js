@@ -131,13 +131,27 @@ const goalkeepers = [
         player.image=makePlayerAvatarData(player.name,player.role);
         return;
       }
-      if(isValidPlayerPhoto(player.image))return;
+      const stable=getStableWikiPortrait(player.name);
+      if(stable&&isValidPlayerPhoto(stable.image)){player.image=stable.image;return;}
+      if(isValidPlayerPhoto(player.image)&&!String(player.image).startsWith("data:image/svg+xml"))return;
       const sourced=rosterPhotoUrls[key]||"";
       const personal=["muhammadarham","hassanali"].includes(key)&&isValidPlayerPhoto(savedPhoto)?savedPhoto:"";
       player.image=isValidPlayerPhoto(sourced)?sourced:(personal||makePlayerAvatarData(player.name,player.role));
     });
   }
   const wikiPortraitCache=new Map();
+  const WIKI_PORTRAIT_STORAGE_KEY="apexStrikersVerifiedPortraitsV1";
+  function readStableWikiPortraits(){
+    try{const value=JSON.parse(localStorage.getItem(WIKI_PORTRAIT_STORAGE_KEY)||"{}");return value&&typeof value==="object"&&!Array.isArray(value)?value:{};}catch(_){return {};}
+  }
+  function getStableWikiPortrait(name){
+    const item=readStableWikiPortraits()[normalizePlayerName(name)];
+    return item&&isValidPlayerPhoto(item.image)&&item.fileUrl?item:null;
+  }
+  function saveStableWikiPortrait(name,record){
+    if(!record||!isValidPlayerPhoto(record.image)||!record.fileUrl)return;
+    try{const all=readStableWikiPortraits();all[normalizePlayerName(name)]=record;localStorage.setItem(WIKI_PORTRAIT_STORAGE_KEY,JSON.stringify(all));}catch(_){}
+  }
   function cleanWikiText(value){
     const box=document.createElement("textarea");
     box.innerHTML=String(value||"").replace(/<[^>]*>/g," ");
@@ -148,6 +162,8 @@ const goalkeepers = [
     if(!name)return Promise.resolve(null);
     const key=normalizePlayerName(name);
     if(CUSTOM_PLAYER_KEYS.has(key))return Promise.resolve(null);
+    const stable=getStableWikiPortrait(name);
+    if(stable)return Promise.resolve(stable);
     if(wikiPortraitCache.has(key))return wikiPortraitCache.get(key);
     const task=(async()=>{
       try{
@@ -177,7 +193,9 @@ const goalkeepers = [
           return {title,image,license,licenseUrl,author,fileUrl,exactNameMatch,needsCredit,allowedLicense};
         }).filter(item=>item.exactNameMatch&&item.allowedLicense&&item.image&&item.fileUrl&&/^https:\/\/upload\.wikimedia\.org\/wikipedia\/commons\//i.test(item.image)&&(!item.needsCredit||(item.author&&item.licenseUrl)));
         candidates.sort((a,b)=>Number(b.needsCredit)-Number(a.needsCredit));
-        return candidates[0]||null;
+        const selected=candidates[0]||null;
+        if(selected)saveStableWikiPortrait(name,selected);
+        return selected;
       }catch(_){return null;}
     })();
     wikiPortraitCache.set(key,task);
@@ -218,33 +236,44 @@ const goalkeepers = [
   function hydrateWikiPortrait(photo,name,role){
     if(!photo||photo.dataset.wikiAttempted==="true")return;
     photo.dataset.wikiAttempted="true";
-    if(CUSTOM_PLAYER_KEYS.has(normalizePlayerName(name)))return;
+    const fallback=makePlayerAvatarData(name,role);
+    if(CUSTOM_PLAYER_KEYS.has(normalizePlayerName(name))){
+      if(!photo.getAttribute("src"))photo.src=fallback;
+      return;
+    }
+    // Always keep a visible portrait if a remote photo host is slow or unavailable.
+    photo.onerror=()=>{
+      photo.onerror=null;
+      photo.dataset.wikiResolved="false";
+      photo.dataset.photoFallback="true";
+      photo.src=fallback;
+    };
     findWikiPortrait(name).then(record=>{
       if(!photo.isConnected)return;
       if(record){
-        photo.onerror=()=>showMissingWikiPhoto(photo,name);
         photo.src=record.image;
         photo.dataset.wikiResolved="true";
         photo.dataset.wikiSource=record.fileUrl;
+        const rosterPlayer=[...players,...goalkeepers].find(p=>normalizePlayerName(p.name)===normalizePlayerName(name));
+        if(rosterPlayer)rosterPlayer.image=record.image;
         showWikiPhotoCredit(photo,record);
       }else{
-        showMissingWikiPhoto(photo,name);
+        photo.src=fallback;
+        photo.dataset.photoFallback="true";
       }
-    }).catch(()=>{if(photo.isConnected)showMissingWikiPhoto(photo,name);});
+    }).catch(()=>{
+      if(photo.isConnected){photo.src=fallback;photo.dataset.photoFallback="true";}
+    });
   }
   function attachPlayerPortraitFallbacks(root){
     if(!root)return;
     root.querySelectorAll(".player-card-photo").forEach(photo=>{
       const name=photo.dataset.playerName||photo.alt||"Apex Player",role=photo.dataset.playerRole||"PLAYER";
-      photo.addEventListener("error",()=>{
-        if(photo.dataset.wikiResolved==="true"){showMissingWikiPhoto(photo,name);return;}
-        if(photo.dataset.sourceRetry!=="true"){
-          const alternate=rosterPhotoUrls[normalizePlayerName(name)];
-          if(alternate&&photo.src!==alternate){photo.dataset.sourceRetry="true";photo.src=alternate;return;}
-        }
-        hydrateWikiPortrait(photo,name,role);
-      });
-      if(!CUSTOM_PLAYER_KEYS.has(normalizePlayerName(name)))hydrateWikiPortrait(photo,name,role);
+      if(CUSTOM_PLAYER_KEYS.has(normalizePlayerName(name))){
+        if(!photo.getAttribute("src"))photo.src=makePlayerAvatarData(name,role);
+        return;
+      }
+      hydrateWikiPortrait(photo,name,role);
     });
   }
 
