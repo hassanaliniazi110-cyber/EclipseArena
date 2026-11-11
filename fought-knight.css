@@ -773,3 +773,56 @@ section,.career-hub,.featured-market-section,.youtube-panel{scroll-margin-top:16
 .pool-a-gallery-card .apex-card-footer{padding-bottom:10px}
 .pool-a-empty{grid-column:1/-1;color:#d6e7c8;text-align:center;padding:22px}
 @media(max-width:620px){.pool-a-card-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.pool-a-gallery-card{min-height:350px}.pool-a-gallery-heading{align-items:flex-start;flex-direction:column}}
+
+
+/* Apex cinematic polish: lock the walkout to every pixel of the viewport. */
+.apex-signing-overlay.apex-fullscreen-walkout{
+  position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;
+  max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
+  overflow:hidden!important;overscroll-behavior:none!important;display:grid!important;place-items:stretch!important;
+}
+.apex-signing-overlay.apex-fullscreen-walkout .apex-cinema-stage{
+  width:100vw!important;height:100vh!important;height:100dvh!important;min-height:100vh!important;min-height:100dvh!important;
+  max-width:none!important;margin:0!important;border:0!important;border-radius:0!important;box-sizing:border-box!important;
+  padding:clamp(14px,3.5vw,44px)!important;justify-content:center!important;
+}
+.apex-cinema-stage:before{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 54%,rgba(85,194,255,.13),transparent 36%),linear-gradient(90deg,transparent 0 12%,rgba(132,220,255,.08) 50%,transparent 88%);
+  opacity:.45;animation:apex-walkout-atmosphere 4.8s ease-in-out infinite alternate;
+}
+.apex-cinema-stage:after{
+  content:"";position:absolute;inset:12px;z-index:9;pointer-events:none;border:1px solid rgba(166,220,255,.12);
+  box-shadow:inset 0 0 90px rgba(0,0,0,.42);opacity:.7;
+}
+.walkout-power-up .walkout-stadium{animation:apex-stadium-power 2.2s ease-in-out infinite alternate}
+.walkout-power-up .walkout-roof{box-shadow:0 0 120px rgba(100,193,255,.32),inset 0 -30px 100px rgba(95,171,255,.2);animation:apex-roof-pulse 2s ease-in-out infinite alternate}
+.walkout-power-up .walkout-crowd{animation:apex-crowd-flash .8s steps(2,end) infinite}
+.apex-cinema-stage .walkout-final-card{width:min(340px,76vw)!important;max-height:min(58vh,620px)!important}
+.apex-cinema-stage .walkout-headline{max-width:94vw;text-wrap:balance}
+.apex-cinema-stage .walkout-identity{transition:opacity .7s,filter .7s,transform .7s}
+.apex-player-card.draft-player-card:before{
+  content:"";position:absolute;z-index:1;inset:-45% -70%;pointer-events:none;
+  background:linear-gradient(112deg,transparent 38%,rgba(255,255,255,.06) 44%,rgba(255,255,255,.42) 49%,rgba(255,255,255,.08) 54%,transparent 61%);
+  transform:translateX(-65%) rotate(8deg);animation:apex-card-prism 5.5s ease-in-out infinite;
+}
+.apex-launch-intro .launch-wordmark .intro-letter{
+  background:linear-gradient(105deg,#fff 0%,#a9eaff 32%,#fff 48%,#c5b8ff 67%,#fff 100%);
+  background-size:220% 100%;background-clip:text;-webkit-background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 18px rgba(112,216,255,.35));animation:launch-title-in .9s cubic-bezier(.16,1,.3,1) .8s forwards,apex-intro-sheen 4s ease-in-out 1.8s infinite;
+}
+@keyframes apex-walkout-atmosphere{from{opacity:.22;transform:scale(1)}to{opacity:.8;transform:scale(1.06)}}
+@keyframes apex-stadium-power{from{filter:brightness(.72) saturate(1)}to{filter:brightness(1.35) saturate(1.4)}}
+@keyframes apex-roof-pulse{from{opacity:.55}to{opacity:1}}
+@keyframes apex-crowd-flash{0%,100%{opacity:.42}50%{opacity:.95}}
+@keyframes apex-card-prism{0%,55%{transform:translateX(-65%) rotate(8deg)}85%,100%{transform:translateX(65%) rotate(8deg)}}
+@keyframes apex-intro-sheen{0%,100%{background-position:100% 0}50%{background-position:0 0}}
+@media(max-width:600px){
+  .apex-cinema-stage .walkout-final-card{width:min(300px,78vw)!important;max-height:50vh!important}
+  .apex-cinema-stage .walkout-identity{width:min(92vw,520px);gap:7px}
+  .apex-cinema-stage .walkout-reveal-line{min-height:62px;padding:9px}
+}
+@media(prefers-reduced-motion:reduce){
+  .apex-cinema-stage:before,.walkout-power-up .walkout-stadium,.walkout-power-up .walkout-roof,
+  .walkout-power-up .walkout-crowd,.apex-player-card.draft-player-card:before,.apex-launch-intro .launch-wordmark .intro-letter{animation:none!important}
+}
