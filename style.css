@@ -1321,3 +1321,39 @@ svg line,svg polyline,.chart-line,.stat-line,.player-chart-line,.player-stats sv
 .apex-photo-credits-footer .apex-photo-credit-entry{padding:7px 0;border-top:1px solid rgba(255,255,255,.08);overflow-wrap:anywhere}
 .apex-photo-credits-footer a{color:#d8ff77;text-decoration:underline;text-underline-offset:2px}
 .apex-photo-credits-footer .apex-photo-credit-source-note{margin-top:12px;font-size:11px}
+
+
+/* Keyboard Master: a one-of-one Lllllllll FC roster card. */
+.keyboard-master-card{
+  position:relative;isolation:isolate;overflow:hidden;
+  border:1px solid rgba(255,220,112,.9)!important;
+  background:radial-gradient(ellipse at 50% 8%,rgba(255,220,112,.22),transparent 42%),linear-gradient(155deg,#302718 0%,#171a20 48%,#0b111a 100%)!important;
+  box-shadow:0 0 0 1px rgba(255,220,112,.18),0 12px 30px rgba(0,0,0,.35),0 0 28px rgba(255,203,77,.16)!important;
+}
+.keyboard-master-card:before{
+  content:"⌨ KEYBOARD LEGEND";position:absolute;z-index:4;top:8px;left:8px;
+  padding:4px 7px;border:1px solid rgba(255,226,145,.65);border-radius:5px;
+  background:rgba(18,14,8,.88);color:#ffe8a6;font:900 8px/1.2 'Orbitron',sans-serif;
+  letter-spacing:.08em;box-shadow:0 0 14px rgba(255,211,95,.2);
+}
+.keyboard-master-card .player-card-photo{
+  height:126px!important;margin-top:25px!important;object-fit:cover!important;
+  border:1px solid rgba(255,222,133,.45)!important;
+  background:radial-gradient(circle at 50% 30%,#554329,#111722 72%)!important;
+  box-shadow:0 8px 22px rgba(0,0,0,.35),0 0 18px rgba(255,207,91,.12)!important;
+}
+.keyboard-master-card .player-rating{color:#ffe39a!important;font-size:32px!important;text-shadow:0 0 18px rgba(255,211,95,.42)}
+.keyboard-master-card .player-role,.keyboard-master-card .player-name{color:#fff0c2!important}
+.keyboard-master-card .player-special{color:#ffd98a!important;font-weight:900}
+.keyboard-master-card .fc-attributes b,.keyboard-master-card .fc-attributes strong{color:#ffe39a!important}
+.keyboard-master-card .ovr-meter i span{background:linear-gradient(90deg,#ffe8a6,#d99a35)!important;box-shadow:0 0 12px rgba(255,208,96,.55)}
+.keyboard-master-card:not(:disabled):hover{transform:translateY(-6px) scale(1.015);border-color:#fff0ba!important;box-shadow:0 0 0 1px rgba(255,226,145,.4),0 18px 38px rgba(0,0,0,.42),0 0 34px rgba(255,203,77,.3)!important}
+@media(prefers-reduced-motion:no-preference){
+  .keyboard-master-card:after{content:"";position:absolute;z-index:1;inset:-45% -80%;pointer-events:none;background:linear-gradient(110deg,transparent 42%,rgba(255,231,165,.12) 50%,transparent 58%);transform:translateX(-45%);animation:keyboardMasterSweep 5s ease-in-out infinite}
+  @keyframes keyboardMasterSweep{0%,55%{transform:translateX(-45%)}100%{transform:translateX(45%)}}
+}
+/* Cleaner portrait treatment across the player and goalkeeper rosters. */
+.player-card-photo{object-fit:cover!important;object-position:50% 22%!important;border:1px solid rgba(210,231,255,.22)!important;background:linear-gradient(145deg,#26394a,#101722)!important;box-shadow:0 8px 20px rgba(0,0,0,.3),inset 0 0 0 1px rgba(255,255,255,.035)}
+.player-card{background-image:linear-gradient(155deg,rgba(255,255,255,.045),transparent 38%),linear-gradient(145deg,rgba(19,32,43,.98),rgba(8,15,22,.98))}
+.player-card .player-name{font-weight:900;letter-spacing:.015em}
+.player-card .player-special{line-height:1.35}
