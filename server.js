@@ -85,7 +85,7 @@ const YOUTUBE_ACCESS_FILE = process.env.YOUTUBE_ACCESS_FILE || path.join(__dirna
 const AUDIT_FILE = process.env.APEX_AUDIT_FILE || path.join(__dirname, "apex-security-audit.jsonl");
 function base32Decode(value) {
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-  const clean = String(value || "").toUpperCase().replace(/=+$/g, "").replace(/\s+/g, "");
+  const clean = String(value || "").toUpperCase().replace(/=+$/g, "").replaceAll(" ", "").replaceAll("\n", "");
   let bits = "";
   for (const char of clean) {
     const index = alphabet.indexOf(char);
@@ -99,7 +99,8 @@ function base32Decode(value) {
 function verifyAdminTotp(code) {
   const secret = process.env.APEX_ADMIN_2FA_SECRET || "";
   if (!/^[A-Z2-7]{32,64}$/i.test(secret)) return false;
-  if (!/^\d{6}$/.test(String(code || ""))) return false;
+  const digits = String(code || "");
+  if (digits.length !== 6 || !Array.from(digits).every(char => char >= "0" && char <= "9")) return false;
   const key = base32Decode(secret);
   if (!key || key.length < 20) return false;
   const counter = Math.floor(Date.now() / 30000);
@@ -112,7 +113,7 @@ function verifyAdminTotp(code) {
       ((digest[position + 1] & 255) << 16) |
       ((digest[position + 2] & 255) << 8) |
       (digest[position + 3] & 255);
-    if (String(binary % 1000000).padStart(6, "0") === String(code)) return true;
+    if (String(binary % 1000000).padStart(6, "0") === digits) return true;
   }
   return false;
 }
