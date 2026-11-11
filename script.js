@@ -540,7 +540,40 @@ const goalkeepers = [
   const onlineCfg={base:(()=>{try{return String(window.ECLIPSE_CONFIG?.backendUrl||"").trim().replace(/\/$/,"");}catch(_){return "";}})(),deviceKey:(()=>{try{let key=localStorage.getItem("apexDeviceKey")||"";if(!/^[a-f0-9]{64}$/i.test(key)){const bytes=new Uint8Array(32);if(window.crypto&&window.crypto.getRandomValues)window.crypto.getRandomValues(bytes);else for(let i=0;i<bytes.length;i++)bytes[i]=Math.floor(Math.random()*256);key=Array.from(bytes,b=>b.toString(16).padStart(2,"0")).join("");localStorage.setItem("apexDeviceKey",key);}return key;}catch(_){return "";}})(),token:(()=>{try{return localStorage.getItem("eclipseDeviceToken")||"";}catch(_){return "";}})(),socket:null,roomId:null,onlineMatch:false,lastStateAt:0};
   let connectPromise=null,activeRewardSessionId=null,activeRewardSessionPromise=null,rewardClaimedThisGame=false,pendingApexEventId='',activeRewardEventId='';
   function setServerStatus(message){const el=$("serverStatus");if(el)el.textContent=message;} function setFriendStatus(message){const el=$("friendStatus");if(el)el.textContent=message;}
-  function api(path,opts={}){if(!onlineCfg.base)return Promise.reject(new Error("Online server is not configured yet."));const headers={"Content-Type":"application/json",...(opts.headers||{})};if(onlineCfg.token)headers.Authorization="Bearer "+onlineCfg.token;return fetch(onlineCfg.base+path,{...opts,headers}).then(async r=>{const d=await r.json().catch(()=>({error:"Invalid server response"}));if(!r.ok)throw new Error(d.error||"Server error "+r.status);return d;});}
+  let authRefreshPromise=null;
+  async function refreshOnlineAuth(){
+    if(authRefreshPromise)return authRefreshPromise;
+    authRefreshPromise=(async()=>{
+      const headers={"Content-Type":"application/json"};
+      if(onlineCfg.token)headers.Authorization="Bearer "+onlineCfg.token;
+      const response=await fetch(onlineCfg.base+"/api/register",{method:"POST",headers,body:JSON.stringify({profile:onlineProfile(),deviceKey:onlineCfg.deviceKey})});
+      const data=await response.json().catch(()=>({error:"Invalid server response"}));
+      if(!response.ok||!data.token)throw new Error(data.error||"Could not restore your online session. Please reconnect.");
+      onlineCfg.token=data.token;
+      try{localStorage.setItem("eclipseDeviceToken",data.token);localStorage.setItem("eclipsePlayerId",data.playerId);}catch(_){}
+      playerId=data.playerId;
+      if($("myPlayerId"))$("myPlayerId").textContent=data.playerId;
+      return data;
+    })();
+    try{return await authRefreshPromise;}finally{authRefreshPromise=null;}
+  }
+  function api(path,opts={}){
+    if(!onlineCfg.base)return Promise.reject(new Error("Online server is not configured yet."));
+    const send=()=>{
+      const headers={"Content-Type":"application/json",...(opts.headers||{})};
+      if(onlineCfg.token)headers.Authorization="Bearer "+onlineCfg.token;
+      return fetch(onlineCfg.base+path,{...opts,headers});
+    };
+    return send().then(async response=>{
+      if(response.status===401&&path!=="/api/register"){
+        await refreshOnlineAuth();
+        response=await send();
+      }
+      const data=await response.json().catch(()=>({error:"Invalid server response"}));
+      if(!response.ok)throw new Error(data.error||"Server error "+response.status);
+      return data;
+    });
+  }
   const saveCareerBeforeLeaderboardSync=saveCareer;saveCareer=function(){saveCareerBeforeLeaderboardSync();if(onlineCfg.base&&onlineCfg.token)api("/api/profile",{method:"PUT",body:JSON.stringify({profile:onlineProfile()})}).catch(()=>{});};
   async function claimGameReward(finalScore){
     if(rewardClaimedThisGame)return;
