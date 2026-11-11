@@ -694,7 +694,7 @@ const goalkeepers = [
       {id:"neon-derby",title:"NEON DERBY",subtitle:"LIGHTS. CROWD. KICK-OFF.",type:"WEEKLY",description:"Hit the target in a high-energy crossbar challenge.",mode:"crossbar",rewardGems:25,rewardXp:180},
       {id:"last-line",title:"LAST LINE",subtitle:"THE WALL NEVER FALLS",type:"DAILY",description:"Read the shot and protect your goal in the keeper challenge.",mode:"goalkeeping",rewardGems:15,rewardXp:90}
     ];
-    let events=localEvents;
+    let events=[localEvents[1],localEvents[0],...localEvents.slice(2)];
     if(onlineCfg.base&&onlineCfg.token){
       try{
         const eventData=await api("/api/events");
@@ -711,7 +711,7 @@ const goalkeepers = [
     if(eventBox){
       eventBox.replaceChildren();
       events.forEach((event,index)=>{
-        const card=document.createElement("article");card.className="apex-event-card"+(index===0?" featured":"");
+        const card=document.createElement("article");card.className="apex-event-card event-"+(event.id||"unknown")+(index===0?" featured":"");
         const art=document.createElement("div");art.className="apex-event-art "+(event.id||"");art.setAttribute("aria-hidden","true");art.textContent=event.id==="game-changers"?"GC":event.id==="apex-ascension"?"AA":event.id==="neon-derby"?"ND":"LL";
         const badge=document.createElement("span");badge.className="apex-event-badge";badge.textContent=String(event.type||"LIMITED EVENT").toUpperCase();
         const title=document.createElement("h3");title.textContent=event.title;
