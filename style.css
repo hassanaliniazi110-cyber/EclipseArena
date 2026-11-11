@@ -1304,3 +1304,9 @@ svg line,svg polyline,.chart-line,.stat-line,.player-chart-line,.player-stats sv
 .draft-open-pack-btn{display:block;width:min(100%,420px);margin:18px auto;padding:20px 24px;border:1px solid rgba(255,214,135,.7);border-radius:16px;background:linear-gradient(115deg,#fff0c7,#e2a644 48%,#8c571d);color:#211405;font:900 1rem 'Orbitron',sans-serif;letter-spacing:.08em;box-shadow:0 12px 40px rgba(234,168,66,.28);cursor:pointer}
 .draft-open-pack-btn:disabled{opacity:.65;cursor:wait}
 @media(max-width:600px){.apex-fullscreen-stage{padding:16px!important;gap:12px!important}.apex-fullscreen-stage .walkout-final-card{width:min(230px,64vw);max-height:42vh}}
+
+/* Visible, per-photo attribution for licensed footballer portraits. */
+.apex-photo-credit-line{display:block;position:relative;z-index:5;margin:-3px 0 7px;padding:4px 5px;border:1px solid rgba(183,255,91,.22);border-radius:4px;background:rgba(5,12,18,.92);color:#d9f4ad;font:700 8px/1.35 Arial,sans-serif;letter-spacing:.015em;text-align:left;overflow-wrap:anywhere;cursor:pointer}
+.apex-photo-credit-line:focus{outline:2px solid #c8ff68;outline-offset:2px}
+.apex-photo-missing{color:#ffc78c;border-color:rgba(255,180,95,.3);cursor:default}
+.apex-card-portrait .apex-photo-credit-line{position:absolute;left:2px;right:2px;bottom:2px;margin:0;font-size:7px;background:rgba(5,12,18,.88)}
