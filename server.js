@@ -736,7 +736,16 @@ app.post("/api/store/draft/open-ten",auth,draftStartLimiter,(req,res)=>{
   res.set("Cache-Control","no-store");
   res.json({eventId,picks,gems:syncAdminGemWallet(req.player),draftVouchers:req.player.draftVouchers,ownedCards:req.player.ownedCards,cardLevels:req.player.cardLevels,draftPity:getDraftPityStatus(req.player)});
 });
-app.post("/api/games/start",auth,gameLimiter,(req,res)=>{req.player.gameSession={id:crypto.randomBytes(16).toString("hex"),startedAt:Date.now(),mode:cleanText(req.body?.mode,24),eventId:cleanText(req.body?.eventId,32)};res.json({sessionId:req.player.gameSession.id});});
+app.post("/api/games/start",auth,gameLimiter,(req,res)=>{
+  const allowedModes=new Set(["penalty","freekick","longshot","goalkeeping","random","vsattack","crossbar","survival"]);
+  const allowedEvents=new Set(["","game-changers","neon-derby","last-line","apex-ascension"]);
+  const mode=cleanText(req.body?.mode,24),eventId=cleanText(req.body?.eventId,32);
+  if(!allowedModes.has(mode))return res.status(400).json({error:"Invalid game mode."});
+  if(!allowedEvents.has(eventId))return res.status(400).json({error:"Invalid event."});
+  req.player.gameSession={id:crypto.randomBytes(32).toString("hex"),startedAt:Date.now(),mode,eventId};
+  res.set("Cache-Control","no-store");
+  res.json({sessionId:req.player.gameSession.id});
+});
 app.post("/api/games/complete",auth,gameLimiter,(req,res)=>{
   const session=req.player.gameSession;
   if(!session||req.body?.sessionId!==session.id)return res.status(409).json({error:"No active game reward session."});
@@ -745,8 +754,9 @@ app.post("/api/games/complete",auth,gameLimiter,(req,res)=>{
   const today=new Date().toISOString().slice(0,10);
   if(req.player.rewardDay!==today){req.player.rewardDay=today;req.player.rewardGemsToday=0;}
   if(Date.now()-req.player.lastGameClaimAt<5000){req.player.gameSession=null;saveData();return res.status(429).json({error:"Start the next game and finish it before claiming more gems."});}
-  const reportedScore=Math.max(0,Math.min(5000,Math.floor(Number(req.body?.score)||0)));
-  let reward=Math.min(50,15+Math.floor(reportedScore/100)),eventReward=0,eventXp=0,eventId="",eventCard=null;
+  // Never trust a score submitted by the browser for currency. Base rewards
+  // use server-measured session time so edited requests cannot mint extra gems.
+  let reward=Math.min(50,15+Math.floor(elapsed/60000)*5),eventReward=0,eventXp=0,eventId="",eventCard=null;
   const eventKey=["game-changers","neon-derby","last-line","apex-ascension"].includes(session.eventId)?session.eventId:"";
   if(eventKey){
     const period=eventKey==="game-changers"?"week-"+Math.floor(Date.now()/604800000):today;
@@ -780,13 +790,25 @@ app.post("/api/games/complete",auth,gameLimiter,(req,res)=>{
   res.json({gems:syncAdminGemWallet(req.player),unlimitedGems:youtubeAdminPlayers.has(req.player.id),reward,eventReward,eventXp,eventId,eventCard,ownedCards:req.player.ownedCards,cardLevels:req.player.cardLevels,dailyEarned:req.player.rewardGemsToday,dailyLimit:null});
 });
 app.get("/api/leaderboard", auth, (req, res) => {
-  const requested=Math.floor(Number(req.query.limit)||1000);
-  const limit=Math.max(1,Math.min(1000,requested));
-  const seenProfiles = new Set();
-  const board = [...players.values()].map(publicProfile)
-    .filter(p => (p.xp || 0) > 0 || (p.wins || 0) > 0 || (p.goals || 0) > 0 || (p.saves || 0) > 0)
-    .filter(p => { const key = [p.name, p.player, p.goalkeeper, p.xp, p.wins, p.goals, p.saves, p.best].map(v => String(v ?? "").trim().toLowerCase()).join("|"); if (seenProfiles.has(key)) return false; seenProfiles.add(key); return true; })
-    .sort((a, b) => b.wins - a.wins || b.xp - a.xp || b.goals - a.goals)
+  const requested=Math.floor(Number(req.query.limit)||50000);
+  const limit=Math.max(1,Math.min(50000,requested));
+  // Every registered account belongs on the board, even before its first match.
+  // Return only public competition stats, never wallets, tokens, or owned-card data.
+  const board = [...players.values()]
+    .map(p => ({
+      id: p.id,
+      name: cleanText(p.profile.name || "Apex Player", 24),
+      xp: Math.max(0, Number(p.profile.xp) || 0),
+      goals: Math.max(0, Number(p.profile.goals) || 0),
+      saves: Math.max(0, Number(p.profile.saves) || 0),
+      wins: Math.max(0, Number(p.profile.wins) || 0),
+      best: Math.max(0, Number(p.profile.best) || 0),
+      player: cleanText(p.profile.player, 40),
+      goalkeeper: cleanText(p.profile.goalkeeper, 40),
+      ovr: Math.max(0, Number(p.profile.ovr) || 0),
+      online: Boolean(socketsByPlayer.get(p.id)?.size)
+    }))
+    .sort((a, b) => b.wins - a.wins || b.xp - a.xp || b.goals - a.goals || a.name.localeCompare(b.name))
     .slice(0, limit)
     .map((p, index) => ({ rank: index + 1, ...p }));
   res.set("Cache-Control","no-store");
