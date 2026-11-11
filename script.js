@@ -141,7 +141,7 @@ const goalkeepers = [
   function cleanWikiText(value){
     const box=document.createElement("textarea");
     box.innerHTML=String(value||"").replace(/<[^>]*>/g," ");
-    return box.value.replace(/\\s+/g," ").trim();
+    return box.value.replace(/\s+/g," ").trim();
   }
   function findWikiPortrait(playerName){
     const name=String(playerName||"").trim();
@@ -166,7 +166,6 @@ const goalkeepers = [
           const info=page.imageinfo?.[0]||{},meta=info.extmetadata||{};
           const license=cleanWikiText(meta.LicenseShortName?.value||meta.UsageTerms?.value||"");
           const licenseUrl=String(meta.LicenseUrl?.value||"").trim();
-          const isOpen=/^(?:CC0(?:\\s*1\\.0)?|Public domain|PD(?:[- ].*)?|CC BY(?:[- ]SA)?(?:[- ]\\d+(?:\\.\\d+)?)?)$/i.test(license);
           const image=info.thumburl||info.url||"";
           const title=page.title||"";
           const titleKey=normalizePlayerName(title.replace(/^File:/i,""));
@@ -174,8 +173,9 @@ const goalkeepers = [
           const author=cleanWikiText(meta.Attribution?.value||meta.Artist?.value||meta.Credit?.value||"");
           const fileUrl=info.descriptionurl||("https://commons.wikimedia.org/wiki/"+encodeURIComponent(title.replace(/ /g,"_")));
           const needsCredit=/^CC BY(?:[- ]SA)?/i.test(license);
-          return {title,image,license,licenseUrl,author,fileUrl,exactNameMatch,needsCredit};
-        }).filter(item=>item.exactNameMatch&&item.license&&item.image&&item.fileUrl&&item.licenseUrl&&/^https:\/\/upload\.wikimedia\.org\/wikipedia\/commons\//i.test(item.image)&&(!item.needsCredit||item.author));
+          const allowedLicense=/^(?:CC0(?:\s*1\.0)?|Public domain|PD(?:[- ].*)?|CC BY(?:[- ]SA)?(?:[- ]\d+(?:\.\d+)?)?)$/i.test(license);
+          return {title,image,license,licenseUrl,author,fileUrl,exactNameMatch,needsCredit,allowedLicense};
+        }).filter(item=>item.exactNameMatch&&item.allowedLicense&&item.image&&item.fileUrl&&/^https:\/\/upload\.wikimedia\.org\/wikipedia\/commons\//i.test(item.image)&&(!item.needsCredit||(item.author&&item.licenseUrl)));
         candidates.sort((a,b)=>Number(b.needsCredit)-Number(a.needsCredit));
         return candidates[0]||null;
       }catch(_){return null;}
@@ -200,6 +200,17 @@ const goalkeepers = [
     line.onclick=event=>{event.preventDefault();event.stopPropagation();window.open(credit.fileUrl,"_blank","noopener,noreferrer");};
     line.onkeydown=event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();event.stopPropagation();window.open(credit.fileUrl,"_blank","noopener,noreferrer");}};
   }
+  function showMissingWikiPhoto(photo,name){
+    if(!photo||!photo.isConnected||photo.dataset.wikiMissing==="true")return;
+    photo.dataset.wikiFailed="true";
+    photo.dataset.wikiMissing="true";
+    photo.alt=name+" · no verified licensed photo found";
+    photo.title="No verified licensed photograph was found for this player.";
+    const line=document.createElement("span");
+    line.className="apex-photo-credit-line apex-photo-missing";
+    line.textContent="PHOTO NOT VERIFIED";
+    photo.insertAdjacentElement("afterend",line);
+  }
   function hydrateWikiPortrait(photo,name,role){
     if(!photo||photo.dataset.wikiAttempted==="true")return;
     photo.dataset.wikiAttempted="true";
@@ -207,28 +218,22 @@ const goalkeepers = [
     findWikiPortrait(name).then(record=>{
       if(!photo.isConnected)return;
       if(record){
-        photo.onerror=null;
+        photo.onerror=()=>showMissingWikiPhoto(photo,name);
         photo.src=record.image;
         photo.dataset.wikiResolved="true";
         photo.dataset.wikiSource=record.fileUrl;
         showWikiPhotoCredit(photo,record);
       }else{
-        photo.dataset.wikiFailed="true";
-        photo.dataset.wikiMissing="true";
-        photo.alt=name+" · no verified licensed photo found";
-        photo.title="No verified licensed photograph was found for this player.";
-        const line=document.createElement("span");
-        line.className="apex-photo-credit-line apex-photo-missing";
-        line.textContent="PHOTO NOT VERIFIED";
-        photo.insertAdjacentElement("afterend",line);
+        showMissingWikiPhoto(photo,name);
       }
-    }).catch(()=>{if(photo.isConnected){photo.dataset.wikiFailed="true";}});
+    }).catch(()=>{if(photo.isConnected)showMissingWikiPhoto(photo,name);});
   }
   function attachPlayerPortraitFallbacks(root){
     if(!root)return;
     root.querySelectorAll(".player-card-photo").forEach(photo=>{
       const name=photo.dataset.playerName||photo.alt||"Apex Player",role=photo.dataset.playerRole||"PLAYER";
       photo.addEventListener("error",()=>{
+        if(photo.dataset.wikiResolved==="true"){showMissingWikiPhoto(photo,name);return;}
         if(photo.dataset.sourceRetry!=="true"){
           const alternate=rosterPhotoUrls[normalizePlayerName(name)];
           if(alternate&&photo.src!==alternate){photo.dataset.sourceRetry="true";photo.src=alternate;return;}
@@ -672,7 +677,7 @@ const goalkeepers = [
   async function loadApexStore(){
     const panel=$("featuredMarketPanel");if(!panel)return;
     let selectedDraftEvent="apex-ascension";
-    panel.innerHTML='<section class="apex-draft-market"><div class="draft-market-kicker">APEX STRIKERS · PLAYER EXCHANGE</div><h3>THE DRAFT ROOM</h3><p>Exchange gems for a Draft Voucher, then choose which event pool to draft from. Each voucher reveals one random player from that event. You will not see who it is until the final reveal.</p><div class="draft-event-picker" role="group" aria-label="Choose draft event"><button type="button" class="draft-event-option selected" data-draft-event="apex-ascension"><strong>APEX ASCENSION</strong><small>200-player elite pool</small></button><button type="button" class="draft-event-option" data-draft-event="game-changers"><strong>GAME CHANGERS</strong><small>10 special players</small></button></div><div class="apex-store-head"><strong>YOUR WALLET</strong><span class="apex-gem-count" id="apexGemCount">Loading...</span></div><div class="draft-wallet-line"><span id="apexVoucherCount">◇ -- DRAFT VOUCHERS</span><span>150 GEMS = 1 VOUCHER</span></div><div class="draft-layout"><div class="draft-main-actions"><div class="apex-pack-row draft-voucher-actions"><button class="apex-pack draft-buy" id="buyDraftVoucher"><strong>GET 1 VOUCHER</strong><span>150 GEMS · 1 VOUCHER</span><small>One sealed player. One big reveal.</small></button><button class="apex-pack draft-buy draft-buy-ten" id="buyTenDraftVouchers"><strong>GET 10 VOUCHERS</strong><span>1,500 GEMS · 10 VOUCHERS</span><small>Stock up for a 10-player opening.</small></button><button class="apex-pack draft-start" id="startPlayerDraft"><strong>ENTER THE DRAFT</strong><span>1 VOUCHER · 1 MYSTERY PLAYER</span><small>Open one mystery player pack. The result is revealed at the end.</small></button><button class="apex-pack draft-start draft-open-ten" id="openTenDrafts"><strong>OPEN 10 DRAFTS</strong><span>10 VOUCHERS · 10 PLAYERS</span><small>Use 10 vouchers instantly and reveal all 10 players.</small></button></div><p id="apexPackStatus" class="career-hub-status" aria-live="polite"></p><div id="apexDraftChoices" class="apex-card-grid draft-choice-grid"></div><div id="apexPackReveal" class="apex-card-grid"></div></div><aside class="draft-odds-panel" id="draftOddsPanel" aria-live="polite"><div class="draft-odds-heading"><span>✦</span><div><strong>TOP 3 PACKABLE</strong><small>BEST PLAYERS IN THIS EVENT</small></div></div><div id="draftOddsList"><p>Loading real pack odds...</p></div><small class="draft-odds-note">Chance per voucher · based on actual pack weights</small><div id="draftPityStatus" class="draft-pity-status" aria-live="polite">Loading guaranteed pools...</div></aside></div><section class="pool-a-gallery" aria-labelledby="poolAHeading"><div class="pool-a-gallery-heading"><div><span>✦ ELITE GUARANTEE POOL</span><h3 id="poolAHeading">POOL A · ALL 126+ OVR PLAYERS</h3><p>Browse every player eligible for the Pool A guarantee. Tap a card to expand its attributes.</p></div><strong id="poolACount">LOADING...</strong></div><div id="poolACards" class="pool-a-card-grid"><p>Loading Pool A cards...</p></div></section></section><p class="apex-photo-credit">Player photographs: Wikimedia Commons. Credits and licence information are listed here: <a href="https://geofootballguessr.com/image-credits" target="_blank" rel="noopener noreferrer">photo credits</a>.</p>';
+    panel.innerHTML='<section class="apex-draft-market"><div class="draft-market-kicker">APEX STRIKERS · PLAYER EXCHANGE</div><h3>THE DRAFT ROOM</h3><p>Exchange gems for a Draft Voucher, then choose which event pool to draft from. Each voucher reveals one random player from that event. You will not see who it is until the final reveal.</p><div class="draft-event-picker" role="group" aria-label="Choose draft event"><button type="button" class="draft-event-option selected" data-draft-event="apex-ascension"><strong>APEX ASCENSION</strong><small>200-player elite pool</small></button><button type="button" class="draft-event-option" data-draft-event="game-changers"><strong>GAME CHANGERS</strong><small>10 special players</small></button></div><div class="apex-store-head"><strong>YOUR WALLET</strong><span class="apex-gem-count" id="apexGemCount">Loading...</span></div><div class="draft-wallet-line"><span id="apexVoucherCount">◇ -- DRAFT VOUCHERS</span><span>150 GEMS = 1 VOUCHER</span></div><div class="draft-layout"><div class="draft-main-actions"><div class="apex-pack-row draft-voucher-actions"><button class="apex-pack draft-buy" id="buyDraftVoucher"><strong>GET 1 VOUCHER</strong><span>150 GEMS · 1 VOUCHER</span><small>One sealed player. One big reveal.</small></button><button class="apex-pack draft-buy draft-buy-ten" id="buyTenDraftVouchers"><strong>GET 10 VOUCHERS</strong><span>1,500 GEMS · 10 VOUCHERS</span><small>Stock up for a 10-player opening.</small></button><button class="apex-pack draft-start" id="startPlayerDraft"><strong>ENTER THE DRAFT</strong><span>1 VOUCHER · 1 MYSTERY PLAYER</span><small>Open one mystery player pack. The result is revealed at the end.</small></button><button class="apex-pack draft-start draft-open-ten" id="openTenDrafts"><strong>OPEN 10 DRAFTS</strong><span>10 VOUCHERS · 10 PLAYERS</span><small>Use 10 vouchers instantly and reveal all 10 players.</small></button></div><p id="apexPackStatus" class="career-hub-status" aria-live="polite"></p><div id="apexDraftChoices" class="apex-card-grid draft-choice-grid"></div><div id="apexPackReveal" class="apex-card-grid"></div></div><aside class="draft-odds-panel" id="draftOddsPanel" aria-live="polite"><div class="draft-odds-heading"><span>✦</span><div><strong>TOP 3 PACKABLE</strong><small>BEST PLAYERS IN THIS EVENT</small></div></div><div id="draftOddsList"><p>Loading real pack odds...</p></div><small class="draft-odds-note">Chance per voucher · based on actual pack weights</small><div id="draftPityStatus" class="draft-pity-status" aria-live="polite">Loading guaranteed pools...</div></aside></div><section class="pool-a-gallery" aria-labelledby="poolAHeading"><div class="pool-a-gallery-heading"><div><span>✦ ELITE GUARANTEE POOL</span><h3 id="poolAHeading">POOL A · ALL 126+ OVR PLAYERS</h3><p>Browse every player eligible for the Pool A guarantee. Tap a card to expand its attributes.</p></div><strong id="poolACount">LOADING...</strong></div><div id="poolACards" class="pool-a-card-grid"><p>Loading Pool A cards...</p></div></section></section><p class="apex-photo-credit">Player photo credits appear beside each verified photograph, including photographer, licence, and Wikimedia Commons source. Custom players use their own profile photos.</p>';
     if(!onlineCfg.base||!onlineCfg.token){$("apexGemCount").textContent="Connect online to sync gems";$("apexVoucherCount").textContent="Connect to view vouchers";updateCareerVoucherBalance("CONNECT ONLINE");return;}
     try{
       const data=await api("/api/store");$("apexGemCount").textContent=data.unlimitedGems?"∞ GEMS · ADMIN WALLET":"◇ "+Number(data.gems).toLocaleString()+" GEMS";updateTopGemBalance(data.gems,data.unlimitedGems);updateCareerVoucherBalance(data.draftVouchers||0);$("apexVoucherCount").textContent="◇ "+(data.draftVouchers||0)+" DRAFT VOUCHERS";syncOwnedCardsToRoster(data.ownedCards,data.cardCatalog);
@@ -718,7 +723,7 @@ const goalkeepers = [
         card.dataset.rarity=String(p.rarity||"ELITE").toLowerCase().replace(/[^a-z0-9-]/g,"-");
         const portrait=document.createElement("div");portrait.className="apex-card-portrait";
         const photo=document.createElement("img");photo.src=isValidPlayerPhoto(info[5])?info[5]:makePlayerAvatarData(info[0],info[2]);photo.alt=info[0]+" player portrait";photo.loading="lazy";photo.referrerPolicy="no-referrer";
-        photo.onerror=()=>{if(photo.dataset.sourceRetry!=="true"){const alternate=rosterPhotoUrls[normalizePlayerName(info[0])];if(alternate&&photo.src!==alternate){photo.dataset.sourceRetry="true";photo.src=alternate;return;}}hydrateWikiPortrait(photo,info[0],info[2]);};
+        photo.onerror=()=>{if(photo.dataset.wikiResolved==="true"){showMissingWikiPhoto(photo,info[0]);return;}if(photo.dataset.sourceRetry!=="true"){const alternate=rosterPhotoUrls[normalizePlayerName(info[0])];if(alternate&&photo.src!==alternate){photo.dataset.sourceRetry="true";photo.src=alternate;return;}}hydrateWikiPortrait(photo,info[0],info[2]);};
         if(!isValidPlayerPhoto(info[5])){photo.dataset.needsWiki="true";}
         portrait.appendChild(photo);
         if(photo.dataset.needsWiki==="true")hydrateWikiPortrait(photo,info[0],info[2]);
