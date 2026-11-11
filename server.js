@@ -312,11 +312,20 @@ app.post("/api/register", registerLimiter, (req, res) => {
   const bearer = /^Bearer\s+([a-f0-9]{64})$/i.exec(req.get("authorization") || "");
   const deviceKey = /^[a-f0-9]{64}$/i.test(String(req.body?.deviceKey || "")) ? String(req.body.deviceKey).toLowerCase() : "";
   const deviceMatch = deviceKey && [...players.values()].find(p => p.deviceKey === deviceKey);
-  const existingId = (bearer && tokenToPlayer.get(hashToken(bearer[1]))) || deviceMatch?.id;
+  const bearerPlayerId = bearer && tokenToPlayer.get(hashToken(bearer[1]));
+  const existingId = bearerPlayerId || deviceMatch?.id;
   if (existingId && players.has(existingId)) {
     const existing = players.get(existingId);
     existing.profile = { ...existing.profile, name: profile.name, player: profile.player, goalkeeper: profile.goalkeeper, ovr: profile.ovr };
     if (deviceKey && (!existing.deviceKey || existing.deviceKey === deviceKey)) existing.deviceKey = deviceKey;
+    // A still-valid bearer token is already the active session. Keep it stable so
+    // overlapping startup/store requests cannot invalidate one another.
+    if (bearerPlayerId && existing.tokenHash === hashToken(bearer[1])) {
+      saveData();
+      return res.json({ playerId: existing.id, token: bearer[1] });
+    }
+    // If the token expired or was lost, recover the account through its device key
+    // and issue one replacement token.
     tokenToPlayer.delete(existing.tokenHash);
     const rotatedToken = crypto.randomBytes(32).toString("hex");
     existing.tokenHash = hashToken(rotatedToken);
