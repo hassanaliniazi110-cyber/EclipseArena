@@ -154,6 +154,17 @@ const goalkeepers = [
   }
   function getStableWikiPortrait(name){
     const key=normalizePlayerName(name);
+    // Ederson's old catalogue slug resolved to the wrong footballer.
+    // Pin his portrait to the exact Wikimedia Commons file for Ederson Moraes.
+    if(key==="ederson")return{
+      image:"https://commons.wikimedia.org/wiki/Special:FilePath/Ederson.png",
+      title:"Ederson.png",
+      author:"Wikimedia Commons contributors",
+      fileUrl:"https://commons.wikimedia.org/wiki/Category:Ederson_Moraes",
+      license:"See the file page for its licence",
+      licenseUrl:"https://commons.wikimedia.org/wiki/File:Ederson.png",
+      needsCredit:true
+    };
     const fixed=rosterPhotoUrls[key];
     if(fixed)return{
       image:fixed,
