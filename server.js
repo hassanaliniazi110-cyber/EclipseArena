@@ -737,7 +737,7 @@ app.post("/api/store/draft/open-ten",auth,draftStartLimiter,(req,res)=>{
   res.json({eventId,picks,gems:syncAdminGemWallet(req.player),draftVouchers:req.player.draftVouchers,ownedCards:req.player.ownedCards,cardLevels:req.player.cardLevels,draftPity:getDraftPityStatus(req.player)});
 });
 app.post("/api/games/start",auth,gameLimiter,(req,res)=>{
-  const allowedModes=new Set(["penalty","freekick","longshot","goalkeeping","random","vsattack","crossbar","survival"]);
+  const allowedModes=new Set(["penalty","freekick","longshot","goalkeeping","random","vsattack","crossbar","survival","headtohead"]);
   const allowedEvents=new Set(["","game-changers","neon-derby","last-line","apex-ascension"]);
   const mode=cleanText(req.body?.mode,24),eventId=cleanText(req.body?.eventId,32);
   if(!allowedModes.has(mode))return res.status(400).json({error:"Invalid game mode."});
