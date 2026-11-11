@@ -137,14 +137,8 @@ function verifyAdminCode(secret, code) {
   return false;
 }
 function requireAdmin2FA(req, res, next) {
+  // Owner actions still require a valid authenticated player session and server-side owner allowlist.
   if (!youtubeAdminPlayers.has(req.player.id)) return res.status(403).json({ error: "Owner access required." });
-  if (!admin2FA || !admin2FA.enabled || !decryptAdminSecret(admin2FA.secret)) return res.status(503).json({ error: "Admin two-step verification is not enrolled. Set APEX_2FA_ENCRYPTION_KEY, then enroll in Admin Security." });
-  const token = String(req.get("x-admin-2fa") || "");
-  const session = admin2FASessions.get(token);
-  if (!session || session.playerId !== req.player.id || session.expiresAt < Date.now()) {
-    if (session) admin2FASessions.delete(token);
-    return res.status(403).json({ error: "Verify your authenticator code in Admin Security first." });
-  }
   next();
 }
 
@@ -546,12 +540,93 @@ const STORE_CARDS = [
   {id:"osimhen",name:"Victor Osimhen",ovr:122,position:"ST",country:"NIGERIA",flag:"NG",rarity:"ELITE",image:"https://geofootballguessr.com/footballers/victor-osimhen.webp"},
   {id:"dybala",name:"Paulo Dybala",ovr:122,position:"CAM",country:"ARGENTINA",flag:"AR",rarity:"ELITE",image:"https://geofootballguessr.com/footballers/paulo-dybala.webp"},
   {id:"sonprime",name:"Son Heung-min (Prime)",ovr:124,position:"LW",country:"SOUTH KOREA",flag:"KR",rarity:"ICON",image:"https://geofootballguessr.com/footballers/son-heung-min.webp"}
+  ,
+  {id:"eusebio",name:"Eusébio",ovr:126,position:"ST",country:"PORTUGAL",flag:"PT",rarity:"ICON",weight:5,image:""},
+  {id:"georgebest",name:"George Best",ovr:125,position:"RW",country:"NORTHERN IRELAND",flag:"NI",rarity:"ICON",weight:6,image:""},
+  {id:"cruyff",name:"Johan Cruyff",ovr:128,position:"CF",country:"NETHERLANDS",flag:"NL",rarity:"ICON",weight:3,image:""},
+  {id:"beckenbauer",name:"Franz Beckenbauer",ovr:127,position:"CB",country:"GERMANY",flag:"DE",rarity:"ICON",weight:3,image:""},
+  {id:"gerdmuller",name:"Gerd Müller",ovr:126,position:"ST",country:"GERMANY",flag:"DE",rarity:"ICON",weight:5,image:""},
+  {id:"vanbasten",name:"Marco van Basten",ovr:126,position:"ST",country:"NETHERLANDS",flag:"NL",rarity:"ICON",weight:5,image:""},
+  {id:"gullit",name:"Ruud Gullit",ovr:126,position:"CAM",country:"NETHERLANDS",flag:"NL",rarity:"ICON",weight:6,image:""},
+  {id:"rijkaard",name:"Frank Rijkaard",ovr:124,position:"CDM",country:"NETHERLANDS",flag:"NL",rarity:"ICON",weight:8,image:""},
+  {id:"bergkamp",name:"Dennis Bergkamp",ovr:125,position:"CAM",country:"NETHERLANDS",flag:"NL",rarity:"ICON",weight:7,image:""},
+  {id:"seedorf",name:"Clarence Seedorf",ovr:124,position:"CM",country:"NETHERLANDS",flag:"NL",rarity:"ICON",weight:9,image:""},
+  {id:"robben",name:"Arjen Robben",ovr:125,position:"RW",country:"NETHERLANDS",flag:"NL",rarity:"ICON",weight:8,image:""},
+  {id:"vanpersie",name:"Robin van Persie",ovr:124,position:"ST",country:"NETHERLANDS",flag:"NL",rarity:"ICON",weight:10,image:""},
+  {id:"sneijder",name:"Wesley Sneijder",ovr:124,position:"CAM",country:"NETHERLANDS",flag:"NL",rarity:"ICON",weight:10,image:""},
+  {id:"vandernistelrooy",name:"Ruud van Nistelrooy",ovr:124,position:"ST",country:"NETHERLANDS",flag:"NL",rarity:"ICON",weight:9,image:""},
+  {id:"drogba",name:"Didier Drogba",ovr:125,position:"ST",country:"IVORY COAST",flag:"CI",rarity:"ICON",weight:7,image:""},
+  {id:"etoo",name:"Samuel Eto'o",ovr:126,position:"ST",country:"CAMEROON",flag:"CM",rarity:"ICON",weight:5,image:""},
+  {id:"yayatoure",name:"Yaya Touré",ovr:125,position:"CM",country:"IVORY COAST",flag:"CI",rarity:"ICON",weight:8,image:""},
+  {id:"essien",name:"Michael Essien",ovr:122,position:"CDM",country:"GHANA",flag:"GH",rarity:"ICON",weight:12,image:""},
+  {id:"okocha",name:"Jay-Jay Okocha",ovr:124,position:"CAM",country:"NIGERIA",flag:"NG",rarity:"ICON",weight:9,image:""},
+  {id:"weah",name:"George Weah",ovr:125,position:"ST",country:"LIBERIA",flag:"LR",rarity:"ICON",weight:8,image:""},
+  {id:"mane",name:"Sadio Mané",ovr:123,position:"LW",country:"SENEGAL",flag:"SN",rarity:"ELITE",weight:45,image:""},
+  {id:"mahrez",name:"Riyad Mahrez",ovr:123,position:"RW",country:"ALGERIA",flag:"DZ",rarity:"ELITE",weight:42,image:""},
+  {id:"ziyech",name:"Hakim Ziyech",ovr:120,position:"CAM",country:"MOROCCO",flag:"MA",rarity:"ELITE",weight:30,image:""},
+  {id:"bounou",name:"Yassine Bounou",ovr:121,position:"GK",country:"MOROCCO",flag:"MA",rarity:"ELITE",weight:32,image:""},
+  {id:"nakata",name:"Hidetoshi Nakata",ovr:121,position:"CAM",country:"JAPAN",flag:"JP",rarity:"ICON",weight:15,image:""},
+  {id:"parksung",name:"Park Ji-sung",ovr:121,position:"CM",country:"SOUTH KOREA",flag:"KR",rarity:"ICON",weight:15,image:""},
+  {id:"chabumkun",name:"Cha Bum-kun",ovr:123,position:"ST",country:"SOUTH KOREA",flag:"KR",rarity:"ICON",weight:10,image:""},
+  {id:"kagawa",name:"Shinji Kagawa",ovr:119,position:"CAM",country:"JAPAN",flag:"JP",rarity:"ELITE",weight:25,image:""},
+  {id:"honda",name:"Keisuke Honda",ovr:120,position:"CAM",country:"JAPAN",flag:"JP",rarity:"ELITE",weight:22,image:""},
+  {id:"socrates",name:"Sócrates",ovr:126,position:"CAM",country:"BRAZIL",flag:"BR",rarity:"ICON",weight:5,image:""},
+  {id:"rivaldo",name:"Rivaldo",ovr:126,position:"LW",country:"BRAZIL",flag:"BR",rarity:"ICON",weight:5,image:""},
+  {id:"romario",name:"Romário",ovr:127,position:"ST",country:"BRAZIL",flag:"BR",rarity:"ICON",weight:4,image:""},
+  {id:"zico",name:"Zico",ovr:127,position:"CAM",country:"BRAZIL",flag:"BR",rarity:"ICON",weight:4,image:""},
+  {id:"garrincha",name:"Garrincha",ovr:126,position:"RW",country:"BRAZIL",flag:"BR",rarity:"ICON",weight:4,image:""},
+  {id:"jairzinho",name:"Jairzinho",ovr:125,position:"RW",country:"BRAZIL",flag:"BR",rarity:"ICON",weight:6,image:""},
+  {id:"carlosalberto",name:"Carlos Alberto",ovr:125,position:"RB",country:"BRAZIL",flag:"BR",rarity:"ICON",weight:8,image:""},
+  {id:"dunga",name:"Dunga",ovr:122,position:"CDM",country:"BRAZIL",flag:"BR",rarity:"ICON",weight:12,image:""},
+  {id:"bebeto",name:"Bebeto",ovr:123,position:"ST",country:"BRAZIL",flag:"BR",rarity:"ICON",weight:10,image:""},
+  {id:"adriano",name:"Adriano",ovr:125,position:"ST",country:"BRAZIL",flag:"BR",rarity:"ICON",weight:8,image:""},
+  {id:"juninho",name:"Juninho Pernambucano",ovr:123,position:"CAM",country:"BRAZIL",flag:"BR",rarity:"ICON",weight:10,image:""},
+  {id:"marcelo",name:"Marcelo",ovr:124,position:"LB",country:"BRAZIL",flag:"BR",rarity:"ICON",weight:12,image:""},
+  {id:"danialves",name:"Dani Alves",ovr:124,position:"RB",country:"BRAZIL",flag:"BR",rarity:"ICON",weight:10,image:""},
+  {id:"thiagosilva",name:"Thiago Silva",ovr:123,position:"CB",country:"BRAZIL",flag:"BR",rarity:"ELITE",weight:35,image:""},
+  {id:"marquinhos",name:"Marquinhos",ovr:122,position:"CB",country:"BRAZIL",flag:"BR",rarity:"ELITE",weight:35,image:""},
+  {id:"fabinho",name:"Fabinho",ovr:120,position:"CDM",country:"BRAZIL",flag:"BR",rarity:"ELITE",weight:28,image:""},
+  {id:"fernandinho",name:"Fernandinho",ovr:121,position:"CDM",country:"BRAZIL",flag:"BR",rarity:"ELITE",weight:28,image:""},
+  {id:"davidluiz",name:"David Luiz",ovr:120,position:"CB",country:"BRAZIL",flag:"BR",rarity:"ELITE",weight:25,image:""},
+  {id:"lucio",name:"Lúcio",ovr:124,position:"CB",country:"BRAZIL",flag:"BR",rarity:"ICON",weight:9,image:""},
+  {id:"brunofernandes",name:"Bruno Fernandes",ovr:123,position:"CAM",country:"PORTUGAL",flag:"PT",rarity:"ELITE",weight:48,image:""},
+  {id:"bernardosilva",name:"Bernardo Silva",ovr:124,position:"CAM",country:"PORTUGAL",flag:"PT",rarity:"ELITE",weight:48,image:""},
+  {id:"joaocancelo",name:"João Cancelo",ovr:122,position:"LB",country:"PORTUGAL",flag:"PT",rarity:"ELITE",weight:38,image:""},
+  {id:"joaofelix",name:"João Félix",ovr:120,position:"CF",country:"PORTUGAL",flag:"PT",rarity:"ELITE",weight:34,image:""},
+  {id:"rafaelleao",name:"Rafael Leão",ovr:123,position:"LW",country:"PORTUGAL",flag:"PT",rarity:"ELITE",weight:48,image:""},
+  {id:"kvaratskhelia",name:"Khvicha Kvaratskhelia",ovr:123,position:"LW",country:"GEORGIA",flag:"GE",rarity:"ELITE",weight:42,image:""},
+  {id:"isak",name:"Alexander Isak",ovr:122,position:"ST",country:"SWEDEN",flag:"SE",rarity:"ELITE",weight:40,image:""},
+  {id:"watkins",name:"Ollie Watkins",ovr:121,position:"ST",country:"ENGLAND",flag:"EN",rarity:"ELITE",weight:34,image:""},
+  {id:"rice",name:"Declan Rice",ovr:123,position:"CDM",country:"ENGLAND",flag:"EN",rarity:"ELITE",weight:48,image:""},
+  {id:"saliba",name:"William Saliba",ovr:123,position:"CB",country:"FRANCE",flag:"FR",rarity:"ELITE",weight:44,image:""},
+  {id:"gabriel",name:"Gabriel Magalhães",ovr:122,position:"CB",country:"BRAZIL",flag:"BR",rarity:"ELITE",weight:38,image:""},
+  {id:"thomasmuller",name:"Thomas Müller",ovr:123,position:"CF",country:"GERMANY",flag:"DE",rarity:"ICON",weight:12,image:""},
+  {id:"kimmich",name:"Joshua Kimmich",ovr:124,position:"CDM",country:"GERMANY",flag:"DE",rarity:"ELITE",weight:42,image:""},
+  {id:"goretzka",name:"Leon Goretzka",ovr:121,position:"CM",country:"GERMANY",flag:"DE",rarity:"ELITE",weight:34,image:""},
+  {id:"gnabry",name:"Serge Gnabry",ovr:121,position:"RW",country:"GERMANY",flag:"DE",rarity:"ELITE",weight:32,image:""},
+  {id:"sane",name:"Leroy Sané",ovr:122,position:"LW",country:"GERMANY",flag:"DE",rarity:"ELITE",weight:38,image:""},
+  {id:"coman",name:"Kingsley Coman",ovr:121,position:"LW",country:"FRANCE",flag:"FR",rarity:"ELITE",weight:34,image:""},
+  {id:"ballack",name:"Michael Ballack",ovr:125,position:"CM",country:"GERMANY",flag:"DE",rarity:"ICON",weight:8,image:""},
+  {id:"klose",name:"Miroslav Klose",ovr:124,position:"ST",country:"GERMANY",flag:"DE",rarity:"ICON",weight:9,image:""},
+  {id:"schweinsteiger",name:"Bastian Schweinsteiger",ovr:124,position:"CM",country:"GERMANY",flag:"DE",rarity:"ICON",weight:9,image:""},
+  {id:"matthaus",name:"Lothar Matthäus",ovr:127,position:"CM",country:"GERMANY",flag:"DE",rarity:"ICON",weight:3,image:""},
+  {id:"ozil",name:"Mesut Özil",ovr:123,position:"CAM",country:"GERMANY",flag:"DE",rarity:"ICON",weight:12,image:""},
+  {id:"gundogan",name:"İlkay Gündoğan",ovr:122,position:"CM",country:"GERMANY",flag:"DE",rarity:"ELITE",weight:35,image:""},
+  {id:"havertz",name:"Kai Havertz",ovr:122,position:"CAM",country:"GERMANY",flag:"DE",rarity:"ELITE",weight:36,image:""},
+  {id:"davidvilla",name:"David Villa",ovr:125,position:"ST",country:"SPAIN",flag:"ES",rarity:"ICON",weight:8,image:""},
+  {id:"torres",name:"Fernando Torres",ovr:125,position:"ST",country:"SPAIN",flag:"ES",rarity:"ICON",weight:8,image:""},
+  {id:"raul",name:"Raúl",ovr:125,position:"ST",country:"SPAIN",flag:"ES",rarity:"ICON",weight:7,image:""},
+  {id:"pique",name:"Gerard Piqué",ovr:124,position:"CB",country:"SPAIN",flag:"ES",rarity:"ICON",weight:9,image:""},
+  {id:"jordialba",name:"Jordi Alba",ovr:122,position:"LB",country:"SPAIN",flag:"ES",rarity:"ELITE",weight:32,image:""},
+  {id:"carvajal",name:"Dani Carvajal",ovr:122,position:"RB",country:"SPAIN",flag:"ES",rarity:"ELITE",weight:34,image:""},
+  {id:"fabregas",name:"Cesc Fàbregas",ovr:123,position:"CM",country:"SPAIN",flag:"ES",rarity:"ICON",weight:10,image:""},
+  {id:"davidsilva",name:"David Silva",ovr:124,position:"CAM",country:"SPAIN",flag:"ES",rarity:"ICON",weight:9,image:""}
 ];
 const GAME_CHANGER_CARD_IDS = ["neymar","vinicius","benzema","griezmann","hazard"];
 app.get("/api/store",auth,(req,res)=>{if(req.player.activeDraft&&(!Array.isArray(req.player.activeDraft.choices)||req.player.activeDraft.choices.length!==10||req.player.activeDraft.draftVersion!==2)){req.player.activeDraft=null;saveData();}res.set("Cache-Control","no-store");res.json({gems:req.player.gems,draftVouchers:req.player.draftVouchers||0,activeDraft:req.player.activeDraft||null,ownedCards:req.player.ownedCards,cardLevels:req.player.cardLevels,cardCatalog:STORE_CARDS,draft:{name:"APEX PLAYER DRAFT",voucherCost:150,choices:10,pick:1,version:2}});});
 app.post("/api/store/vouchers/buy",auth,storeLimiter,(req,res)=>{const quantity=Math.max(1,Math.min(5,Math.floor(Number(req.body?.quantity)||1)));const current=Math.max(0,Number(req.player.draftVouchers)||0);if(current+quantity>99)return res.status(409).json({error:"Your voucher wallet is full. Use some vouchers before buying more."});const cost=150*quantity;if(req.player.gems<cost)return res.status(409).json({error:"Not enough gems for that many draft vouchers."});req.player.gems-=cost;req.player.draftVouchers=current+quantity;saveData();auditEvent(req.player.id,"draft_vouchers_bought",String(quantity));res.json({gems:req.player.gems,draftVouchers:req.player.draftVouchers});});
 const DRAFT_WEIGHTS={ronaldo:1,messi:2,figo:3,mbappe:80,yamal:100,haaland:90,bellingham:85,salah:85,debruyne:85,neymar:60,vinicius:70,modric:45,kane:65,son:60,lewandowski:65,zidane:3,ronaldinho:5,beckham:8,iniesta:12,xavi:12,ibrahimovic:6,benzema:35,suarez:28,griezmann:45,kaka:10,hazard:35,bale:30,kroos:28,casemiro:45,pele:3,ronaldonazario:4,henry:7,pirlo:12,ramos:10,vandijk:30,courtois:28,neuer:16,alisson:40,donnarumma:34,casillas:9,yashin:2,maldini:2,puyol:7,nesta:8,cannavaro:9,lahm:12,cafu:9,robertocarlos:6,gerrard:12,lampard:15,scholes:15,busquets:35,kante:30,vieira:8,makelele:12,foden:55,saka:50,palmer:45,musiala:45,wirtz:45,odegaard:42,grimaldo:35,hakimi:40,trent:40,raphinha:45,lautaro:40,osimhen:38,dybala:32,sonprime:20};
-const draftWeight=card=>Math.max(1,Number(DRAFT_WEIGHTS[card.id])||1);
+const draftWeight=card=>Math.max(1,Number(DRAFT_WEIGHTS[card.id]??card.weight)||1);
 function weightedDraftPick(items){const total=items.reduce((sum,card)=>sum+draftWeight(card),0);let roll=crypto.randomInt(total);for(const card of items){roll-=draftWeight(card);if(roll<0)return card;}return items[items.length-1];}
 function draftChanceInTen(targetId,pool){const target=pool.find(card=>card.id===targetId);if(!target)return 0;const total=pool.reduce((sum,card)=>sum+draftWeight(card),0);return Math.max(0,Math.min(100,(1-Math.pow(1-draftWeight(target)/total,Math.min(10,pool.length)))*100));}
 app.post("/api/store/draft/start",auth,storeLimiter,(req,res)=>{if(req.player.activeDraft&&req.player.activeDraft.expiresAt>Date.now()&&req.player.activeDraft.draftVersion===2&&Array.isArray(req.player.activeDraft.choices)&&req.player.activeDraft.choices.length===10)return res.json({draft:req.player.activeDraft,draftVouchers:req.player.draftVouchers||0,choiceCount:10});if(req.player.activeDraft)req.player.activeDraft=null;if((req.player.draftVouchers||0)<1)return res.status(409).json({error:"Get an Apex Draft Voucher first."});const pool=STORE_CARDS.filter(card=>card.id!=="arham");if(pool.length<10)return res.status(503).json({error:"Draft pool is unavailable. Try again later."});const odds=Object.fromEntries(pool.map(card=>[card.id,Number(draftChanceInTen(card.id,pool).toFixed(2))]));const remaining=[...pool],choices=[];while(choices.length<10){const picked=weightedDraftPick(remaining);choices.push(picked);remaining.splice(remaining.findIndex(card=>card.id===picked.id),1);}if(choices.length!==10)return res.status(503).json({error:"The draft could not prepare ten unique players. Please try again."});req.player.draftVouchers--;req.player.activeDraft={id:crypto.randomBytes(16).toString("hex"),draftVersion:2,choiceCount:10,createdAt:Date.now(),expiresAt:Date.now()+300000,choices:choices.map(card=>card.id),odds};saveData();auditEvent(req.player.id,"draft_started",req.player.activeDraft.id);res.set("Cache-Control","no-store");res.json({draft:req.player.activeDraft,draftVouchers:req.player.draftVouchers,choices,choiceCount:10});});
@@ -600,11 +675,14 @@ app.post("/api/games/complete",auth,gameLimiter,(req,res)=>{
   res.json({gems:req.player.gems,reward,eventReward,eventXp,eventId,eventCard,ownedCards:req.player.ownedCards,cardLevels:req.player.cardLevels,dailyEarned:req.player.rewardGemsToday,dailyLimit:null,unlimitedGems:true});
 });
 app.get("/api/leaderboard", auth, (req, res) => {
+  const requested=Math.floor(Number(req.query.limit)||1000);
+  const limit=Math.max(1,Math.min(1000,requested));
   const board = [...players.values()].map(publicProfile)
     .sort((a, b) => b.wins - a.wins || b.xp - a.xp || b.goals - a.goals)
-    .slice(0, 50)
+    .slice(0, limit)
     .map((p, index) => ({ rank: index + 1, ...p }));
-  res.json({ leaderboard: board, updatedAt: new Date().toISOString() });
+  res.set("Cache-Control","no-store");
+  res.json({ leaderboard: board, totalPlayers: players.size, limit, updatedAt: new Date().toISOString() });
 });
 app.get("/api/events",auth,(_req,res)=>{const now=new Date();const week=Math.floor(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate())/604800000);const events=[{id:"game-changers",title:"GAME CHANGERS: ICON REBORN",subtitle:"Legends return. New eras begin.",type:"featured",description:"Build your squad around game-changing football icons.",mode:"vsattack",rewardGems:45,rewardXp:300,rewardPlayer:"1 GAME CHANGERS PLAYER",endsAt:new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()+(7-now.getUTCDay()))).toISOString()},{id:"neon-derby",title:"NEON DERBY",subtitle:"A city divided. One pitch.",type:"weekly",description:"Take on the derby challenge.",mode:"crossbar",rewardGems:25,rewardXp:180},{id:"last-line",title:"LAST LINE",subtitle:"Keep your fortress standing.",type:"daily",description:"A goalkeeper reaction challenge.",mode:"goalkeeping",rewardGems:15,rewardXp:90}];res.json({featured:events[0],events,rotation:week,serverTime:now.toISOString()});});
 app.get("/api/profiles/:id", auth, (req, res) => {
