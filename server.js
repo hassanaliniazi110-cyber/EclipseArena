@@ -87,6 +87,11 @@ function requireOwner(req, res, next) {
   if (!youtubeAdminPlayers.has(req.player.id)) return res.status(403).json({ error: "Owner access required." });
   next();
 }
+const ADMIN_GEM_BALANCE = 999999999999999;
+function syncAdminGemWallet(player) {
+  if (youtubeAdminPlayers.has(player.id)) player.gems = ADMIN_GEM_BALANCE;
+  return player.gems;
+}
 
 function auditEvent(actorId, action, targetId = "") {
   const entry = { at: new Date().toISOString(), actorId: cleanText(actorId, 24), action: cleanText(action, 64), targetId: cleanText(targetId, 64) };
@@ -619,8 +624,8 @@ const STORE_CARDS = [
   {id:"sonprime2",name:"Son Heung-min (Legend)",ovr:126,position:"LW",country:"SOUTH KOREA",flag:"KR",rarity:"ICON",weight:6,image:""}
 ];
 const GAME_CHANGER_CARD_IDS = ["neymar","vinicius","benzema","griezmann","hazard"];
-app.get("/api/store",auth,(req,res)=>{if(req.player.activeDraft&&(!Array.isArray(req.player.activeDraft.choices)||req.player.activeDraft.choices.length!==10||req.player.activeDraft.draftVersion!==2)){req.player.activeDraft=null;saveData();}res.set("Cache-Control","no-store");res.json({gems:req.player.gems,draftVouchers:req.player.draftVouchers||0,activeDraft:req.player.activeDraft||null,ownedCards:req.player.ownedCards,cardLevels:req.player.cardLevels,cardCatalog:STORE_CARDS,draft:{name:"APEX PLAYER DRAFT",voucherCost:150,choices:10,pick:1,version:2}});});
-app.post("/api/store/vouchers/buy",auth,storeLimiter,(req,res)=>{const quantity=Math.max(1,Math.min(5,Math.floor(Number(req.body?.quantity)||1)));const current=Math.max(0,Number(req.player.draftVouchers)||0);if(current+quantity>99)return res.status(409).json({error:"Your voucher wallet is full. Use some vouchers before buying more."});const cost=150*quantity;if(req.player.gems<cost)return res.status(409).json({error:"Not enough gems for that many draft vouchers."});req.player.gems-=cost;req.player.draftVouchers=current+quantity;saveData();auditEvent(req.player.id,"draft_vouchers_bought",String(quantity));res.json({gems:req.player.gems,draftVouchers:req.player.draftVouchers});});
+app.get("/api/store",auth,(req,res)=>{if(req.player.activeDraft&&(!Array.isArray(req.player.activeDraft.choices)||req.player.activeDraft.choices.length!==10||req.player.activeDraft.draftVersion!==2)){req.player.activeDraft=null;saveData();}const gems=syncAdminGemWallet(req.player);if(youtubeAdminPlayers.has(req.player.id))saveData();res.set("Cache-Control","no-store");res.json({gems,unlimitedGems:youtubeAdminPlayers.has(req.player.id),draftVouchers:req.player.draftVouchers||0,activeDraft:req.player.activeDraft||null,ownedCards:req.player.ownedCards,cardLevels:req.player.cardLevels,cardCatalog:STORE_CARDS,draft:{name:"APEX PLAYER DRAFT",voucherCost:150,choices:10,pick:1,version:2}});});
+app.post("/api/store/vouchers/buy",auth,storeLimiter,(req,res)=>{const quantity=Math.max(1,Math.min(5,Math.floor(Number(req.body?.quantity)||1)));const current=Math.max(0,Number(req.player.draftVouchers)||0);if(current+quantity>99)return res.status(409).json({error:"Your voucher wallet is full. Use some vouchers before buying more."});const isOwner=youtubeAdminPlayers.has(req.player.id);const cost=150*quantity;if(!isOwner&&req.player.gems<cost)return res.status(409).json({error:"Not enough gems for that many draft vouchers."});if(!isOwner)req.player.gems-=cost;else syncAdminGemWallet(req.player);req.player.draftVouchers=current+quantity;saveData();auditEvent(req.player.id,"draft_vouchers_bought",String(quantity));res.json({gems:syncAdminGemWallet(req.player),unlimitedGems:isOwner,draftVouchers:req.player.draftVouchers});});
 const DRAFT_WEIGHTS={ronaldo:1,messi:2,figo:3,mbappe:80,yamal:100,haaland:90,bellingham:85,salah:85,debruyne:85,neymar:60,vinicius:70,modric:45,kane:65,son:60,lewandowski:65,zidane:3,ronaldinho:5,beckham:8,iniesta:12,xavi:12,ibrahimovic:6,benzema:35,suarez:28,griezmann:45,kaka:10,hazard:35,bale:30,kroos:28,casemiro:45,pele:3,ronaldonazario:4,henry:7,pirlo:12,ramos:10,vandijk:30,courtois:28,neuer:16,alisson:40,donnarumma:34,casillas:9,yashin:2,maldini:2,puyol:7,nesta:8,cannavaro:9,lahm:12,cafu:9,robertocarlos:6,gerrard:12,lampard:15,scholes:15,busquets:35,kante:30,vieira:8,makelele:12,foden:55,saka:50,palmer:45,musiala:45,wirtz:45,odegaard:42,grimaldo:35,hakimi:40,trent:40,raphinha:45,lautaro:40,osimhen:38,dybala:32,sonprime:20};
 const draftWeight=card=>Math.max(1,Number(DRAFT_WEIGHTS[card.id]??card.weight)||1);
 function weightedDraftPick(items){const total=items.reduce((sum,card)=>sum+draftWeight(card),0);let roll=crypto.randomInt(total);for(const card of items){roll-=draftWeight(card);if(roll<0)return card;}return items[items.length-1];}
@@ -638,17 +643,17 @@ app.post("/api/games/complete",auth,gameLimiter,(req,res)=>{
   if(Date.now()-req.player.lastGameClaimAt<5000){req.player.gameSession=null;saveData();return res.status(429).json({error:"Start the next game and finish it before claiming more gems."});}
   const reportedScore=Math.max(0,Math.min(5000,Math.floor(Number(req.body?.score)||0)));
   let reward=Math.min(50,15+Math.floor(reportedScore/100)),eventReward=0,eventXp=0,eventId="",eventCard=null;
-  const eventKey=["game-changers","neon-derby","last-line"].includes(session.eventId)?session.eventId:"";
+  const eventKey=["game-changers","neon-derby","last-line","apex-ascension"].includes(session.eventId)?session.eventId:"";
   if(eventKey){
     const period=eventKey==="game-changers"?"week-"+Math.floor(Date.now()/604800000):today;
     req.player.eventClaims=req.player.eventClaims||{};
     const claimKey=eventKey+":"+period;
     if(!req.player.eventClaims[claimKey]){
-      eventReward=eventKey==="game-changers"?45:eventKey==="neon-derby"?25:15;
-      eventXp=eventKey==="game-changers"?300:eventKey==="neon-derby"?180:90;
+      eventReward=eventKey==="apex-ascension"?100:eventKey==="game-changers"?45:eventKey==="neon-derby"?25:15;
+      eventXp=eventKey==="apex-ascension"?750:eventKey==="game-changers"?300:eventKey==="neon-derby"?180:90;
       req.player.eventClaims[claimKey]=true;eventId=eventKey;
-      if(eventKey==="game-changers"){
-        const eventPool=STORE_CARDS.filter(card=>GAME_CHANGER_CARD_IDS.includes(card.id));
+      if(eventKey==="game-changers"||eventKey==="apex-ascension"){
+        const eventPool=eventKey==="apex-ascension"?STORE_CARDS.filter(card=>card.id!=="arham").slice(0,200):STORE_CARDS.filter(card=>GAME_CHANGER_CARD_IDS.includes(card.id));
         if(eventPool.length){
           const awarded=eventPool[crypto.randomInt(eventPool.length)];
           const duplicate=req.player.ownedCards.includes(awarded.id);
@@ -657,18 +662,18 @@ app.post("/api/games/complete",auth,gameLimiter,(req,res)=>{
           if(!duplicate)req.player.ownedCards.push(awarded.id);
           req.player.cardLevels[awarded.id]=nextLevel;
           req.player.ownedCards=[...new Set(req.player.ownedCards)].slice(0,100);
-          eventCard={...awarded,rarity:"GAME CHANGERS",ovr:Number(awarded.ovr||0)+nextLevel,level:nextLevel,duplicate,replacedNormalCard:duplicate,upgraded:true};
+          eventCard={...awarded,rarity:eventKey==="apex-ascension"?"APEX ASCENSION":"GAME CHANGERS",ovr:Number(awarded.ovr||0)+nextLevel,level:nextLevel,duplicate,replacedNormalCard:duplicate,upgraded:true};
         }
       }
     }
   }
   reward+=eventReward;
-  req.player.gems+=reward;
+  req.player.gems+=reward;syncAdminGemWallet(req.player);
   req.player.profile.xp=Math.min(10000000,req.player.profile.xp+20+eventXp);
   req.player.rewardGemsToday+=reward;req.player.lastGameClaimAt=Date.now();req.player.gameSession=null;
   saveData();auditEvent(req.player.id,"game_reward_claimed",String(reward));
   if(eventCard)auditEvent(req.player.id,"game_changers_player_awarded",eventCard.id);
-  res.json({gems:req.player.gems,reward,eventReward,eventXp,eventId,eventCard,ownedCards:req.player.ownedCards,cardLevels:req.player.cardLevels,dailyEarned:req.player.rewardGemsToday,dailyLimit:null,unlimitedGems:true});
+  res.json({gems:syncAdminGemWallet(req.player),unlimitedGems:youtubeAdminPlayers.has(req.player.id),reward,eventReward,eventXp,eventId,eventCard,ownedCards:req.player.ownedCards,cardLevels:req.player.cardLevels,dailyEarned:req.player.rewardGemsToday,dailyLimit:null});
 });
 app.get("/api/leaderboard", auth, (req, res) => {
   const requested=Math.floor(Number(req.query.limit)||1000);
@@ -680,7 +685,7 @@ app.get("/api/leaderboard", auth, (req, res) => {
   res.set("Cache-Control","no-store");
   res.json({ leaderboard: board, totalPlayers: players.size, limit, updatedAt: new Date().toISOString() });
 });
-app.get("/api/events",auth,(_req,res)=>{const now=new Date();const week=Math.floor(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate())/604800000);const events=[{id:"game-changers",title:"GAME CHANGERS: ICON REBORN",subtitle:"Legends return. New eras begin.",type:"featured",description:"Build your squad around game-changing football icons.",mode:"vsattack",rewardGems:45,rewardXp:300,rewardPlayer:"1 GAME CHANGERS PLAYER",endsAt:new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()+(7-now.getUTCDay()))).toISOString()},{id:"neon-derby",title:"NEON DERBY",subtitle:"A city divided. One pitch.",type:"weekly",description:"Take on the derby challenge.",mode:"crossbar",rewardGems:25,rewardXp:180},{id:"last-line",title:"LAST LINE",subtitle:"Keep your fortress standing.",type:"daily",description:"A goalkeeper reaction challenge.",mode:"goalkeeping",rewardGems:15,rewardXp:90}];res.json({featured:events[0],events,rotation:week,serverTime:now.toISOString()});});
+app.get("/api/events",auth,(_req,res)=>{const now=new Date();const week=Math.floor(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate())/604800000);const events=[{id:"game-changers",title:"GAME CHANGERS: ICON REBORN",subtitle:"Legends return. New eras begin.",type:"featured",description:"Build your squad around game-changing football icons.",mode:"vsattack",rewardGems:45,rewardXp:300,rewardPlayer:"1 GAME CHANGERS PLAYER",endsAt:new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()+(7-now.getUTCDay()))).toISOString()},{id:"apex-ascension",title:"APEX ASCENSION",subtitle:"200 LEGENDS. ONE THRONE.",type:"ULTIMATE EVENT",description:"Enter the ultimate showdown. The 200-player Ascension pool can award one elite signing, plus 100 gems and 750 XP.",mode:"vsattack",rewardGems:100,rewardXp:750,rewardPlayer:"1 OF 200 APEX ASCENSION PLAYERS",playerCount:200},{id:"neon-derby",title:"NEON DERBY",subtitle:"A city divided. One pitch.",type:"weekly",description:"Take on the derby challenge.",mode:"crossbar",rewardGems:25,rewardXp:180},{id:"last-line",title:"LAST LINE",subtitle:"Keep your fortress standing.",type:"daily",description:"A goalkeeper reaction challenge.",mode:"goalkeeping",rewardGems:15,rewardXp:90}];res.json({featured:events[0],events,rotation:week,serverTime:now.toISOString()});});
 app.get("/api/profiles/:id", auth, (req, res) => {
   const id = cleanText(req.params.id, 24).toUpperCase();
   if (!validPlayerId(id)) return res.status(400).json({ error: "Invalid player ID" });
