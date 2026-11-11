@@ -138,64 +138,91 @@ const goalkeepers = [
     });
   }
   const wikiPortraitCache=new Map();
+  function cleanWikiText(value){
+    const box=document.createElement("textarea");
+    box.innerHTML=String(value||"").replace(/<[^>]*>/g," ");
+    return box.value.replace(/\\s+/g," ").trim();
+  }
   function findWikiPortrait(playerName){
     const name=String(playerName||"").trim();
-    if(!name)return Promise.resolve("");
+    if(!name)return Promise.resolve(null);
     const key=normalizePlayerName(name);
-    if(CUSTOM_PLAYER_KEYS.has(key))return Promise.resolve("");
+    if(CUSTOM_PLAYER_KEYS.has(key))return Promise.resolve(null);
     if(wikiPortraitCache.has(key))return wikiPortraitCache.get(key);
     const task=(async()=>{
       try{
         const headers={"Accept":"application/json"};
-        const searchUrl="https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch="+encodeURIComponent('filetype:bitmap "'+name+'"')+"&srnamespace=6&srlimit=12&format=json&origin=*";
+        const searchUrl="https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch="+encodeURIComponent('filetype:bitmap "'+name+'"')+"&srnamespace=6&srlimit=20&format=json&origin=*";
         const searchResponse=await fetch(searchUrl,{mode:"cors",credentials:"omit",headers});
-        if(!searchResponse.ok)return "";
+        if(!searchResponse.ok)return null;
         const searchData=await searchResponse.json();
         const titles=(searchData.query?.search||[]).map(item=>item.title).filter(Boolean);
-        if(!titles.length)return "";
+        if(!titles.length)return null;
         const infoUrl="https://commons.wikimedia.org/w/api.php?action=query&titles="+encodeURIComponent(titles.join("|"))+"&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=520&format=json&origin=*";
         const infoResponse=await fetch(infoUrl,{mode:"cors",credentials:"omit",headers});
-        if(!infoResponse.ok)return "";
+        if(!infoResponse.ok)return null;
         const infoData=await infoResponse.json();
         const candidates=Object.values(infoData.query?.pages||{}).map(page=>{
           const info=page.imageinfo?.[0]||{},meta=info.extmetadata||{};
-          const license=String(meta.LicenseShortName?.value||meta.UsageTerms?.value||"").replace(/<[^>]*>/g," ").trim();
-          const isFree=/^(?:CC0(?:\s*1\.0)?|Public domain|PD(?:-.*)?)$/i.test(license);
+          const license=cleanWikiText(meta.LicenseShortName?.value||meta.UsageTerms?.value||"");
+          const licenseUrl=String(meta.LicenseUrl?.value||"").trim();
+          const isOpen=/^(?:CC0(?:\\s*1\\.0)?|Public domain|PD(?:[- ].*)?|CC BY(?:[- ]SA)?(?:[- ]\\d+(?:\\.\\d+)?)?)$/i.test(license);
           const image=info.thumburl||info.url||"";
-          return {title:page.title||"",image,isFree};
-        }).filter(item=>item.isFree&&/^https:\/\/upload\.wikimedia\.org\/wikipedia\/commons\//i.test(item.image));
-        candidates.sort((a,b)=>{
-          const an=normalizePlayerName(a.title),bn=normalizePlayerName(b.title);
-          return Number(bn.includes(key))-Number(an.includes(key));
-        });
-        return candidates[0]?.image||"";
-      }catch(_){return "";}
+          const title=page.title||"";
+          const titleKey=normalizePlayerName(title.replace(/^File:/i,""));
+          const exactNameMatch=titleKey.includes(key);
+          const author=cleanWikiText(meta.Attribution?.value||meta.Artist?.value||meta.Credit?.value||"");
+          const fileUrl=info.descriptionurl||("https://commons.wikimedia.org/wiki/"+encodeURIComponent(title.replace(/ /g,"_")));
+          const needsCredit=/^CC BY(?:[- ]SA)?/i.test(license);
+          return {title,image,license,licenseUrl,author,fileUrl,exactNameMatch,needsCredit};
+        }).filter(item=>item.exactNameMatch&&item.license&&item.image&&item.fileUrl&&item.licenseUrl&&/^https:\/\/upload\.wikimedia\.org\/wikipedia\/commons\//i.test(item.image)&&(!item.needsCredit||item.author));
+        candidates.sort((a,b)=>Number(b.needsCredit)-Number(a.needsCredit));
+        return candidates[0]||null;
+      }catch(_){return null;}
     })();
     wikiPortraitCache.set(key,task);
     return task;
   }
+  function showWikiPhotoCredit(photo,credit){
+    if(!photo||!credit)return;
+    let line=photo.parentElement?.querySelector(":scope > .apex-photo-credit-line");
+    if(!line){
+      line=document.createElement("span");
+      line.className="apex-photo-credit-line";
+      photo.insertAdjacentElement("afterend",line);
+    }
+    const label=(credit.author?credit.author+" · ":"")+credit.license+" · Wikimedia Commons";
+    line.textContent="PHOTO CREDIT: "+label;
+    line.title=credit.title+" · "+label;
+    line.setAttribute("role","link");
+    line.setAttribute("tabindex","0");
+    line.setAttribute("aria-label","Open photo source and licence details for "+(photo.dataset.playerName||photo.alt));
+    line.onclick=event=>{event.preventDefault();event.stopPropagation();window.open(credit.fileUrl,"_blank","noopener,noreferrer");};
+    line.onkeydown=event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();event.stopPropagation();window.open(credit.fileUrl,"_blank","noopener,noreferrer");}};
+  }
   function hydrateWikiPortrait(photo,name,role){
-    if(!photo)return;
-    if(photo.dataset.wikiAttempted==="true"){
-      if(photo.dataset.wikiResolved==="true"||photo.dataset.wikiFailed==="true"){
-        photo.onerror=null;
-        photo.dataset.fallbackApplied="true";
-        photo.src=makePlayerAvatarData(name,role);
-      }
-      return;
-    }
+    if(!photo||photo.dataset.wikiAttempted==="true")return;
     photo.dataset.wikiAttempted="true";
-    if(normalizePlayerName(name)==="ehanali"){
-      photo.dataset.fallbackApplied="true";
-      photo.src=makePlayerAvatarData(name,role);
-      return;
-    }
-    const original=photo.src;
-    findWikiPortrait(name).then(url=>{
+    if(CUSTOM_PLAYER_KEYS.has(normalizePlayerName(name)))return;
+    findWikiPortrait(name).then(record=>{
       if(!photo.isConnected)return;
-      if(url){photo.src=url;photo.dataset.wikiResolved="true";}
-      else{photo.dataset.wikiFailed="true";photo.dataset.fallbackApplied="true";photo.src=makePlayerAvatarData(name,role);}
-    }).catch(()=>{if(photo.isConnected){photo.dataset.fallbackApplied="true";photo.src=makePlayerAvatarData(name,role);}});
+      if(record){
+        photo.onerror=null;
+        photo.src=record.image;
+        photo.dataset.wikiResolved="true";
+        photo.dataset.wikiSource=record.fileUrl;
+        showWikiPhotoCredit(photo,record);
+      }else{
+        photo.dataset.wikiFailed="true";
+        photo.dataset.wikiMissing="true";
+        photo.alt=name+" · no verified licensed photo found";
+        photo.title="No verified licensed photograph was found for this player.";
+        const line=document.createElement("span");
+        line.className="apex-photo-credit-line apex-photo-missing";
+        line.textContent="PHOTO NOT VERIFIED";
+        photo.insertAdjacentElement("afterend",line);
+      }
+    }).catch(()=>{if(photo.isConnected){photo.dataset.wikiFailed="true";}});
   }
   function attachPlayerPortraitFallbacks(root){
     if(!root)return;
@@ -208,7 +235,7 @@ const goalkeepers = [
         }
         hydrateWikiPortrait(photo,name,role);
       });
-      if(photo.src.startsWith("data:image/svg+xml")||photo.dataset.needsWiki==="true")hydrateWikiPortrait(photo,name,role);
+      if(!CUSTOM_PLAYER_KEYS.has(normalizePlayerName(name)))hydrateWikiPortrait(photo,name,role);
     });
   }
 
