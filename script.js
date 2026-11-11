@@ -40,7 +40,7 @@
 const goalkeepers = [
 {name:"David Raya",rating:117,role:"GOALKEEPER",special:"Quick distribution",unlockXP:0,unlockWins:0,glow:"rgba(100,220,130,.2)"},
 {name:"Alisson",rating:120,role:"GOALKEEPER",special:"Fast one-on-ones",unlockXP:700,unlockWins:3,glow:"rgba(199,255,74,.2)"},
-{name:"Thibaut Courtois",rating:121,role:"GOALKEEPER",special:"Huge reach",unlockXP:700,unlockWins:3,glow:"rgba(199,255,74,.2)"},
+
 {name:"Manuel Neuer",rating:120,role:"SWEEPER KEEPER",special:"Rushes off the line",unlockXP:700,unlockWins:3,glow:"rgba(199,255,74,.2)"},
 {name:"Ederson",rating:118,role:"PLAYMAKING KEEPER",special:"Accurate distribution",unlockXP:450,unlockWins:2,glow:"rgba(199,255,74,.2)"},
 {name:"Marc-André ter Stegen",rating:118,role:"GOALKEEPER",special:"Sharp reflexes",unlockXP:450,unlockWins:2,glow:"rgba(199,255,74,.2)"},
@@ -203,27 +203,34 @@ const goalkeepers = [
     });
   }
 
+  const isGoalkeeperPosition=position=>/^(GK|GOALKEEPER|ICON GOALKEEPER|CUSTOM GOALKEEPER|SWEEPER KEEPER|PLAYMAKING KEEPER|PENALTY SPECIALIST)$/i.test(String(position||"").trim());
   function syncOwnedCardsToRoster(ownedIds,cardCatalog){
     ownedDraftCardIds=new Set(Array.isArray(ownedIds)?ownedIds.filter(id=>typeof id==="string"):[]);
     (Array.isArray(cardCatalog)?cardCatalog:[]).forEach(card=>{
       if(!card||!ownedDraftCardIds.has(card.id)||card.id==="arham")return;
-      const existing=players.find(p=>p.cardId===card.id||normalizePlayerName(p.name)===normalizePlayerName(card.name));
-      if(existing){
-        existing.cardId=card.id;
-        existing.image=card.image||existing.image||"";
-        existing.rating=Number(card.ovr)||existing.rating;
-        existing.role=card.position||existing.role;
-        if(card.stats)existing.stats={...(existing.stats||{}),...card.stats};
-        existing.special="SIGNED CARD · "+String(card.rarity||"PLAYER").toUpperCase();
-      }else{
-        players.push({name:card.name,rating:Number(card.ovr)||60,role:card.position||"ST",special:"SIGNED CARD · "+String(card.rarity||"PLAYER").toUpperCase(),unlockXP:0,unlockWins:0,glow:"rgba(199,255,74,.2)",cardId:card.id,image:card.image||"",stats:card.stats||null});
-      }
+      const keeper=isGoalkeeperPosition(card.position);
+      const target=keeper?goalkeepers:players;
+      const other=keeper?players:goalkeepers;
+      const nameKey=normalizePlayerName(card.name);
+      const existing=target.find(p=>p.cardId===card.id||normalizePlayerName(p.name)===nameKey);
+      const misplaced=other.findIndex(p=>p.cardId===card.id||normalizePlayerName(p.name)===nameKey);
+      if(misplaced>=0)other.splice(misplaced,1);
+      const signedPlayer={
+        name:card.name,
+        rating:Number(card.ovr)||60,
+        role:keeper?(card.position||"GOALKEEPER"):(card.position||"ST"),
+        special:"SIGNED CARD · "+String(card.rarity||"PLAYER").toUpperCase(),
+        unlockXP:0,unlockWins:0,glow:"rgba(199,255,74,.2)",
+        cardId:card.id,image:card.image||"",stats:card.stats||null
+      };
+      if(existing)Object.assign(existing,signedPlayer);
+      else target.push(signedPlayer);
     });
     if(typeof renderPlayers==="function")renderPlayers();
   }
   function isUnlocked(p,isKeeper){
     const starter=(!isKeeper&&p.name==="Muhammad Arham")||(isKeeper&&p.name==="David Raya");
-    const signed=!isKeeper&&Boolean(p.cardId&&ownedDraftCardIds.has(p.cardId));
+    const signed=Boolean(p.cardId&&ownedDraftCardIds.has(p.cardId));
     return apexAdminMode||starter||signed||((p.unlockXP||0)<=(career.unlockXP||0)&&(p.unlockWins||0)<=(career.unlockWins||0));
   }
   function playerCard(p, selected, attr, isKeeper){
@@ -246,7 +253,7 @@ const goalkeepers = [
     ensureRosterPlayerImages();
     const rosterQuery=( $("rosterSearch")?.value||"").trim().toLowerCase();
     const rosterFilter=$("rosterFilter")?.value||"all";
-    const visiblePlayers=players.filter(p=>{const matches=!rosterQuery||(p.name+" "+p.role+" "+(p.club||"")).toLowerCase().includes(rosterQuery);const role=String(p.role||"").toUpperCase();const group=role==="ST"||role==="LW"||role==="RW"?"attack":role==="CAM"||role==="CM"||role==="CDM"||role==="RM"||role==="LM"?"midfield":role==="CB"||role==="LB"||role==="RB"?"defence":"other";return matches&&(rosterFilter==="all"||group===rosterFilter);}).sort((a,b)=>Number(b.rating||0)-Number(a.rating||0));
+    const visiblePlayers=players.filter(p=>!isGoalkeeperPosition(p.role)).filter(p=>{const matches=!rosterQuery||(p.name+" "+p.role+" "+(p.club||"")).toLowerCase().includes(rosterQuery);const role=String(p.role||"").toUpperCase();const group=role==="ST"||role==="LW"||role==="RW"?"attack":role==="CAM"||role==="CM"||role==="CDM"||role==="RM"||role==="LM"?"midfield":role==="CB"||role==="LB"||role==="RB"?"defence":"other";return matches&&(rosterFilter==="all"||group===rosterFilter);}).sort((a,b)=>Number(b.rating||0)-Number(a.rating||0));
     $("playerGrid").innerHTML=visiblePlayers.map(p=>playerCard(p,selectedPlayer,"data-player",false)).join("");
     attachPlayerPortraitFallbacks($("playerGrid"));
     $("playerGrid").querySelectorAll("[data-player]").forEach(btn=>btn.addEventListener("click",()=>{const wasOpen=btn.classList.contains("show-stats");$("playerGrid").querySelectorAll(".player-card").forEach(card=>card.classList.remove("show-stats","selected"));selectedPlayer=btn.dataset.player;btn.classList.add("selected");if(!wasOpen)btn.classList.add("show-stats");if(typeof renderCareerHub==="function")renderCareerHub();toast(wasOpen?"PLAYER SELECTED":"PLAYER SELECTED · STATS OPEN");}));
