@@ -1509,3 +1509,28 @@ svg line,svg polyline,.chart-line,.stat-line,.player-chart-line,.player-stats sv
 @media(prefers-reduced-motion:reduce){.apex-launch-intro:before,.launch-crest-wrap{animation:none!important}.apex-walkout-cinema.walkout-crowd-eruption:before,.apex-walkout-cinema.walkout-final-flash:after{animation:none!important;display:none!important}}
 /* Account approval is retired. Owner-only controls still require 2FA. */
 .account-requests-heading,#accountOwnerRequestList,#accountRefreshRequests{display:none!important}
+
+
+/* Season 01 visual upgrade: animated foil, card depth, and stadium launch. */
+.apex-launch-intro{isolation:isolate;background:radial-gradient(ellipse at 50% 46%,#163d59 0%,#0a1427 42%,#02050a 78%)!important}
+.apex-launch-intro:after{content:"";position:absolute;inset:-35%;z-index:-1;pointer-events:none;background:conic-gradient(from 0deg,transparent 0 22%,rgba(111,221,255,.13) 25%,transparent 29% 48%,rgba(166,133,255,.12) 52%,transparent 57% 78%,rgba(202,255,104,.09) 82%,transparent 86%);animation:apexLaunchOrbit 18s linear infinite}
+.apex-launch-intro .launch-crest-wrap{filter:drop-shadow(0 0 26px rgba(107,222,255,.45));animation:apexCrestFloat 3.8s ease-in-out infinite,apexCrestPulse 2.8s ease-in-out infinite}
+.apex-launch-intro .launch-wordmark{text-shadow:0 0 24px rgba(107,222,255,.3),0 0 54px rgba(157,129,255,.18)}
+.apex-launch-intro .launch-divider i{color:#b9f3ff;text-shadow:0 0 18px #8ceaff;animation:apexStarSpin 7s linear infinite}
+.apex-launch-intro .launch-particles i{filter:drop-shadow(0 0 8px rgba(130,224,255,.9));animation:apexParticleDrift 5s ease-in-out infinite alternate}
+.apex-player-card{position:relative;isolation:isolate;transform:translateZ(0);transition:transform .28s cubic-bezier(.2,.8,.2,1),filter .28s ease,box-shadow .28s ease;box-shadow:0 14px 32px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.16)}
+.apex-player-card:before{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;border-radius:inherit;background:linear-gradient(118deg,transparent 22%,rgba(255,255,255,.17) 42%,transparent 57%);transform:translateX(-135%);transition:transform .75s ease}
+.apex-player-card:hover{transform:translateY(-6px) scale(1.025);filter:saturate(1.14);box-shadow:0 22px 42px rgba(0,0,0,.42),0 0 25px rgba(115,218,255,.13)}
+.apex-player-card:hover:before{transform:translateX(135%)}
+.apex-player-card.icon{box-shadow:0 14px 34px rgba(0,0,0,.4),0 0 22px rgba(255,207,112,.22),inset 0 0 0 1px rgba(255,226,163,.3)}
+.apex-player-card.game-changers{box-shadow:0 14px 34px rgba(0,0,0,.4),0 0 22px rgba(167,131,255,.22),inset 0 0 0 1px rgba(194,164,255,.28)}
+.apex-signing-stage.walkout-power-up .walkout-spotlight{filter:brightness(1.45);transform:scale(1.12)}
+.apex-signing-stage.walkout-final-reveal .walkout-final-card{animation:apexCardArrival .85s cubic-bezier(.16,1,.3,1) both}
+.apex-signing-stage.walkout-gold-burst .walkout-player-silhouette{filter:drop-shadow(0 0 28px rgba(255,213,126,.7))}
+@keyframes apexLaunchOrbit{to{transform:rotate(360deg)}}
+@keyframes apexCrestPulse{0%,100%{filter:drop-shadow(0 0 22px rgba(107,222,255,.3))}50%{filter:drop-shadow(0 0 42px rgba(166,133,255,.5))}}
+@keyframes apexStarSpin{to{transform:rotate(360deg)}}
+@keyframes apexParticleDrift{from{translate:0 10px;opacity:.35}to{translate:0 -18px;opacity:.95}}
+@keyframes apexCardArrival{0%{opacity:0;transform:translateY(42px) scale(.72) rotateY(-18deg)}65%{opacity:1;transform:translateY(-7px) scale(1.035) rotateY(3deg)}100%{opacity:1;transform:translateY(0) scale(1) rotateY(0)}}
+@media(hover:none){.apex-player-card:hover{transform:none;filter:none}.apex-player-card:hover:before{transform:translateX(-135%)}}
+@media(prefers-reduced-motion:reduce){.apex-launch-intro:after,.apex-launch-intro .launch-crest-wrap,.apex-launch-intro .launch-divider i,.apex-launch-intro .launch-particles i{animation:none!important}.apex-player-card,.apex-player-card:before{transition:none!important}.apex-signing-stage.walkout-final-reveal .walkout-final-card{animation:none!important}}
