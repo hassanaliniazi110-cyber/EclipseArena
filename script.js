@@ -173,7 +173,7 @@ const goalkeepers = [
     {x:.22,y:.29,role:"RW"},{x:.39,y:.39,role:"ST"},
     {x:.61,y:.39,role:"CAM"},{x:.78,y:.29,role:"LW"}
   ];
-  const match = {active:false,finished:false,clock:0,lastTick:0,player:{x:.5,y:.76},rival:{x:.5,y:.24},ball:{x:.5,y:.76},move:"",moveX:0,moveY:0,sprint:false,hasBall:true,playerGoals:0,rivalGoals:0,rankPoints:0,rank:"ROOKIE III",lastRivalShot:0,rivalHasBall:false,passUntil:0,passFromX:.5,passFromY:.76,passToX:.5,passToY:.5,passReceiverSlot:-1,passStartedAt:0,controlledName:"Muhammad Arham",controlledRating:122,controlledRole:"ST",teammates:[],rivalTeammates:[],lastShot:null};
+  const match = {active:false,finished:false,clock:0,lastTick:0,player:{x:.5,y:.76},rival:{x:.5,y:.24},ball:{x:.5,y:.76},move:"",moveX:0,moveY:0,sprint:false,hasBall:true,playerGoals:0,rivalGoals:0,rankPoints:0,rank:"ROOKIE III",lastRivalShot:0,rivalHasBall:false,passUntil:0,passFromX:.5,passFromY:.76,passToX:.5,passToY:.5,passReceiverSlot:-1,passStartedAt:0,passDuration:460,shotAnim:null,controlledName:"Muhammad Arham",controlledRating:122,controlledRole:"ST",teammates:[],rivalTeammates:[],lastShot:null};
   function getApex3DState(){
     return {
       mode,selectedPlayer:match.active?match.controlledName:selectedPlayer,selectedGoalkeeper,
@@ -187,7 +187,7 @@ const goalkeepers = [
         controlledName:match.controlledName,controlledRating:match.controlledRating,controlledRole:match.controlledRole,
         teammates:match.teammates.map(t=>({name:t.name,ovr:t.ovr,role:t.role,x:t.x,y:t.y})),
         rivalTeammates:match.rivalTeammates.map(t=>({name:t.name,ovr:t.ovr,role:t.role,x:t.x,y:t.y})),
-        playerGoals:match.playerGoals,rivalGoals:match.rivalGoals,lastShot:match.lastShot
+        playerGoals:match.playerGoals,rivalGoals:match.rivalGoals,lastShot:match.lastShot,shotAnim:match.shotAnim?{...match.shotAnim}:null
       },
       // Convert the original pixel-based animation to normalized 0–1 coordinates for WebGL.
       ballAnim:ballAnim?{
@@ -795,14 +795,15 @@ const goalkeepers = [
   }
   function updateMatchTeammates(dt){
     const time=performance.now(),teamPossession=match.hasBall||match.passUntil>time;
-    const supportRuns=[[-.19,-.10],[-.08,-.23],[.10,-.18],[.20,-.08]];
+    const supportRuns=[[-.24,-.14],[-.10,-.25],[.10,-.25],[.24,-.14]];
     const defensiveShape=[[-.20,.03],[-.08,-.05],[.08,-.05],[.20,.03]];
     const pressIndex=match.teammates.reduce((best,t,i)=>matchDistance(t,match.rival)<matchDistance(match.teammates[best],match.rival)?i:best,0);
     match.teammates.forEach((teammate,i)=>{
       let tx,ty;
       if(teamPossession){
         const offset=supportRuns[i];
-        tx=match.ball.x+offset[0];ty=match.ball.y+offset[1];
+        tx=match.player.x+offset[0];ty=match.player.y+offset[1];
+        if(match.player.y<.34){ty=Math.max(.075,ty-.055);}
         if(match.passUntil>time&&match.passReceiverSlot===i){tx=match.passToX;ty=match.passToY;}
       }else if(match.rivalHasBall){
         if(i===pressIndex){tx=match.rival.x+(match.rival.x<.5?.025:-.025);ty=match.rival.y-.015;}
@@ -812,7 +813,7 @@ const goalkeepers = [
         if(i===nearest){tx=match.ball.x;ty=match.ball.y;}
         else{tx=teammate.homeX;ty=teammate.homeY;}
       }
-      const speed=5.1+Math.min(1.5,(teammate.ovr||90)/100);
+      const speed=7.0+Math.min(1.8,(teammate.ovr||90)/100);
       moveMatchActor(teammate,Math.max(.07,Math.min(.93,tx)),Math.max(.07,Math.min(.93,ty)),speed,dt);
     });
     match.rivalTeammates.forEach((teammate,i)=>{
@@ -827,7 +828,7 @@ const goalkeepers = [
   }
   function resetMatchPositions(){
     match.player={x:.5,y:.76};match.rival={x:.5,y:.24};match.ball={x:.5,y:.76};
-    match.hasBall=true;match.rivalHasBall=false;match.passUntil=0;match.passReceiverSlot=-1;
+    match.hasBall=true;match.rivalHasBall=false;match.passUntil=0;match.passReceiverSlot=-1;match.shotAnim=null;
     match.teammates.forEach((t,i)=>{t.x=t.homeX=MATCH_TEAM_FORMATION[i].x;t.y=t.homeY=MATCH_TEAM_FORMATION[i].y;});
     match.rivalTeammates.forEach((t,i)=>{t.x=t.homeX=RIVAL_TEAM_FORMATION[i].x;t.y=t.homeY=RIVAL_TEAM_FORMATION[i].y;});
   }
@@ -1639,7 +1640,7 @@ const goalkeepers = [
     if(onlineCfg.base&&onlineCfg.token)activeRewardSessionPromise=api("/api/games/start",{method:"POST",body:JSON.stringify({mode,eventId:activeRewardEventId})}).then(data=>{activeRewardSessionId=data.sessionId;return data.sessionId;}).catch(error=>{activeRewardSessionId=null;activeRewardSessionPromise=null;toast("Online game session could not start: "+error.message);return null;});
     if(!isRandomRush){recentModes=[nextMode,...recentModes.filter(x=>x!==nextMode)].slice(0,5);try{localStorage.setItem("eclipseRecentModes",JSON.stringify(recentModes));}catch(_){}renderModeTools();}
     if(mode==="headtohead")onlineCfg.onlineMatch=false;
-    match.active=mode==="headtohead";match.finished=false;match.clock=0;match.playerGoals=0;match.rivalGoals=h2hChallenge==="comeback"?2:0;match.rankPoints=0;match.rank="ROOKIE III";match.player={x:.5,y:.76};match.rival={x:.5,y:.24};match.ball={x:.5,y:.76};match.move="";match.moveX=0;match.moveY=0;match.sprint=false;match.hasBall=true;match.rivalHasBall=false;match.lastRivalShot=0;match.passUntil=0;match.passReceiverSlot=-1;match.lastShot=null;match.teammates=[];match.rivalTeammates=[];match.controlledName=selectedPlayer;
+    match.active=mode==="headtohead";match.finished=false;match.clock=0;match.playerGoals=0;match.rivalGoals=h2hChallenge==="comeback"?2:0;match.rankPoints=0;match.rank="ROOKIE III";match.player={x:.5,y:.76};match.rival={x:.5,y:.24};match.ball={x:.5,y:.76};match.move="";match.moveX=0;match.moveY=0;match.sprint=false;match.hasBall=true;match.rivalHasBall=false;match.lastRivalShot=0;match.passUntil=0;match.passReceiverSlot=-1;match.shotAnim=null;match.lastShot=null;match.teammates=[];match.rivalTeammates=[];match.controlledName=selectedPlayer;
     if(match.active){renderMatchSquadPicker();buildMatchTeams();}
     applyCurrentTeamKits();
     $("matchHud").classList.toggle("hidden",!match.active);$("matchControls").classList.toggle("hidden",!match.active);$("matchSquadPicker")?.classList.toggle("hidden",!match.active);$("matchCameraControls").classList.remove("hidden");$("matchResult").classList.add("hidden");$("matchResult").textContent="";
@@ -1673,6 +1674,28 @@ const goalkeepers = [
       if(h2hChallenge==="golden"&&(match.playerGoals>0||match.rivalGoals>0)){match.clock=90;endFullMatch();return;}
       if(match.clock>=90){match.clock=90;endFullMatch();return;}
 
+      if(match.shotAnim){
+        const shot=match.shotAnim,elapsed=now-shot.start,t=Math.max(0,Math.min(1,elapsed/(shot.duration||720)));
+        const eased=1-Math.pow(1-t,2);
+        match.ball.x=shot.fromX+(shot.toX-shot.fromX)*eased;
+        match.ball.y=shot.fromY+(shot.toY-shot.fromY)*eased;
+        if(t>=1){
+          match.shotAnim=null;
+          if(shot.scored){
+            match.playerGoals++;match.rankPoints+=100;
+            $("feedback").textContent="GOAL! +100 RANK POINTS";
+            resetMatchPositions();
+          }else{
+            match.hasBall=false;match.rivalHasBall=false;
+            match.ball={x:shot.toX,y:.105};
+            $("feedback").textContent="SAVED! Chase the rebound.";
+          }
+          updateRank();
+        }
+        $("matchScore").textContent=match.playerGoals+" - "+match.rivalGoals;
+        drawPitch();animationFrame=requestAnimationFrame(tick);return;
+      }
+
       const axisX=Math.max(-1,Math.min(1,match.moveX)),axisY=Math.max(-1,Math.min(1,match.moveY));
       const inputMagnitude=Math.min(1,Math.hypot(axisX,axisY));
       if(inputMagnitude>.08){
@@ -1690,7 +1713,7 @@ const goalkeepers = [
         moveMatchActor(match.rival,targetX,targetY,aiLevel,dt);
         const toRival=matchDistance(match.player,match.rival);
         const rivalToBall=matchDistance(match.rival,match.ball);
-        if(match.hasBall&&toRival<2.8){
+        if(match.hasBall&&toRival<1.9){
           match.hasBall=false;match.rivalHasBall=true;
           match.ball={x:match.rival.x,y:match.rival.y-.018};
           $("feedback").textContent="AI TACKLE! Win possession back.";
@@ -1705,7 +1728,7 @@ const goalkeepers = [
 
       if(match.passUntil){
         const elapsed=now-match.passStartedAt;
-        const t=Math.max(0,Math.min(1,elapsed/460));
+        const t=Math.max(0,Math.min(1,elapsed/Math.max(260,Number(match.passDuration)||460)));
         match.ball.x=match.passFromX+(match.passToX-match.passFromX)*t;
         match.ball.y=match.passFromY+(match.passToY-match.passFromY)*t;
         if(!onlineCfg.onlineMatch&&!match.rivalHasBall&&matchDistance(match.rival,match.ball)<1.55&&t>.12){
@@ -1766,7 +1789,7 @@ const goalkeepers = [
       match.sprint=!match.sprint;$("feedback").textContent=match.sprint?"SPRINT ON":"SPRINT OFF";
     }else if(action==="pass"){
       if(!match.hasBall){$("feedback").textContent="Win possession before passing.";return;}
-      let bestIndex=-1,bestScore=-Infinity;
+      let bestIndex=-1,bestScore=-Infinity,bestDistance=Infinity;
       match.teammates.forEach((teammate,i)=>{
         const dx=(teammate.x-match.player.x)*MATCH_FIELD_WIDTH;
         const dy=(match.player.y-teammate.y)*MATCH_FIELD_LENGTH;
@@ -1774,14 +1797,15 @@ const goalkeepers = [
         const forward=dy/MATCH_FIELD_LENGTH;
         const oppositionSpace=match.rivalTeammates.reduce((space,opponent)=>Math.min(space,matchDistance(teammate,opponent)),30);
         const score=forward*4+Math.min(1.5,oppositionSpace/12)+Math.min(1,(teammate.ovr||90)/180)-distance/45;
-        if(distance>2.8&&distance<32&&score>bestScore){bestScore=score;bestIndex=i;}
+        if(distance>2.2&&distance<46&&score>bestScore){bestScore=score;bestIndex=i;bestDistance=distance;}
       });
-      if(bestIndex<0){$("feedback").textContent="No teammate is available. Move into space first.";return;}
+      if(bestIndex<0){$("feedback").textContent="No teammate is in range yet. Move into space.";return;}
       const target=match.teammates[bestIndex];
       match.passFromX=match.ball.x;match.passFromY=match.ball.y;
       match.passToX=Math.max(.06,Math.min(.94,target.x));
       match.passToY=Math.max(.06,Math.min(.94,target.y-.025));
-      match.passReceiverSlot=bestIndex;match.passStartedAt=performance.now();match.passUntil=match.passStartedAt+460;
+      match.passReceiverSlot=bestIndex;match.passStartedAt=performance.now();
+      match.passDuration=Math.max(300,Math.min(620,bestDistance*18));match.passUntil=match.passStartedAt+match.passDuration;
       match.hasBall=false;match.rivalHasBall=false;
       $("feedback").textContent="PASS TO "+target.name.toUpperCase()+" · "+target.ovr+" OVR";
     }else if(action==="tackle"){
@@ -1797,12 +1821,16 @@ const goalkeepers = [
       const distanceFactor=Math.max(0,Math.min(1,(.53-match.player.y)/.40));
       const wide=Math.abs(match.player.x-.5);
       const ovr=Math.max(70,Number(match.controlledRating)||90);
-      const accuracy=Math.max(.30,Math.min(.93,.43+distanceFactor*.31+Math.min(.14,(ovr-90)*.0011)-wide*.18));
-      const scored=Math.random()<accuracy;
-      match.lastShot={start:performance.now(),scored,x:match.player.x};
-      if(scored){match.playerGoals++;match.rankPoints+=100;$("feedback").textContent="GOAL! "+(distanceFactor>.72?"TOP-CLASS FINISH!":"+100 RANK POINTS");}
-      else $("feedback").textContent="SAVED! The goalkeeper got across.";
-      resetMatchPositions();
+      const targetX=match.player.x<.5?.68:.32;
+      const keeperRating=108;
+      const shotQuality=.48+distanceFactor*.19+Math.min(.16,(ovr-90)*.0015)-wide*.24;
+      const saveDifficulty=Math.max(.18,Math.min(.82,shotQuality-(keeperRating-100)*.002));
+      const scored=Math.random()<Math.max(.18,Math.min(.78,saveDifficulty));
+      const start=performance.now();
+      match.lastShot={start,scored,x:targetX};
+      match.shotAnim={start,duration:720,fromX:match.ball.x,fromY:match.ball.y,toX:targetX,toY:.025,scored};
+      match.hasBall=false;match.rivalHasBall=false;match.passUntil=0;match.sprint=false;
+      $("feedback").textContent="SHOT! "+match.controlledName.toUpperCase()+" STRIKES TOWARD GOAL.";
     }
     updateRank();$("matchScore").textContent=match.playerGoals+" - "+match.rivalGoals;drawPitch();
   }
