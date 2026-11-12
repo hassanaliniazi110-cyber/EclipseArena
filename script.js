@@ -177,7 +177,8 @@ const goalkeepers = [
   function getApex3DState(){
     return {
       mode,selectedPlayer:match.active?match.controlledName:selectedPlayer,selectedGoalkeeper,
-      goalkeeperRating:(goalkeepers.find(g=>g.name===selectedGoalkeeper)||goalkeepers[0]).rating,score,attemptLabel:"ATTEMPT "+attempt,
+      goalkeeperRating:(goalkeepers.find(g=>g.name===selectedGoalkeeper)||goalkeepers[0]).rating,
+      goalkeeperKitColor:KEEPER_KITS[teamKeeperKit]||KEEPER_KITS.neon,score,attemptLabel:"ATTEMPT "+attempt,
       finished:match.finished,aim:{x:aim.x,y:aim.y},
       match:{
         active:match.active,finished:match.finished,clock:match.clock,
@@ -682,7 +683,7 @@ const goalkeepers = [
       outfield.filter(p=>p.name!==captain.value&&(p.name===saved||!used.has(p.name))).forEach(p=>options.push({value:p.name,label:p.name+" · "+matchOvr(p)+" OVR"}));
       fillTeamLayoutSelect(select,options,saved);
       if(!String(select.value).startsWith("academy:"))used.add(select.value);
-      select.onchange=()=>renderTeamLayout();
+      select.onchange=()=>{matchSquadNames[i]=select.value;renderTeamLayout();};
     }
     $("teamLayoutFormation").value=teamFormation;
     $("teamLayoutKit").value=teamKit;
@@ -698,8 +699,8 @@ const goalkeepers = [
     $("teamLayoutScreen").classList.add("hidden");$("homeScreen").classList.remove("hidden");
     setArenaView("home");window.scrollTo({top:0,behavior:"auto"});
   }
-  $("teamLayoutCaptain")?.addEventListener("change",renderTeamLayout);
-  $("teamLayoutKeeper")?.addEventListener("change",renderTeamLayout);
+  $("teamLayoutCaptain")?.addEventListener("change",()=>{selectedPlayer=$("teamLayoutCaptain").value;renderTeamLayout();});
+  $("teamLayoutKeeper")?.addEventListener("change",()=>{selectedGoalkeeper=$("teamLayoutKeeper").value;renderTeamLayout();});
   $("saveTeamLayoutBtn")?.addEventListener("click",()=>{
     const captain=$("teamLayoutCaptain").value,keeper=$("teamLayoutKeeper").value;
     const squad=[0,1,2,3].map(i=>$("teamLayoutMate"+i).value);
