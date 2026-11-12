@@ -1906,3 +1906,9 @@ html[data-device="laptop"] .match-controls:not(.hidden){
 
 /* Device-agnostic safety net: never hide the active H2H action pad because of device detection. */
 #matchControls:not(.hidden){display:flex!important}
+
+
+/* Reliable touch-first H2H input: keep the joystick interactive above the 3D canvas. */
+#matchJoystick{position:relative;z-index:12;pointer-events:auto;touch-action:none;-webkit-user-select:none;user-select:none;}
+#matchControls .match-action-pad{position:relative;z-index:13;pointer-events:auto;}
+#matchControls .match-action-pad button{touch-action:manipulation;pointer-events:auto;}
