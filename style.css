@@ -1903,3 +1903,6 @@ html[data-device="laptop"] .match-controls:not(.hidden){
   .match-controls:not(.hidden) .match-action-pad button{min-height:60px;font-size:10px}
   .match-controls:not(.hidden) .match-action-pad button[data-action="shoot"]{min-height:72px}
 }
+
+/* Device-agnostic safety net: never hide the active H2H action pad because of device detection. */
+#matchControls:not(.hidden){display:flex!important}
