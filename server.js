@@ -325,8 +325,10 @@ function requireOwner(req, res, next) {
     });
   }
   if (!verifyAdminTotp(req.get("X-Admin-2FA"))) {
-    auditEvent(req.player.id, "owner_2fa_failed");
-    return res.status(401).json({ error: "A valid current 6-digit authenticator code is required." });
+    return totpAttemptLimiter(req, res, () => {
+      auditEvent(req.player.id, "owner_2fa_failed");
+      return res.status(401).json({ error: "A valid current 6-digit authenticator code is required." });
+    });
   }
   next();
 }
@@ -431,7 +433,7 @@ app.use(cors({
 app.use(express.json({ limit: "12kb", strict: true }));
 app.use((req, res, next) => { if (req.path.startsWith("/api/")) res.setHeader("Cache-Control", "no-store, max-age=0"); next(); });
 app.use(rateLimit({ windowMs: 60 * 1000, limit: 90, standardHeaders: "draft-7", legacyHeaders: false }));
-app.get("/health", auth, requireOwnerIdentity, adminLimiter, totpAttemptLimiter, requireOwner, (req, res) => {
+app.get("/health", auth, requireOwnerIdentity, adminLimiter, requireOwner, (req, res) => {
   // Health diagnostics require the owner's player token plus a current authenticator code.
 
   return res.set("Cache-Control", "no-store").json({
@@ -533,7 +535,7 @@ app.post("/api/youtube/requests", auth, youtubeRequestLimiter, (req, res) => {
   res.status(201).json({ status: "pending", message: "Your request was sent to the owner." });
 });
 
-app.get("/api/admin/audit", auth, requireOwnerIdentity, adminLimiter, totpAttemptLimiter, requireOwner, (req, res) => {
+app.get("/api/admin/audit", auth, requireOwnerIdentity, adminLimiter, requireOwner, (req, res) => {
   try {
     const lines = fs.readFileSync(AUDIT_FILE, "utf8").trim().split(/\r?\n/).filter(Boolean).slice(-100);
     res.json({ events: lines.map(line => { try { return JSON.parse(line); } catch (_) { return null; } }).filter(Boolean) });
@@ -542,10 +544,10 @@ app.get("/api/admin/audit", auth, requireOwnerIdentity, adminLimiter, totpAttemp
     return res.status(500).json({ error: "Audit log is temporarily unavailable." });
   }
 });
-app.get("/api/youtube/requests", auth, requireOwnerIdentity, adminLimiter, totpAttemptLimiter, requireOwner, (req, res) => {
+app.get("/api/youtube/requests", auth, requireOwnerIdentity, adminLimiter, requireOwner, (req, res) => {
   res.json({ requests: youtubeAccessData.requests.filter(r => r.status === "pending") });
 });
-app.post("/api/youtube/requests/:requestId/decision", auth, requireOwnerIdentity, adminLimiter, totpAttemptLimiter, requireOwner, (req, res) => {
+app.post("/api/youtube/requests/:requestId/decision", auth, requireOwnerIdentity, adminLimiter, requireOwner, (req, res) => {
   const request = youtubeAccessData.requests.find(r => r.id === req.params.requestId && r.status === "pending");
   if (!request) return res.status(404).json({ error: "Request not found or already handled." });
   const decision = req.body?.decision;
@@ -598,6 +600,10 @@ app.post("/api/register", registerLimiter, (req, res) => {
   const deviceKeyHash = /^[a-f0-9]{64}$/i.test(rawDeviceKey) ? hashToken(rawDeviceKey.toLowerCase()) : "";
   const deviceMatch = deviceKeyHash && [...players.values()].find(p => p.deviceKeyHash === deviceKeyHash);
   const bearerPlayerId = bearer && tokenToPlayer.get(hashToken(bearer[1]));
+  if (bearerPlayerId && deviceMatch && deviceMatch.id !== bearerPlayerId) {
+    auditEvent(bearerPlayerId, "device_key_account_mismatch", deviceMatch.id);
+    return res.status(409).json({ error: "That recovery key belongs to a different player account." });
+  }
   if (!deviceKeyHash && !bearerPlayerId) {
     return res.status(400).json({ error: "A valid 32-byte device recovery key is required." });
   }
@@ -732,7 +738,7 @@ app.post("/api/friends/remove", auth,friendLimiter, (req, res) => {
   res.json({ ok: true });
 });
 // Admin can inspect public player profiles only. Authentication tokens and private account secrets are never returned.
-app.get("/api/admin/players", auth, requireOwnerIdentity, adminLimiter, totpAttemptLimiter, requireOwner, (req, res) => {
+app.get("/api/admin/players", auth, requireOwnerIdentity, adminLimiter, requireOwner, (req, res) => {
   const all = [...players.values()].map(publicProfile)
     .sort((a, b) => Number(b.online) - Number(a.online) || b.xp - a.xp || a.name.localeCompare(b.name));
   res.json({ players: all, total: all.length, online: all.filter(p => p.online).length });
