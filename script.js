@@ -522,6 +522,20 @@ const goalkeepers = [
     const signed=Boolean(p.cardId&&ownedDraftCardIds.has(p.cardId));
     return apexAdminMode||starter||signed||((p.unlockXP||0)<=(career.unlockXP||0)&&(p.unlockWins||0)<=(career.unlockWins||0));
   }
+  function getPlayerPlayStyle(player,isKeeper){
+    const name=String(player.name||"").toLowerCase();
+    if(isKeeper){if(name.includes("neuer"))return "Sweeper Keeper";if(name.includes("ederson"))return "Ball-Playing Keeper";if(name.includes("martínez")||name.includes("martinez"))return "Penalty Specialist";if(name.includes("yashin")||name.includes("buffon"))return "Commanding Shot-Stopper";if(name.includes("raya"))return "Modern Distributor";return "Reflex Shot-Stopper";}
+    if(/ronaldo naz|cristiano/.test(name))return "Power Finisher";
+    if(/messi|maradona|ronaldinho|neymar/.test(name))return "Creative Dribbler";
+    if(/mbapp|vinícius|vinicius|yamal|salah|endrick/.test(name))return "Explosive Winger";
+    if(/haaland|kane|benzema|arham/.test(name))return "Clinical Finisher";
+    if(/de bruyne|xavi|iniesta|pirlo|zidane|bellingham/.test(name))return "Advanced Playmaker";
+    if(/van dijk|ramos/.test(name))return "Defensive Leader";
+    if(/umar/.test(name))return "Long-Range Sniper";
+    if(/hassan/.test(name))return "Apex All-Rounder";
+    if(/figo|saka/.test(name))return "Wide Creator";
+    return player.role==="CB"||player.role==="CDM"?"Ball-Winning Anchor":player.role==="CM"||player.role==="CAM"?"Box-to-Box Creator":player.role==="RW"||player.role==="LW"?"Direct Winger":"Complete Forward";
+  }
   function playerCard(p, selected, attr, isKeeper){
     const unlocked=isUnlocked(p,isKeeper),xp=career.players[p.name]||0,level=1+Math.floor(xp/100);
     const rawRating=(p.rating||60)+Math.min(4,Math.floor(xp/250));
@@ -529,6 +543,7 @@ const goalkeepers = [
     const displayRating=(p.name==="Cristiano Ronaldo"||p.name==="Lllllllll FC"?999:(p.name==="Hassan Ali"&&(isKeeper||p.role==="GK")?300:rating));
     const xpNeeded=Math.max(0,(p.unlockXP||0)-(career.unlockXP||0)),winsNeeded=Math.max(0,(p.unlockWins||0)-(career.unlockWins||0));
     const lockLabel=unlocked?"LVL "+level:"🔒 "+xpNeeded+" XP + "+winsNeeded+" MATCH WINS TO UNLOCK";
+    const playStyle=getPlayerPlayStyle(p,isKeeper);
     const labels=isKeeper?["DIV","HAN","KIC","REF","SPD","POS"]:["PAC","SHO","PAS","DRI","DEF","PHY"];
     const offsets=isKeeper?[1,0,-3,2,-2,1]:p.role==="ST"?[0,3,-2,-1,-4,2]:p.role==="RW"||p.role==="LW"?[3,0,-1,3,-5,-2]:p.role==="CAM"||p.role==="CM"?[-1,-1,3,1,0,0]:[0,0,0,0,0,0];
     const attributes=labels.map((label,i)=>'<span><b>'+label+'</b><strong>'+(p.stats&&p.stats[label]!=null?p.stats[label]:Math.min(199,Math.max(45,rating+offsets[i])))+'</strong></span>').join("");
@@ -537,7 +552,7 @@ const goalkeepers = [
     const portrait='<img class="player-card-photo" '+(safeImage?'src="'+safeImage+'" ':'')+'data-player-name="'+safeName+'" data-player-role="'+(isKeeper?"GOALKEEPER":String(p.role||"PLAYER"))+'" alt="'+safeName+' portrait" loading="lazy">';
     const mergedLevel=p.cardId?Math.max(0,Number(ownedDraftCardLevels[p.cardId])||0):0;
     const signedTag=p.cardId&&ownedDraftCardIds.has(p.cardId)?'<span class="player-signed-tag">'+(mergedLevel>0?("MERGED · LVL "+mergedLevel):"SIGNED CARD")+'</span>':"";
-    return '<button class="player-card '+(p.name===selected?'selected ':'')+(p.name==="Lllllllll FC"?'keyboard-master-card ':'')+(signedTag?'player-card-signed ':'')+(!unlocked?'player-locked':'')+'" '+(unlocked?'':'disabled aria-label="Locked player '+safeName+'" ')+attr+'="'+safeName.replace(/"/g,"&quot;")+'" style="--player-glow:'+p.glow+'">'+portrait+'<div class="player-card-copy">'+signedTag+'<div class="player-rating">'+displayRating+'</div><div class="player-role">'+p.role+' · OVR</div><div class="player-name">'+safeName+'</div><div class="player-special">'+(unlocked?p.special:lockLabel)+'</div><div class="fc-attributes">'+attributes+'</div><div class="ovr-meter"><i><span style="width:'+Math.min(100,rating)+'%"></span></i></div></div></button>';
+    return '<button class="player-card '+(p.name===selected?'selected ':'')+(p.name==="Lllllllll FC"?'keyboard-master-card ':'')+(signedTag?'player-card-signed ':'')+(!unlocked?'player-locked':'')+'" '+(unlocked?'':'disabled aria-label="Locked player '+safeName+'" ')+attr+'="'+safeName.replace(/"/g,"&quot;")+'" style="--player-glow:'+p.glow+'">'+portrait+'<div class="player-card-copy">'+signedTag+'<div class="player-rating">'+displayRating+'</div><div class="player-role">'+p.role+' · OVR</div><div class="player-name">'+safeName+'</div><div class="player-special">'+(unlocked?p.special:lockLabel)+'</div><div class="player-playstyle"><span>PLAY STYLE</span> '+playStyle+'</div><div class="fc-attributes">'+attributes+'</div><div class="ovr-meter"><i><span style="width:'+Math.min(100,rating)+'%"></span></i></div></div></button>';
   }
   function renderPlayers(){
     ensureRosterPlayerImages();
