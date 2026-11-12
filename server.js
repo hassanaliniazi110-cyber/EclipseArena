@@ -218,7 +218,7 @@ function loadData() {
       deviceKeyHash: /^[a-f0-9]{64}$/i.test(p.deviceKeyHash || "")
         ? p.deviceKeyHash.toLowerCase()
         : (/^[a-f0-9]{64}$/i.test(p.deviceKey || "") ? hashToken(p.deviceKey.toLowerCase()) : ""),
-      approvalStatus: "approved",
+      approvalStatus: p.approvalStatus === "pending" ? "pending" : "approved",
       createdAt: String(p.createdAt || ""),
       profile: normalizeProfile({ ...p.profile, ovr: serverOverallFromXp(p.profile?.xp) }),
       friends: new Set(Array.isArray(p.friends) ? p.friends.filter(validPlayerId).slice(0, 100) : []),
@@ -660,7 +660,7 @@ app.post("/api/register", registerLimiter, (req, res) => {
     // overlapping startup/store requests cannot invalidate one another.
     if (bearerPlayerId && existing.tokenHash === hashToken(bearer[1])) {
       saveData();
-      return res.json({ playerId: existing.id, token: bearer[1], status: "approved" });
+      return res.json({ playerId: existing.id, token: bearer[1], status: existing.approvalStatus || "approved" });
     }
     // A device key is a one-time recovery credential. Replace it after use so a
     // copied old key cannot be replayed for future account recovery.
@@ -696,7 +696,7 @@ app.post("/api/register", registerLimiter, (req, res) => {
       playerId: existing.id,
       token: rotatedToken,
       ...(replacementDeviceKey ? { deviceKey: replacementDeviceKey } : {}),
-      status: "approved"
+      status: existing.approvalStatus || "approved"
     });
   }
   if (players.size >= MAX_PLAYERS) return res.status(503).json({ error: "The server is full. Please try again later." });
@@ -1152,8 +1152,8 @@ app.post("/api/games/complete",auth,gameLimiter,(req,res)=>{
   res.json({gems:syncAdminGemWallet(req.player),unlimitedGems:youtubeAdminPlayers.has(req.player.id),reward,eventReward,eventXp,eventId,eventCard,ownedCards:req.player.ownedCards,cardLevels:req.player.cardLevels,dailyEarned:req.player.rewardGemsToday,dailyLimit:null});
 });
 app.get("/api/leaderboard", auth, (req, res) => {
-  const requested=Math.floor(Number(req.query.limit)||50000);
-  const limit=Math.max(1,Math.min(50000,requested));
+  const requested=Math.floor(Number(req.query.limit)||1000);
+  const limit=Math.max(1,Math.min(1000,requested));
   // Every registered account belongs on the board, even before its first match.
   // Return only public competition stats, never wallets, tokens, or owned-card data.
   const boardById = new Map([...players.values()].map(p => [p.id, {
