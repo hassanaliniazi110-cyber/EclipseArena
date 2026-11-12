@@ -1220,7 +1220,7 @@ const goalkeepers = [
     cancelAnimationFrame(animationFrame);match.lastTick=performance.now();
     const tick=(now)=>{if(!match.active||match.finished)return;const dt=Math.min(.06,(now-match.lastTick)/1000);match.lastTick=now;if(onlineCfg.onlineMatch&&onlineCfg.matchStartAt){match.clock=Math.min(90,Math.max(0,(Date.now()-onlineCfg.matchStartAt)/1000));}else match.clock+=dt;
       if(match.clock>=90){match.clock=90;endFullMatch();return}
-      const step=(match.sprint?.48:.34)*dt;const axisX=match.moveX||(match.move==="left"?-1:match.move==="right"?1:0);const axisY=match.moveY||(match.move==="up"?-1:match.move==="down"?1:0);const magnitude=Math.hypot(axisX,axisY)||1;match.player.x+=(axisX/magnitude)*step;match.player.y+=(axisY/magnitude)*step;
+      const step=(match.sprint?.48:.34)*dt;const axisX=match.moveX||(match.move==="left"?-1:match.move==="right"?1:0);const axisY=match.moveY||(match.move==="up"?-1:match.move==="down"?1:0);const magnitude=Math.hypot(axisX,axisY);const axisScale=magnitude>1?1/magnitude:1;match.player.x+=axisX*axisScale*step;match.player.y+=axisY*axisScale*step;
       match.player.x=Math.max(.08,Math.min(.92,match.player.x));match.player.y=Math.max(.06,Math.min(.94,match.player.y));
       const dx=match.player.x-match.rival.x,dy=match.player.y-match.rival.y,dist=Math.hypot(dx,dy)||.001;if(!onlineCfg.onlineMatch){match.rival.x+=dx/dist*.12*dt;match.rival.y+=dy/dist*.12*dt;}
       if(match.hasBall){match.ball.x=match.player.x;match.ball.y=match.player.y-.022}else{match.ball.x=match.rival.x;match.ball.y=match.rival.y-.022}
@@ -1349,6 +1349,11 @@ const goalkeepers = [
   if(joystick){joystick.addEventListener("pointerdown",e=>{if(!match.active)return;e.preventDefault();joystickPointer=e.pointerId;joystick.setPointerCapture?.(e.pointerId);moveJoystick(e);});joystick.addEventListener("pointermove",moveJoystick);["pointerup","pointercancel","lostpointercapture"].forEach(type=>joystick.addEventListener(type,resetJoystick));}
   document.querySelectorAll("[data-action]").forEach(b=>b.addEventListener("click",()=>matchAction(b.dataset.action)));
   document.querySelectorAll("[data-camera-zoom]").forEach(b=>b.addEventListener("click",()=>{const current=window.ApexMatch3D?.getZoom?.()||1.25;const action=b.dataset.cameraZoom;window.ApexMatch3D?.setZoom?.(action==="reset"?1.25:current+(action==="in"?.12:-.12));}));
+  const heldMatchKeys=new Set();
+  function syncMatchKeyboard(){if(!match.active)return;match.moveX=(heldMatchKeys.has("a")||heldMatchKeys.has("arrowleft")?-1:0)+(heldMatchKeys.has("d")||heldMatchKeys.has("arrowright")?1:0);match.moveY=(heldMatchKeys.has("w")||heldMatchKeys.has("arrowup")?-1:0)+(heldMatchKeys.has("s")||heldMatchKeys.has("arrowdown")?1:0);}
+  document.addEventListener("keydown",e=>{if(!match.active||e.target.matches("input,textarea,select"))return;const key=e.key.toLowerCase();if(["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"].includes(key)){e.preventDefault();heldMatchKeys.add(key);syncMatchKeyboard();}else if(key==="shift"){match.sprint=true;}else if(!e.repeat&&key===" "){e.preventDefault();matchAction("shoot");}else if(!e.repeat&&key==="e"){matchAction("pass");}else if(!e.repeat&&key==="q"){matchAction("tackle");}});
+  document.addEventListener("keyup",e=>{const key=e.key.toLowerCase();if(heldMatchKeys.delete(key))syncMatchKeyboard();if(key==="shift")match.sprint=false;});
+  window.addEventListener("blur",()=>{heldMatchKeys.clear();match.moveX=0;match.moveY=0;match.sprint=false;});
   document.querySelectorAll("[data-mode]").forEach(b=>b.addEventListener("click",()=>startMode(b.dataset.mode)));
   document.addEventListener("click",e=>{
     const youtubeButton=e.target.closest("[data-open-youtube]");
