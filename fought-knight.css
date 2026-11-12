@@ -826,3 +826,43 @@ section,.career-hub,.featured-market-section,.youtube-panel{scroll-margin-top:16
   .apex-cinema-stage:before,.walkout-power-up .walkout-stadium,.walkout-power-up .walkout-roof,
   .walkout-power-up .walkout-crowd,.apex-player-card.draft-player-card:before,.apex-launch-intro .launch-wordmark .intro-letter{animation:none!important}
 }
+
+
+/* Final player-card skin, loaded after the base stylesheet by design. */
+body .player-grid{align-items:stretch;gap:14px}
+body .player-card{
+  display:grid!important;grid-template-columns:minmax(94px,35%) minmax(0,1fr)!important;
+  align-items:stretch;gap:11px;min-width:0;min-height:184px!important;padding:10px!important;
+  isolation:isolate;border:1px solid rgba(112,205,255,.46)!important;border-radius:15px!important;
+  background:radial-gradient(ellipse at 15% 0,rgba(73,190,255,.2),transparent 55%),linear-gradient(145deg,#1b3450 0%,#0c1728 58%,#090f1b 100%)!important;
+  box-shadow:0 13px 30px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.1)!important;
+  transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease!important;
+}
+body .player-card:before{pointer-events:none}
+body .player-card:hover:not(:disabled){transform:translateY(-5px)!important;border-color:rgba(128,225,255,.95)!important;box-shadow:0 18px 38px rgba(0,0,0,.45),0 0 22px rgba(75,193,255,.16)!important}
+body .player-card.selected{border:2px solid #c7ff4a!important;padding:9px!important;box-shadow:0 0 0 1px rgba(199,255,74,.2),0 0 24px rgba(199,255,74,.18),0 15px 32px rgba(0,0,0,.38)!important}
+body .player-card-photo{position:relative!important;display:block;width:100%!important;height:100%!important;min-height:158px!important;max-height:210px;align-self:stretch;margin:0!important;object-fit:cover!important;object-position:50% 18%!important;border:1px solid rgba(181,222,255,.38)!important;border-radius:10px!important;background:linear-gradient(145deg,#294966,#0a1422)!important;box-shadow:0 8px 18px rgba(0,0,0,.34),inset 0 0 0 1px rgba(255,255,255,.06)!important}
+body .player-card-photo.photo-unavailable{opacity:0!important}
+body .player-card-copy{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;min-width:0;padding:3px 2px}
+body .player-card .player-rating{margin:0 0 2px;padding:2px 8px;border:1px solid rgba(199,255,74,.5);border-radius:6px;background:rgba(4,13,23,.75);color:#d8ff7a!important;font:900 29px/1.05 'Barlow Condensed',sans-serif!important;text-shadow:0 0 16px rgba(199,255,74,.24)}
+body .player-card .player-role{margin:0;color:#a9c9df!important;font-size:8px;font-weight:900;letter-spacing:1.4px}
+body .player-card .player-name{margin-top:3px;color:#f5f8ff!important;font-size:13px;line-height:1.2;font-weight:900;overflow-wrap:anywhere}
+body .player-card .player-special{margin:2px 0 0;color:#a8bbd0!important;font-size:9px;line-height:1.4}
+body .player-card .fc-attributes{display:none!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:7px 0 0;padding:7px 5px;border:1px solid rgba(132,194,230,.2);border-radius:8px;background:rgba(3,10,18,.52)}
+body .player-card.show-stats .fc-attributes{display:grid!important}
+body .player-card.show-stats .fc-attributes span{display:flex;justify-content:space-between;gap:4px;padding:4px 5px;border-radius:5px;background:rgba(93,175,230,.1)}
+body .player-card.show-stats .fc-attributes b{color:#9ebbd5!important;font-size:7px}
+body .player-card.show-stats .fc-attributes strong{color:#f0f8ff!important;font-size:10px}
+body .player-card.player-card-signed{border-color:rgba(255,190,99,.88)!important;background:radial-gradient(ellipse at 15% 0,rgba(255,184,82,.2),transparent 55%),linear-gradient(145deg,#392b27,#111827 72%)!important}
+body .player-card .player-signed-tag{display:inline-flex;max-width:100%;padding:4px 7px;border:1px solid rgba(255,192,100,.7);border-radius:99px;background:rgba(74,43,17,.62);color:#ffd18b;font-size:7px;font-weight:900;letter-spacing:.7px}
+body .player-card .ovr-meter{width:100%;height:4px;margin-top:auto;background:#26384b;border-radius:99px;overflow:hidden}
+body .player-card .ovr-meter i,body .player-card .ovr-meter span{display:block;height:100%;background:linear-gradient(90deg,#42c8ff,#c7ff4a);border-radius:99px}
+@media(max-width:600px){
+  body .player-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  body .player-card{grid-template-columns:minmax(66px,34%) minmax(0,1fr)!important;gap:8px;min-height:168px!important;padding:8px!important}
+  body .player-card.selected{padding:7px!important}
+  body .player-card-photo{min-height:144px!important}
+  body .player-card .player-rating{font-size:25px!important}
+  body .player-card .player-name{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){body .player-card,body .player-card:hover{transition:none!important;transform:none!important}}
