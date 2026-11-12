@@ -93,11 +93,46 @@ const goalkeepers = [
         ball:{x:match.ball.x,y:match.ball.y},hasBall:match.hasBall,
         playerGoals:match.playerGoals,rivalGoals:match.rivalGoals
       },
-      ballAnim:ballAnim?Object.assign({},ballAnim):null,
+      // Convert the original pixel-based animation to normalized 0–1 coordinates for WebGL.
+      ballAnim:ballAnim?{
+        ...ballAnim,
+        fromX:ballAnim.fromX/Math.max(cw,1),fromY:ballAnim.fromY/Math.max(ch,1),
+        toX:ballAnim.toX/Math.max(cw,1),toY:ballAnim.toY/Math.max(ch,1)
+      }:null,
       keeperMotion:keeperMotion?Object.assign({},keeperMotion):null
     };
   }
   if(window.ApexMatch3D&&canvas)window.ApexMatch3D.init(canvas,getApex3DState);
+  // Fullscreen match view.
+  const pitchWrap=canvas?.closest(".pitch-wrap");
+  if(pitchWrap&&!pitchWrap.querySelector(".apex-fullscreen-btn")){
+    const fullscreenBtn=document.createElement("button");
+    fullscreenBtn.type="button";fullscreenBtn.className="apex-fullscreen-btn";
+    fullscreenBtn.textContent="⛶ FULLSCREEN";fullscreenBtn.setAttribute("aria-label","Enter fullscreen match view");
+    fullscreenBtn.setAttribute("aria-pressed","false");
+    const syncFullscreen=()=>{
+      const active=document.fullscreenElement===pitchWrap;
+      fullscreenBtn.textContent=active?"✕ EXIT FULLSCREEN":"⛶ FULLSCREEN";
+      fullscreenBtn.setAttribute("aria-label",active?"Exit fullscreen match view":"Enter fullscreen match view");
+      fullscreenBtn.setAttribute("aria-pressed",String(active));
+      requestAnimationFrame(()=>{resizeCanvas();window.ApexMatch3D?.resize?.();});
+    };
+    const toggleFullscreen=async()=>{
+      try{
+        if(document.fullscreenElement)await document.exitFullscreen();
+        else if(pitchWrap.requestFullscreen)await pitchWrap.requestFullscreen({navigationUI:"hide"});
+        else toast("Fullscreen is not supported by this browser.");
+      }catch(_){toast("The browser could not open fullscreen. Try its fullscreen shortcut.");}
+    };
+    fullscreenBtn.addEventListener("click",toggleFullscreen);
+    pitchWrap.appendChild(fullscreenBtn);
+    document.addEventListener("fullscreenchange",syncFullscreen);
+    document.addEventListener("keydown",event=>{
+      if(event.key.toLowerCase()!=="f"||event.metaKey||event.ctrlKey||event.altKey||
+        event.target.matches("input,textarea,select")||$("gameScreen").classList.contains("hidden"))return;
+      event.preventDefault();toggleFullscreen();
+    });
+  }
 
   let apexAdminMode=false;
   let ownedDraftCardIds=new Set();
