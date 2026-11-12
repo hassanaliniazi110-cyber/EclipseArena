@@ -522,19 +522,100 @@ const goalkeepers = [
     const signed=Boolean(p.cardId&&ownedDraftCardIds.has(p.cardId));
     return apexAdminMode||starter||signed||((p.unlockXP||0)<=(career.unlockXP||0)&&(p.unlockWins||0)<=(career.unlockWins||0));
   }
-  function getPlayerPlayStyle(player,isKeeper){
-    const name=String(player.name||"").toLowerCase();
-    if(isKeeper){if(name.includes("neuer"))return "Sweeper Keeper";if(name.includes("ederson"))return "Ball-Playing Keeper";if(name.includes("martínez")||name.includes("martinez"))return "Penalty Specialist";if(name.includes("yashin")||name.includes("buffon"))return "Commanding Shot-Stopper";if(name.includes("raya"))return "Modern Distributor";return "Reflex Shot-Stopper";}
-    if(/ronaldo naz|cristiano/.test(name))return "Power Finisher";
-    if(/messi|maradona|ronaldinho|neymar/.test(name))return "Creative Dribbler";
-    if(/mbapp|vinícius|vinicius|yamal|salah|endrick/.test(name))return "Explosive Winger";
-    if(/haaland|kane|benzema|arham/.test(name))return "Clinical Finisher";
-    if(/de bruyne|xavi|iniesta|pirlo|zidane|bellingham/.test(name))return "Advanced Playmaker";
-    if(/van dijk|ramos/.test(name))return "Defensive Leader";
-    if(/umar/.test(name))return "Long-Range Sniper";
-    if(/hassan/.test(name))return "Apex All-Rounder";
-    if(/figo|saka/.test(name))return "Wide Creator";
-    return player.role==="CB"||player.role==="CDM"?"Ball-Winning Anchor":player.role==="CM"||player.role==="CAM"?"Box-to-Box Creator":player.role==="RW"||player.role==="LW"?"Direct Winger":"Complete Forward";
+  const PLAYSTYLE_ICON_PATHS={
+    "Finesse Shot":'<path d="M7 21 12 4l5 17M9 15h6M4 10l3-2m13 2-3-2"/>',
+    "First Touch":'<path d="M4 18c3-7 6-9 9-9s5 2 7 0M12 9l-3-3m3 3 3-3M5 20h14"/>',
+    "Power Shot":'<path d="M4 12h10m-4-4 4 4-4 4M16 5l4 7-4 7"/>',
+    "Aerial":'<path d="M12 21V5m-5 7 5-7 5 7M5 19h14"/>',
+    "Acrobatic":'<path d="m5 18 5-7 3 3 6-9M14 5h5v5"/>',
+    "Technical":'<path d="M5 7c5-5 9 5 14 0M5 17c5 5 9-5 14 0M12 4v16"/>',
+    "Flair":'<path d="M12 3 14 9l6 3-6 2-2 7-2-7-6-2 6-3Z"/>',
+    "Rapid":'<path d="M3 8h10M3 12h14M3 16h10m4-11 4 7-4 7"/>',
+    "Quick Step":'<path d="m4 17 5-5-3-3 5-5m1 17 5-5-3-3 5-5"/>',
+    "Tiki Taka":'<circle cx="6" cy="7" r="2"/><circle cx="18" cy="17" r="2"/><path d="m8 8 8 7M16 7l-4 4"/>',
+    "Incisive Pass":'<path d="M4 18 19 6m-7 0h7v7"/>',
+    "Pinged Pass":'<path d="M4 12h15m-5-5 5 5-5 5M5 5l4 7-4 7"/>',
+    "Whipped Pass":'<path d="M4 18c7 0 5-12 15-12m-5-3 5 3-3 5"/>',
+    "Long Ball Pass":'<path d="M4 18 18 6m-7 0h7v7M4 7h4"/>',
+    "Dead Ball":'<path d="M12 3v18M3 12h18M6 6l12 12m0-12L6 18"/>',
+    "Anticipate":'<path d="M12 3 20 7v5c0 5-3 8-8 10-5-2-8-5-8-10V7Z"/><path d="m8 12 3 3 5-6"/>',
+    "Intercept":'<path d="M4 4 20 20M20 4 4 20M12 3v18"/>',
+    "Block":'<path d="M5 4h14v16H5zM8 8l8 8m0-8-8 8"/>',
+    "Bruiser":'<path d="M4 7h16M4 17h16M8 4l-4 3 4 3m8 4 4 3-4 3"/>',
+    "Relentless":'<path d="M19 7a8 8 0 1 0 1 8M19 3v4h-4M12 7v5l3 2"/>',
+    "Jockey":'<path d="M4 8h16M4 16h16M8 5l-4 3 4 3m8 2 4 3-4 3"/>',
+    "Slide Tackle":'<path d="m4 17 7-7 3 3 6-8M4 20h16"/>',
+    "Rush Out":'<path d="M4 18 18 6m-7 0h7v7M4 6v12"/>',
+    "Far Reach":'<path d="M4 12h16M14 6l6 6-6 6M4 5v14"/>',
+    "Footwork":'<path d="m5 17 4-5-2-3 5-5m3 16 4-5-2-3 4-5"/>',
+    "Cross Claimer":'<path d="M4 18 12 4l8 14M8 14h8M12 4v-2"/>',
+    "1v1 Close Down":'<circle cx="12" cy="12" r="8"/><path d="m8 12 3 3 5-6"/>',
+    "Long Throw":'<path d="M4 16c5-9 11-9 16-9m-5-4 5 4-4 5"/>'
+  };
+  const PLAYSTYLE_ASSIGNMENTS={
+    "Cristiano Ronaldo":["Power Shot","Aerial","Finesse Shot"],
+    "Lionel Messi":["Technical","Tiki Taka","Finesse Shot"],
+    "Kylian Mbappé":["Rapid","Quick Step","Finesse Shot"],
+    "Erling Haaland":["Power Shot","Aerial","Acrobatic"],
+    "Jude Bellingham":["Relentless","Tiki Taka","Intercept"],
+    "Lamine Yamal":["Technical","Flair","Finesse Shot"],
+    "Kevin De Bruyne":["Incisive Pass","Pinged Pass","Dead Ball"],
+    "Mohamed Salah":["Finesse Shot","Rapid","Technical"],
+    "Vinícius Júnior":["Rapid","Quick Step","Flair"],
+    "Neymar Jr.":["Flair","Technical","Tiki Taka"],
+    "Harry Kane":["Power Shot","Long Ball Pass","Aerial"],
+    "Bukayo Saka":["Whipped Pass","Technical","Rapid"],
+    "Phil Foden":["Technical","Tiki Taka","Flair"],
+    "Zayd Quadri":["Technical","Tiki Taka"],
+    "Ehan Ali":["Relentless","Technical"],
+    "Umar Shoaib":["Power Shot","Dead Ball","Finesse Shot"],
+    "Muhammad Arham":["Finesse Shot","First Touch","Power Shot"],
+    "Diego Maradona":["Technical","Flair","Incisive Pass"],
+    "Luís Figo":["Whipped Pass","Technical","Rapid"],
+    "Zinedine Zidane":["Technical","Tiki Taka","Incisive Pass"],
+    "Pelé":["Finesse Shot","Acrobatic","First Touch"],
+    "Ronaldo Nazário":["Rapid","Quick Step","Acrobatic"],
+    "Ronaldinho":["Flair","Technical","Tiki Taka"],
+    "Thierry Henry":["Rapid","Finesse Shot","Quick Step"],
+    "Xavi":["Tiki Taka","Pinged Pass","Incisive Pass"],
+    "Andrés Iniesta":["Technical","Tiki Taka","Flair"],
+    "Andrea Pirlo":["Long Ball Pass","Dead Ball","Pinged Pass"],
+    "Sergio Ramos":["Anticipate","Bruiser","Block"],
+    "Virgil van Dijk":["Anticipate","Block","Aerial"],
+    "Karim Benzema":["First Touch","Finesse Shot","Tiki Taka"],
+    "Hassan Ali":["Anticipate","Far Reach","1v1 Close Down"],
+    "Federico Valverde":["Relentless","Power Shot","Intercept"],
+    "Rodri":["Intercept","Anticipate","Pinged Pass"],
+    "Endrick":["Rapid","Quick Step","Acrobatic"]
+  };
+  function getPlayerPlayStyles(player,isKeeper){
+    const name=String(player.name||"");
+    if(PLAYSTYLE_ASSIGNMENTS[name])return PLAYSTYLE_ASSIGNMENTS[name].filter(style=>PLAYSTYLE_ICON_PATHS[style]||style==="First Touch").slice(0,3);
+    if(isKeeper){
+      const lower=name.toLowerCase();
+      if(lower.includes("neuer"))return ["Rush Out","Footwork","Far Reach"];
+      if(lower.includes("ederson"))return ["Long Ball Pass","Footwork","Rush Out"];
+      if(lower.includes("martínez")||lower.includes("martinez"))return ["1v1 Close Down","Footwork","Far Reach"];
+      if(lower.includes("yashin")||lower.includes("buffon"))return ["Far Reach","Cross Claimer","1v1 Close Down"];
+      if(lower.includes("raya"))return ["Footwork","Long Throw","Cross Claimer"];
+      return ["Far Reach","1v1 Close Down","Cross Claimer"];
+    }
+    const role=String(player.role||"").toUpperCase();
+    if(role==="CB"||role==="CDM")return ["Anticipate","Intercept","Block"];
+    if(role==="CM"||role==="CAM")return ["Tiki Taka","Incisive Pass","Relentless"];
+    if(role==="RW"||role==="LW")return ["Rapid","Technical","Flair"];
+    return ["Finesse Shot","Power Shot","First Touch"];
+  }
+  function escapePlayStyleLabel(value){
+    return String(value).replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+  }
+  function playStyleIconData(style){
+    const path=PLAYSTYLE_ICON_PATHS[style]||'<path d="M4 12h16M12 4v16"/>';
+    const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#f4f8ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" stroke="#b7dcff" stroke-opacity=".72"/>'+path+'</svg>';
+    return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
+  }
+  function renderPlayStyleBadges(styles){
+    return '<div class="player-playstyles" role="group" aria-label="Player PlayStyles"><span class="player-playstyles-label">PLAYSTYLES</span><div class="player-playstyles-icons">'+styles.map(style=>'<span class="player-playstyle-badge" title="'+escapePlayStyleLabel(style)+'" aria-label="'+escapePlayStyleLabel(style)+'"><img src="'+playStyleIconData(style)+'" alt="" loading="lazy"></span>').join("")+'</div></div>';
   }
   function playerCard(p, selected, attr, isKeeper){
     const unlocked=isUnlocked(p,isKeeper),xp=career.players[p.name]||0,level=1+Math.floor(xp/100);
@@ -543,7 +624,7 @@ const goalkeepers = [
     const displayRating=(p.name==="Cristiano Ronaldo"||p.name==="Lllllllll FC"?999:(p.name==="Hassan Ali"&&(isKeeper||p.role==="GK")?300:rating));
     const xpNeeded=Math.max(0,(p.unlockXP||0)-(career.unlockXP||0)),winsNeeded=Math.max(0,(p.unlockWins||0)-(career.unlockWins||0));
     const lockLabel=unlocked?"LVL "+level:"🔒 "+xpNeeded+" XP + "+winsNeeded+" MATCH WINS TO UNLOCK";
-    const playStyle=getPlayerPlayStyle(p,isKeeper);
+    const playStyles=getPlayerPlayStyles(p,isKeeper);
     const labels=isKeeper?["DIV","HAN","KIC","REF","SPD","POS"]:["PAC","SHO","PAS","DRI","DEF","PHY"];
     const offsets=isKeeper?[1,0,-3,2,-2,1]:p.role==="ST"?[0,3,-2,-1,-4,2]:p.role==="RW"||p.role==="LW"?[3,0,-1,3,-5,-2]:p.role==="CAM"||p.role==="CM"?[-1,-1,3,1,0,0]:[0,0,0,0,0,0];
     const attributes=labels.map((label,i)=>'<span><b>'+label+'</b><strong>'+(p.stats&&p.stats[label]!=null?p.stats[label]:Math.min(199,Math.max(45,rating+offsets[i])))+'</strong></span>').join("");
@@ -552,7 +633,7 @@ const goalkeepers = [
     const portrait='<img class="player-card-photo" '+(safeImage?'src="'+safeImage+'" ':'')+'data-player-name="'+safeName+'" data-player-role="'+(isKeeper?"GOALKEEPER":String(p.role||"PLAYER"))+'" alt="'+safeName+' portrait" loading="lazy">';
     const mergedLevel=p.cardId?Math.max(0,Number(ownedDraftCardLevels[p.cardId])||0):0;
     const signedTag=p.cardId&&ownedDraftCardIds.has(p.cardId)?'<span class="player-signed-tag">'+(mergedLevel>0?("MERGED · LVL "+mergedLevel):"SIGNED CARD")+'</span>':"";
-    return '<button class="player-card '+(p.name===selected?'selected ':'')+(p.name==="Lllllllll FC"?'keyboard-master-card ':'')+(signedTag?'player-card-signed ':'')+(!unlocked?'player-locked':'')+'" '+(unlocked?'':'disabled aria-label="Locked player '+safeName+'" ')+attr+'="'+safeName.replace(/"/g,"&quot;")+'" style="--player-glow:'+p.glow+'">'+portrait+'<div class="player-card-copy">'+signedTag+'<div class="player-rating">'+displayRating+'</div><div class="player-role">'+p.role+' · OVR</div><div class="player-name">'+safeName+'</div><div class="player-special">'+(unlocked?p.special:lockLabel)+'</div><div class="player-playstyle"><span>PLAY STYLE</span> '+playStyle+'</div><div class="fc-attributes">'+attributes+'</div><div class="ovr-meter"><i><span style="width:'+Math.min(100,rating)+'%"></span></i></div></div></button>';
+    return '<button class="player-card '+(p.name===selected?'selected ':'')+(p.name==="Lllllllll FC"?'keyboard-master-card ':'')+(signedTag?'player-card-signed ':'')+(!unlocked?'player-locked':'')+'" '+(unlocked?'':'disabled aria-label="Locked player '+safeName+'" ')+attr+'="'+safeName.replace(/"/g,"&quot;")+'" style="--player-glow:'+p.glow+'">'+portrait+'<div class="player-card-copy">'+signedTag+'<div class="player-rating">'+displayRating+'</div><div class="player-role">'+p.role+' · OVR</div><div class="player-name">'+safeName+'</div><div class="player-special">'+(unlocked?p.special:lockLabel)+'</div>'+renderPlayStyleBadges(playStyles)+'<div class="fc-attributes">'+attributes+'</div><div class="ovr-meter"><i><span style="width:'+Math.min(100,rating)+'%"></span></i></div></div></button>';
   }
   function renderPlayers(){
     ensureRosterPlayerImages();
