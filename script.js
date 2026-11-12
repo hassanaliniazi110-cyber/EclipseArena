@@ -2009,6 +2009,7 @@ const goalkeepers = [
     // Hassan reads the shot perfectly and commits to its actual direction.
     keeperMotion={side:shotSide,targetX:aim.x,start:performance.now(),duration:700};
     drawPitch();
+    setTimeout(()=>{keeperMotion=null;drawPitch();},780);
 
     const centerBias=Math.abs(aim.x-.5);
     const keeperRating=(goalkeepers.find(g=>g.name===selectedGoalkeeper)||goalkeepers[0]).rating;
