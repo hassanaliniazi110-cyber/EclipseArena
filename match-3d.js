@@ -171,7 +171,7 @@
     goal(-FIELD_LENGTH/2,-1);goal(FIELD_LENGTH/2,1);
     scene.add(new T.HemisphereLight(0xadcfff,0x15251b,1.02));
     const sun=new T.DirectionalLight(0xffffff,2.05);sun.position.set(-25,48,38);sun.castShadow=true;
-    sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-62;sun.shadow.camera.right=62;sun.shadow.camera.top=78;sun.shadow.camera.bottom=-78;
+    sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-62;sun.shadow.camera.right=62;sun.shadow.camera.top=78;sun.shadow.camera.bottom=-78;
     sun.shadow.camera.near=1;sun.shadow.camera.far=180;sun.shadow.bias=-.00025;scene.add(sun);
     [[-41,18,-57],[41,18,-57],[-41,18,57],[41,18,57]].forEach((p,i)=>{
       cylinder(scene,.12,.16,17,[p[0],8.5,p[2]],mat("#25394c",{metalness:.55,roughness:.4}),8);
@@ -338,7 +338,7 @@
       hud.innerHTML='<div class="apex-3d-scoreboard"><div class="apex-3d-hud-top"><span class="apex-3d-hud-brand">APEX <b>STRIKERS</b></span><span class="apex-3d-hud-live"><i></i> LIVE ENGINE</span></div><div class="apex-3d-hud-middle"><span class="apex-3d-hud-mode">MATCH</span><strong class="apex-3d-hud-score">0 : 0</strong><span class="apex-3d-hud-clock">00:00</span></div><div class="apex-3d-hud-status">3D MATCH ENGINE · LIVE</div></div>';
       wrap.appendChild(hud);hudMode=hud.querySelector(".apex-3d-hud-mode");hudScore=hud.querySelector(".apex-3d-hud-score");hudClock=hud.querySelector(".apex-3d-hud-clock");hudStatus=hud.querySelector(".apex-3d-hud-status");
       renderer=new T.WebGLRenderer({canvas:glCanvas,antialias:true,alpha:false,powerPreference:"high-performance"});
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.25));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
       renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.16;
       if("outputColorSpace" in renderer)renderer.outputColorSpace=T.SRGBColorSpace;
       scene=new T.Scene();camera=new T.PerspectiveCamera(47,1,.1,180);camera.position.set(0,23,29);camera.zoom=cameraZoom;camera.updateProjectionMatrix();
