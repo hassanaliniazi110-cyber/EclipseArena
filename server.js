@@ -1281,10 +1281,9 @@ io.on("connection", socket => {
   });
   socket.on("disconnect", () => {
     socketsByPlayer.get(id)?.delete(socket);
-    if (!socketsByPlayer.get(id)?.size) socketsByPlayer.delete(id);
-    // A player may have multiple tabs/devices connected. Only end their match
-    // when their final authenticated socket disconnects.
+    // Keep presence and active matches alive while another authenticated tab remains.
     if (!socketsByPlayer.get(id)?.size) {
+      socketsByPlayer.delete(id);
       for (const [roomId, match] of activeMatches) {
         if (match.players.has(id)) {
           clearTimeout(match.timer);
@@ -1292,9 +1291,9 @@ io.on("connection", socket => {
           io.to(roomId).emit("match:ended", { message: "A player disconnected" });
         }
       }
-    }
-    for (const friendId of players.get(id)?.friends || []) {
-      socketsByPlayer.get(friendId)?.forEach(s => s.emit("friend:status", { playerId: id, online: false }));
+      for (const friendId of players.get(id)?.friends || []) {
+        socketsByPlayer.get(friendId)?.forEach(s => s.emit("friend:status", { playerId: id, online: false }));
+      }
     }
   });
 });
