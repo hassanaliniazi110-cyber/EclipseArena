@@ -1,23 +1,51 @@
 (() => {
   "use strict";
-  const deviceProfile=(()=>{const ua=navigator.userAgent||"",touch=(navigator.maxTouchPoints||0)>1||("ontouchstart" in window),ipad=/iPad/.test(ua)||(navigator.platform==="MacIntel"&&touch),iphone=/iPhone|iPod/.test(ua),android=/Android/.test(ua),tablet=ipad||(/Android/.test(ua)&&!/Mobile/.test(ua)),mac=/Macintosh|MacIntel|MacPPC/.test(ua)&&!touch;const type=ipad?"ipad":iphone?"iphone":tablet?"tablet":android?"android":mac?"macos":touch?"touch-device":"laptop";document.documentElement.dataset.device=type;document.documentElement.dataset.input=touch?"touch":"keyboard";return {type,touch,tablet,mac};})();
+  const deviceProfile=(()=>{
+    const ua=navigator.userAgent||"",touch=(navigator.maxTouchPoints||0)>1||("ontouchstart" in window);
+    const ipad=/iPad/.test(ua)||(navigator.platform==="MacIntel"&&touch);
+    const iphone=/iPhone|iPod/.test(ua),android=/Android/.test(ua);
+    const tablet=ipad||(/Android/.test(ua)&&!/Mobile/.test(ua));
+    const mac=/Macintosh|MacIntel|MacPPC/.test(ua)&&!touch;
+    const type=ipad?"ipad":iphone?"iphone":tablet?"tablet":android?"android":mac?"macos":touch?"touch-device":"laptop";
+    document.documentElement.dataset.device=type;
+    document.documentElement.dataset.input=touch?"touch":"keyboard";
+    return {type,touch,tablet,mac,ua};
+  })();
 
   const deviceNotice=(()=>{
-    const labels={ipad:"iPad",iphone:"iPhone",tablet:"Android tablet",android:"Android phone",macos:"Mac",laptop:"Laptop", "touch-device":"Touchscreen device"};
-    const label=labels[deviceProfile.type]||"Device";
+    const labels={ipad:"Apple iPad",iphone:"Apple iPhone",tablet:"Android tablet",android:"Android phone",macos:"Mac",laptop:"Laptop / desktop", "touch-device":"Touchscreen device"};
+    const getExactModel=()=>{
+      const ua=navigator.userAgent||"";
+      if(navigator.userAgentData?.model)return navigator.userAgentData.model;
+      const androidMatch=ua.match(/;\\s*([^;)]+)\\s+Build\\//i);
+      if(androidMatch)return androidMatch[1].trim();
+      const appleModel=ua.match(/iPhone(\\d+,\\d+)/);
+      if(appleModel)return "iPhone "+appleModel[1];
+      return "";
+    };
+    const model=getExactModel();
+    const deviceName=model?model:(labels[deviceProfile.type]||"Device");
     const input=deviceProfile.touch?"TOUCH CONTROLS ENABLED":"KEYBOARD CONTROLS ENABLED";
     const el=document.createElement("div");
-    el.id="apexDeviceNotice";el.className="apex-device-notice";el.setAttribute("role","status");el.setAttribute("aria-live","polite");
-    el.innerHTML='<span class="apex-device-notice-icon">✓</span><span><strong>DEVICE DETECTED: '+label+'</strong><small>'+input+'</small></span>';
+    el.id="apexDeviceNotice";el.className="apex-device-notice";el.setAttribute("role","dialog");el.setAttribute("aria-modal","true");el.setAttribute("aria-live","polite");
+    el.innerHTML='<div class="apex-device-notice-content"><span class="apex-device-notice-kicker">APEX STRIKERS · SYSTEM CHECK</span><div class="apex-device-notice-icon">✓</div><p class="apex-device-notice-label">DEVICE DETECTED</p><h1 class="apex-device-name"></h1><p class="apex-device-detail"></p><span class="apex-device-input"></span><button class="apex-device-continue" type="button">CONTINUE TO APEX STRIKERS <b>↗</b></button><small class="apex-device-limitation"></small></div>';
+    el.querySelector(".apex-device-name").textContent=deviceName;
+    el.querySelector(".apex-device-detail").textContent=model?"Exact model reported by this browser":(deviceProfile.type==="ipad"?"Apple's browser identifies this device as iPad, but does not expose its exact hardware model.":"Exact hardware model is not exposed by this browser.");
+    el.querySelector(".apex-device-input").textContent=input;
+    el.querySelector(".apex-device-limitation").textContent=deviceProfile.type==="ipad"&&!model?"Model details are restricted by iPadOS browser privacy.":(model?"":"Device model unavailable");
     document.body.appendChild(el);
-    const reveal=()=>{if(el.classList.contains("is-visible"))return;el.classList.add("is-visible");window.setTimeout(()=>el.classList.add("is-hiding"),3200);window.setTimeout(()=>el.remove(),3900);};
+    const reveal=()=>{if(el.classList.contains("is-visible"))return;el.classList.add("is-visible");document.body.classList.add("apex-device-notice-open");};
+    const dismiss=()=>{el.classList.add("is-hiding");document.body.classList.remove("apex-device-notice-open");window.setTimeout(()=>el.remove(),450);};
+    el.querySelector(".apex-device-continue").addEventListener("click",dismiss);
     const intro=document.querySelector(".intro-splash");
     if(intro){
-      intro.addEventListener("animationend",e=>{if(e.target===intro&&e.animationName==="intro-exit")reveal();});
-      const skip=intro.querySelector(".intro-skip-btn");if(skip)skip.addEventListener("click",()=>window.setTimeout(reveal,80),{once:true});
-      window.setTimeout(reveal,9000);
+      let shown=false;
+      const showOnce=()=>{if(shown)return;shown=true;reveal();};
+      intro.addEventListener("animationend",e=>{if(e.target===intro&&e.animationName==="intro-exit")showOnce();});
+      const skip=intro.querySelector(".intro-skip-btn");if(skip)skip.addEventListener("click",()=>window.setTimeout(showOnce,80),{once:true});
+      window.setTimeout(showOnce,12000);
     }else reveal();
-    return {label,input};
+    return {deviceName,model,input};
   })();
   const $ = (id) => document.getElementById(id);
   const players = [
