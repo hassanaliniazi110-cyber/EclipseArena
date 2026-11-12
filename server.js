@@ -378,6 +378,10 @@ function auth(req, res, next) {
   const id = match && tokenToPlayer.get(hashToken(match[1]));
   if (!id || !players.has(id)) return res.status(401).json({ error: "Authentication required. Reconnect to the server." });
   req.player = players.get(id);
+  if (req.player.approvalStatus !== "approved") {
+    req.player.approvalStatus = "approved";
+    saveData();
+  }
   next();
 }
 function normalizeProfile(input = {}) {
@@ -404,7 +408,7 @@ app.post("/api/register", registerLimiter, (req, res) => {
     // overlapping startup/store requests cannot invalidate one another.
     if (bearerPlayerId && existing.tokenHash === hashToken(bearer[1])) {
       saveData();
-      return res.json({ playerId: existing.id, token: bearer[1], status: existing.approvalStatus || "pending" });
+      return res.json({ playerId: existing.id, token: bearer[1], status: "approved" });
     }
     // If the token expired or was lost, recover the account through its device key
     // and issue one replacement token.
@@ -413,7 +417,7 @@ app.post("/api/register", registerLimiter, (req, res) => {
     existing.tokenHash = hashToken(rotatedToken);
     tokenToPlayer.set(existing.tokenHash, existing.id);
     saveData();
-    return res.json({ playerId: existing.id, token: rotatedToken, status: existing.approvalStatus || "pending" });
+    return res.json({ playerId: existing.id, token: rotatedToken, status: "approved" });
   }
   if (players.size >= MAX_PLAYERS) return res.status(503).json({ error: "The server is full. Please try again later." });
   let id;
@@ -754,7 +758,7 @@ const DRAFT_WEIGHTS={ronaldo:1,messi:2,figo:3,mbappe:80,yamal:100,haaland:90,bel
 const draftWeight=card=>{const ovr=Number(card.ovr)||0;const tier=ovr>=128?0.06:ovr>=126?0.12:ovr>=124?0.28:ovr>=122?0.75:ovr>=120?2.2:ovr>=118?5:10;const listed=Number(DRAFT_WEIGHTS[card.id]);const weight=Math.max(0.04,Math.min(tier,Number.isFinite(listed)&&listed>0?listed:tier));return Math.max(1,Math.round(weight*1000));};
 function weightedDraftPick(items){const total=items.reduce((sum,card)=>sum+draftWeight(card),0);let roll=crypto.randomInt(total);for(const card of items){roll-=draftWeight(card);if(roll<0)return card;}return items[items.length-1];}
 function draftChanceInTen(targetId,pool){const target=pool.find(card=>card.id===targetId);if(!target)return 0;const total=pool.reduce((sum,card)=>sum+draftWeight(card),0);return Math.max(0,Math.min(100,(1-Math.pow(1-draftWeight(target)/total,Math.min(10,pool.length)))*100));}
-const DRAFT_PITY_LIMITS={poolA:70,poolB:10};
+const DRAFT_PITY_LIMITS={poolA:20,poolB:5};
 function getDraftPityStatus(player){
   const saved=player.draftPity&&typeof player.draftPity==="object"?player.draftPity:{};
   const result={};
@@ -763,9 +767,9 @@ function getDraftPityStatus(player){
     const base=eventId==="game-changers"?STORE_CARDS.filter(card=>GAME_CHANGER_CARD_IDS.includes(card.id)):STORE_CARDS.filter(card=>card.id!=="arham"&&!GAME_CHANGER_CARD_IDS.includes(card.id)).slice(0,200);
     const hasA=base.some(card=>(Number(card.ovr)||0)>125);
     const hasB=base.some(card=>(Number(card.ovr)||0)<=125);
-    const a=Math.max(0,Math.min(69,Math.floor(Number(entry.poolA)||0)));
-    const b=Math.max(0,Math.min(9,Math.floor(Number(entry.poolB)||0)));
-    result[eventId]={poolA:{remaining:hasA?Math.max(1,70-a):null,limit:70},poolB:{remaining:hasB?Math.max(1,10-b):null,limit:10}};
+    const a=Math.max(0,Math.min(DRAFT_PITY_LIMITS.poolA-1,Math.floor(Number(entry.poolA)||0)));
+    const b=Math.max(0,Math.min(DRAFT_PITY_LIMITS.poolB-1,Math.floor(Number(entry.poolB)||0)));
+    result[eventId]={poolA:{remaining:hasA?Math.max(1,DRAFT_PITY_LIMITS.poolA-a):null,limit:DRAFT_PITY_LIMITS.poolA},poolB:{remaining:hasB?Math.max(1,DRAFT_PITY_LIMITS.poolB-b):null,limit:DRAFT_PITY_LIMITS.poolB}};
   }
   return result;
 }
@@ -774,15 +778,15 @@ function selectDraftWithPity(player,eventId,basePool){
   const bPool=basePool.filter(card=>(Number(card.ovr)||0)<=125);
   if(!player.draftPity||typeof player.draftPity!=="object")player.draftPity={};
   const old=player.draftPity[eventId]&&typeof player.draftPity[eventId]==="object"?player.draftPity[eventId]:{};
-  let a=Math.max(0,Math.min(69,Math.floor(Number(old.poolA)||0)));
-  let b=Math.max(0,Math.min(9,Math.floor(Number(old.poolB)||0)));
+  let a=Math.max(0,Math.min(DRAFT_PITY_LIMITS.poolA-1,Math.floor(Number(old.poolA)||0)));
+  let b=Math.max(0,Math.min(DRAFT_PITY_LIMITS.poolB-1,Math.floor(Number(old.poolB)||0)));
   let selected,forcedPool="";
-  if(aPool.length&&a>=69){selected=weightedDraftPick(aPool);forcedPool="A";}
-  else if(bPool.length&&b>=9){selected=weightedDraftPick(bPool);forcedPool="B";}
+  if(aPool.length&&a>=DRAFT_PITY_LIMITS.poolA-1){selected=weightedDraftPick(aPool);forcedPool="A";}
+  else if(bPool.length&&b>=DRAFT_PITY_LIMITS.poolB-1){selected=weightedDraftPick(bPool);forcedPool="B";}
   else selected=weightedDraftPick(basePool);
   const isA=(Number(selected.ovr)||0)>125;
-  if(isA){a=0;if(bPool.length&&b>=9)b=9;else if(bPool.length)b=Math.min(9,b+1);}
-  else{b=0;if(aPool.length&&a>=69)a=69;else if(aPool.length)a=Math.min(69,a+1);}
+  if(isA){a=0;if(bPool.length&&b>=DRAFT_PITY_LIMITS.poolB-1)b=DRAFT_PITY_LIMITS.poolB-1;else if(bPool.length)b=Math.min(DRAFT_PITY_LIMITS.poolB-1,b+1);}
+  else{b=0;if(aPool.length&&a>=DRAFT_PITY_LIMITS.poolA-1)a=DRAFT_PITY_LIMITS.poolA-1;else if(aPool.length)a=Math.min(DRAFT_PITY_LIMITS.poolA-1,a+1);}
   player.draftPity[eventId]={poolA:a,poolB:b};
   return {card:selected,forcedPool,pity:getDraftPityStatus(player)[eventId]};
 }
