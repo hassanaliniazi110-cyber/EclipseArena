@@ -1534,3 +1534,19 @@ svg line,svg polyline,.chart-line,.stat-line,.player-chart-line,.player-stats sv
 @keyframes apexCardArrival{0%{opacity:0;transform:translateY(42px) scale(.72) rotateY(-18deg)}65%{opacity:1;transform:translateY(-7px) scale(1.035) rotateY(3deg)}100%{opacity:1;transform:translateY(0) scale(1) rotateY(0)}}
 @media(hover:none){.apex-player-card:hover{transform:none;filter:none}.apex-player-card:hover:before{transform:translateX(-135%)}}
 @media(prefers-reduced-motion:reduce){.apex-launch-intro:after,.apex-launch-intro .launch-crest-wrap,.apex-launch-intro .launch-divider i,.apex-launch-intro .launch-particles i{animation:none!important}.apex-player-card,.apex-player-card:before{transition:none!important}.apex-signing-stage.walkout-final-reveal .walkout-final-card{animation:none!important}}
+
+/* Device-aware match layout and larger, clearer football action. */
+html[data-device="ipad"] .match-controls,html[data-device="iphone"] .match-controls,html[data-device="tablet"] .match-controls,html[data-device="android"] .match-controls{display:flex}
+html[data-device="ipad"] .match-controls button,html[data-device="iphone"] .match-controls button,html[data-device="tablet"] .match-controls button,html[data-device="android"] .match-controls button{min-width:68px;min-height:62px;font-size:10px}
+html[data-device="ipad"] .match-joystick,html[data-device="tablet"] .match-joystick{width:156px;height:156px}
+html[data-device="ipad"] .match-joystick-ring,html[data-device="tablet"] .match-joystick-ring{width:132px;height:132px}
+html[data-device="ipad"] .match-joystick-thumb,html[data-device="tablet"] .match-joystick-thumb{width:56px;height:56px}
+html[data-device="iphone"] .match-joystick,html[data-device="android"] .match-joystick{width:124px;height:124px}
+html[data-device="iphone"] .match-action-pad,html[data-device="android"] .match-action-pad{grid-template-columns:repeat(2,minmax(62px,76px))}
+html[data-device="macos"] .match-controls,html[data-device="laptop"] .match-controls{display:none}
+html[data-device="macos"] .match-keyboard-hint,html[data-device="laptop"] .match-keyboard-hint{display:block}
+.match-keyboard-hint{display:none;position:absolute;z-index:8;left:50%;bottom:12px;transform:translateX(-50%);padding:8px 12px;border:1px solid rgba(205,231,255,.25);border-radius:9px;background:rgba(4,14,24,.86);color:#eaf6ff;font:800 10px Arial,sans-serif;letter-spacing:.5px;pointer-events:none}
+#pitch{width:100%;min-height:420px}
+.game-screen:has(#matchControls:not(.hidden)) #pitch{min-height:520px;aspect-ratio:1.38}
+@media(max-width:700px){#pitch{min-height:360px}.game-screen:has(#matchControls:not(.hidden)) #pitch{min-height:430px;aspect-ratio:1.08}}
+@media(orientation:landscape) and (max-height:600px){.game-screen:has(#matchControls:not(.hidden)) #pitch{min-height:0;height:calc(100dvh - 135px);aspect-ratio:1.5}}
