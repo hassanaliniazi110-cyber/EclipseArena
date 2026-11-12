@@ -164,7 +164,7 @@ const goalkeepers = [
   let score = 0, opponentScore = 0, matchMinute = 0, matchAttacks = 0, attempt = 1, aim = {x:.5,y:.27}, power = 78, shotTaken = false, keeperDive = "center", keeperMotion = null, ballAnim = null, animationFrame = 0;
   const canvas = $("pitch"), ctx = canvas.getContext("2d");
   let cw = 900, ch = 620, lastResult = "", shotTimer = null, soundOn = false, masterVolume = 0.65, passcodeFailures=0, passcodeLockUntil=0, lastShotReplay=null, celebrationUntil=0;
-  const MATCH_FIELD_WIDTH=76,MATCH_FIELD_LENGTH=118;
+  const MATCH_FIELD_WIDTH=84,MATCH_FIELD_LENGTH=130;
   let MATCH_TEAM_FORMATION=[
     {x:.22,y:.71,role:"LW"},{x:.39,y:.61,role:"ST"},
     {x:.61,y:.61,role:"CAM"},{x:.78,y:.71,role:"RW"}
@@ -1032,11 +1032,14 @@ const goalkeepers = [
         ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("RIVAL",px,py-playerSize*.71);ctx.restore();
       }
     };
-    // Four moving support players on each side, plus the active players.
-    match.teammates.forEach((p,i)=>drawMatchPlayer(p.x,p.y,p.name+" · "+p.ovr,"#c7ff4a",[8,9,10,7][i],0,false));
-    match.rivalTeammates.forEach((p,i)=>drawMatchPlayer(p.x,p.y,p.name,"#ed6570",[7,9,8,11][i],Math.PI,false));
-    drawMatchPlayer(match.rival.x,match.rival.y,"Cristiano Ronaldo","#ed6570",9,Math.PI,false);
-    drawMatchPlayer(match.player.x,match.player.y,selectedPlayer,"#c7ff4a",selectedPlayer==="Lionel Messi"?10:7,0,true);
+    // Four moving support players, both goalkeepers, and the two controlled players.
+    const homeKit=TEAM_KITS[teamKit]||TEAM_KITS.apex,keeperColor=KEEPER_KITS[teamKeeperKit]||KEEPER_KITS.neon;
+    match.teammates.forEach((p,i)=>drawMatchPlayer(p.x,p.y,p.name+" · "+p.ovr,homeKit.home,[8,9,10,7][i],0,false));
+    match.rivalTeammates.forEach((p,i)=>drawMatchPlayer(p.x,p.y,p.name,homeKit.away,[7,9,8,11][i],Math.PI,false));
+    drawMatchPlayer(.5,.945,selectedGoalkeeper+" · GK",keeperColor,1,0,false);
+    drawMatchPlayer(.5,.055,"AI GOALKEEPER",homeKit.away,1,Math.PI,false);
+    drawMatchPlayer(match.rival.x,match.rival.y,"AI STRIKER",homeKit.away,9,Math.PI,false);
+    drawMatchPlayer(match.player.x,match.player.y,selectedPlayer,homeKit.home,selectedPlayer==="Lionel Messi"?10:7,0,true);
     // Ball with a small shadow and panel detail.
     const bx=match.ball.x*w,by=match.ball.y*h,br=Math.max(4,w*.008);
     ctx.fillStyle="rgba(0,0,0,.3)";ctx.beginPath();ctx.ellipse(bx+2,by+br*1.5,br*1.25,br*.55,0,0,Math.PI*2);ctx.fill();
@@ -1093,7 +1096,7 @@ const goalkeepers = [
     const kx = w*.5 + (diving ? side*w*diveRange*diveProgress : 0);
     const ky = h*.135 - (diving ? h*(selectedGoalkeeper==="Hassan Ali"?.085:.055)*Math.sin(keeperT*Math.PI/2) : 0);
     const rotation = diving ? side*1.25*diveProgress : 0;
-    const keeperKits = {"Hassan Ali":"#c7ff4a","Ehan Ali":"#bd7bff","Alisson":"#f2cf35","Thibaut Courtois":"#3cbd78","Manuel Neuer":"#f28b35","Ederson":"#f28b35","Marc-André ter Stegen":"#39b86a","Gianluigi Donnarumma":"#242936","Emiliano Martínez":"#65baff","Jan Oblak":"#39b86a","David Raya":"#39b86a","Mike Maignan":"#f2cf35","Lev Yashin":"#191919","Muhammad Arham":"#ff6b6b"}; const keeperJersey=keeperKits[selectedGoalkeeper]||"#ff8c42";
+    const keeperKits = {"Hassan Ali":"#c7ff4a","Ehan Ali":"#bd7bff","Alisson":"#f2cf35","Thibaut Courtois":"#3cbd78","Manuel Neuer":"#f28b35","Ederson":"#f28b35","Marc-André ter Stegen":"#39b86a","Gianluigi Donnarumma":"#242936","Emiliano Martínez":"#65baff","Jan Oblak":"#39b86a","David Raya":"#39b86a","Mike Maignan":"#f2cf35","Lev Yashin":"#191919","Muhammad Arham":"#ff6b6b"}; const keeperJersey=KEEPER_KITS[teamKeeperKit]||keeperKits[selectedGoalkeeper]||"#ff8c42";
     drawFootballer(kx,ky,Math.max(12,w*.105),rotation,keeperJersey,true,selectedGoalkeeper);
     ctx.fillStyle="rgba(5,15,10,.82)";ctx.fillRect(w*.5-w*.095,h*.205,w*.19,h*.026);
     ctx.fillStyle="#f2f7f2";ctx.font="800 "+Math.max(8,w*.013)+"px sans-serif";ctx.textAlign="center";
@@ -1105,7 +1108,7 @@ const goalkeepers = [
       ctx.beginPath();ctx.moveTo(w*.5,h*.72);ctx.lineTo(w*.5+((aim.x-.5)*w*.4),h*.48);ctx.stroke();ctx.setLineDash([]);
     }else{
       // Shooter at the spot, with a distinct kit and ball at their feet.
-      const shooterKits = {"Hassan Ali":"#f2f4ec","Zayd Quadri":"#f2f4ec","Ehan Ali":"#bd7bff","Umar Shoaib":"#ff8c42","Muhammad Arham":"#ff6b6b","Cristiano Ronaldo":"#f5d52f","Erling Haaland":"#65baff","Jude Bellingham":"#f8f8f4","Lamine Yamal":"#b51f3a","Lionel Messi":"#f4a4c3","Kylian Mbappé":"#f8f8f4","Kevin De Bruyne":"#1767c7","Mohamed Salah":"#c92536","Vinícius Júnior":"#f8f8f4","Neymar Jr.":"#f8f8f4","Harry Kane":"#c91f36","Bukayo Saka":"#d92535","Phil Foden":"#65baff"}; const shooterJersey=shooterKits[selectedPlayer]||"#f2f4ec";
+      const shooterKits = {"Hassan Ali":"#f2f4ec","Zayd Quadri":"#f2f4ec","Ehan Ali":"#bd7bff","Umar Shoaib":"#ff8c42","Muhammad Arham":"#ff6b6b","Cristiano Ronaldo":"#f5d52f","Erling Haaland":"#65baff","Jude Bellingham":"#f8f8f4","Lamine Yamal":"#b51f3a","Lionel Messi":"#f4a4c3","Kylian Mbappé":"#f8f8f4","Kevin De Bruyne":"#1767c7","Mohamed Salah":"#c92536","Vinícius Júnior":"#f8f8f4","Neymar Jr.":"#f8f8f4","Harry Kane":"#c91f36","Bukayo Saka":"#d92535","Phil Foden":"#65baff"}; const shooterJersey=(TEAM_KITS[teamKit]||TEAM_KITS.apex).home||shooterKits[selectedPlayer]||"#f2f4ec";
       drawFootballer(w*.5,h*.755,Math.max(13,w*.105),-.08,shooterJersey,false,selectedPlayer);
       // Kick leg swings when the shot is taken.
       if(ballAnim){
