@@ -1853,10 +1853,12 @@ const goalkeepers = [
     const placementBonus=centerBias>.28?.18:centerBias>.17?.10:0;
     const powerBonus=power>85?.06:0;
     const difficultyAdjustment=difficulty==="Rookie"?-.12:difficulty==="Legend"?.08:0;
-    const saveChance=reachable?Math.max(.05,Math.min(.55,keeperSkill+ difficultyAdjustment-placementBonus-powerBonus)):0;
+    const shotQuality=Math.max(0,Math.min(1,centerBias*1.45+(power/100)*.20+(aim.y<.12?.12:0)+placementBonus*.25+powerBonus*.25));
+    const keeperThreshold=Math.max(.18,Math.min(.82,.26+(keeperRating-70)*.004+difficultyAdjustment));
+    const keeperSaved=reachable&&shotQuality<keeperThreshold;
     const hassanWall=selectedGoalkeeper==="Hassan Ali";
-    // Hassan is unbeatable: no valid shot can score against him.
-    const scored=isKeeperMode?false:(mode==="crossbar"?(crossbarHit&&Math.random()<.8):(!hassanWall&&inGoal&&Math.random()>saveChance));
+    // Shot outcomes are skill-based and repeatable: aim, power, keeper rating and difficulty decide the result.
+    const scored=isKeeperMode?false:(mode==="crossbar"?crossbarHit:(!hassanWall&&inGoal&&!keeperSaved));
     setTimeout(()=>{
       if(isKeeperMode){
         finishAttempt(false,"Take control of the goalkeeper and choose the correct dive.");
