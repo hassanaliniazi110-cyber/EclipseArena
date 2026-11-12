@@ -538,7 +538,7 @@ const goalkeepers = [
     $("playerGrid").querySelectorAll("[data-player]").forEach(btn=>btn.addEventListener("click",()=>{const wasOpen=btn.classList.contains("show-stats");$("playerGrid").querySelectorAll(".player-card").forEach(card=>card.classList.remove("show-stats","selected"));selectedPlayer=btn.dataset.player;btn.classList.add("selected");if(!wasOpen)btn.classList.add("show-stats");renderMatchSquadPicker();if(typeof renderCareerHub==="function")renderCareerHub();toast(wasOpen?"PLAYER SELECTED":"PLAYER SELECTED · STATS OPEN");}));
     $("goalkeeperGrid").innerHTML=goalkeepers.map(p=>playerCard(p,selectedGoalkeeper,"data-goalkeeper",true)).join("");
     attachPlayerPortraitFallbacks($("goalkeeperGrid"));
-    $("goalkeeperGrid").querySelectorAll("[data-goalkeeper]").forEach(btn=>btn.addEventListener("click",()=>{const wasOpen=btn.classList.contains("show-stats");$("goalkeeperGrid").querySelectorAll(".player-card").forEach(card=>card.classList.remove("show-stats","selected"));selectedGoalkeeper=btn.dataset.goalkeeper;btn.classList.add("selected");if(!wasOpen)btn.classList.add("show-stats");if(typeof renderCareerHub==="function")renderCareerHub();toast(wasOpen?"GOALKEEPER SELECTED":"GOALKEEPER SELECTED · STATS OPEN");}));
+    $("goalkeeperGrid").querySelectorAll("[data-goalkeeper]").forEach(btn=>btn.addEventListener("click",()=>{const wasOpen=btn.classList.contains("show-stats");$("goalkeeperGrid").querySelectorAll(".player-card").forEach(card=>card.classList.remove("show-stats","selected"));selectedGoalkeeper=btn.dataset.goalkeeper;btn.classList.add("selected");if(!wasOpen)btn.classList.add("show-stats");renderMatchSquadPicker();if(typeof renderCareerHub==="function")renderCareerHub();toast(wasOpen?"GOALKEEPER SELECTED":"GOALKEEPER SELECTED · STATS OPEN");}));
     const count=players.filter(p=>isUnlocked(p,false)).length,gcount=goalkeepers.filter(p=>isUnlocked(p,true)).length;const visibleCount=$("playerGrid").querySelectorAll("[data-player]").length;if($("rosterResultCount"))$("rosterResultCount").textContent=visibleCount+" PLAYERS SHOWN · "+players.length+" TOTAL";if($("rosterSearch"))$("rosterSearch").oninput=renderPlayers;if($("rosterFilter"))$("rosterFilter").onchange=renderPlayers;
     const counters=document.querySelectorAll(".section-count");if(counters[0])counters[0].textContent=count+" / "+players.length+" UNLOCKED";if(counters[1])counters[1].textContent=gcount+" / "+goalkeepers.length+" UNLOCKED";
   }
@@ -576,6 +576,7 @@ const goalkeepers = [
   }
   function renderMatchSquadPicker(){
     const grid=$("matchSquadSlots");if(!grid)return;
+    grid.replaceChildren();
     const eligible=players.filter(p=>!isGoalkeeperPosition(p.role)&&p.name!==selectedPlayer&&isUnlocked(p,false));
     const allOutfield=players.filter(p=>!isGoalkeeperPosition(p.role)&&p.name!==selectedPlayer);
     const used=new Set();
@@ -1477,7 +1478,7 @@ const goalkeepers = [
     if(mode==="headtohead")onlineCfg.onlineMatch=false;
     match.active=mode==="headtohead";match.finished=false;match.clock=0;match.playerGoals=0;match.rivalGoals=h2hChallenge==="comeback"?2:0;match.rankPoints=0;match.rank="ROOKIE III";match.player={x:.5,y:.76};match.rival={x:.5,y:.24};match.ball={x:.5,y:.76};match.move="";match.moveX=0;match.moveY=0;match.sprint=false;match.hasBall=true;match.rivalHasBall=false;match.lastRivalShot=0;match.passUntil=0;match.passReceiverSlot=-1;match.lastShot=null;match.teammates=[];match.rivalTeammates=[];match.controlledName=selectedPlayer;
     if(match.active){renderMatchSquadPicker();buildMatchTeams();}
-    $("matchHud").classList.toggle("hidden",!match.active);$("matchControls").classList.toggle("hidden",!match.active);$("matchCameraControls").classList.remove("hidden");$("matchResult").classList.add("hidden");$("matchResult").textContent="";
+    $("matchHud").classList.toggle("hidden",!match.active);$("matchControls").classList.toggle("hidden",!match.active);$("matchSquadPicker")?.classList.toggle("hidden",!match.active);$("matchCameraControls").classList.remove("hidden");$("matchResult").classList.add("hidden");$("matchResult").textContent="";
     $("powerSlider").classList.toggle("hidden",match.active);$("powerSlider").disabled=match.active;$("shootBtn").classList.toggle("hidden",match.active);$("matchRank").textContent="ROOKIE III · 0 PTS";
     score=0;attempt=1;if(mode==="headtohead"||mode==="vsattack"){opponentScore=0;matchMinute=0;matchAttacks=0;}
     $("homeScreen").classList.add("hidden");$("gameScreen").classList.remove("hidden");
@@ -1756,7 +1757,7 @@ const goalkeepers = [
     window.ApexMatch3D?.setCameraView?.(view);
     document.querySelectorAll("[data-camera-view]").forEach(x=>x.classList.toggle("selected",x===b));
   }));
-  document.querySelectorAll("[data-camera-zoom]").forEach(b=>b.addEventListener("click",()=>{const current=window.ApexMatch3D?.getZoom?.()||1.25;const action=b.dataset.cameraZoom;window.ApexMatch3D?.setZoom?.(action==="reset"?1.25:current+(action==="in"?.12:-.12));}));
+  document.querySelectorAll("[data-camera-zoom]").forEach(b=>b.addEventListener("click",()=>{const current=window.ApexMatch3D?.getZoom?.()||1;const action=b.dataset.cameraZoom;window.ApexMatch3D?.setZoom?.(action==="reset"?1:current+(action==="in"?.12:-.12));}));
   const heldMatchKeys=new Set();
   function syncMatchKeyboard(){if(!match.active)return;match.moveX=(heldMatchKeys.has("a")||heldMatchKeys.has("arrowleft")?-1:0)+(heldMatchKeys.has("d")||heldMatchKeys.has("arrowright")?1:0);match.moveY=(heldMatchKeys.has("w")||heldMatchKeys.has("arrowup")?-1:0)+(heldMatchKeys.has("s")||heldMatchKeys.has("arrowdown")?1:0);}
   document.addEventListener("keydown",e=>{if(!match.active||e.target.matches("input,textarea,select"))return;const key=e.key.toLowerCase();if(["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"].includes(key)){e.preventDefault();heldMatchKeys.add(key);syncMatchKeyboard();}else if(key==="shift"){match.sprint=true;}else if(!e.repeat&&key===" "){e.preventDefault();matchAction("shoot");}else if(!e.repeat&&key==="e"){matchAction("pass");}else if(!e.repeat&&key==="q"){matchAction("tackle");}});
