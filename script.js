@@ -524,6 +524,7 @@ const goalkeepers = [
   }
   const PLAYSTYLE_ICON_PATHS={
     "Finesse Shot":'<path d="M7 21 12 4l5 17M9 15h6M4 10l3-2m13 2-3-2"/>',
+    "First Touch":'<path d="M4 18c3-7 6-9 9-9s5 2 7 0M12 9l-3-3m3 3 3-3M5 20h14"/>',
     "Power Shot":'<path d="M4 12h10m-4-4 4 4-4 4M16 5l4 7-4 7"/>',
     "Aerial":'<path d="M12 21V5m-5 7 5-7 5 7M5 19h14"/>',
     "Acrobatic":'<path d="m5 18 5-7 3 3 6-9M14 5h5v5"/>',
