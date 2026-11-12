@@ -1,6 +1,24 @@
 (() => {
   "use strict";
   const deviceProfile=(()=>{const ua=navigator.userAgent||"",touch=(navigator.maxTouchPoints||0)>1||("ontouchstart" in window),ipad=/iPad/.test(ua)||(navigator.platform==="MacIntel"&&touch),iphone=/iPhone|iPod/.test(ua),android=/Android/.test(ua),tablet=ipad||(/Android/.test(ua)&&!/Mobile/.test(ua)),mac=/Macintosh|MacIntel|MacPPC/.test(ua)&&!touch;const type=ipad?"ipad":iphone?"iphone":tablet?"tablet":android?"android":mac?"macos":touch?"touch-device":"laptop";document.documentElement.dataset.device=type;document.documentElement.dataset.input=touch?"touch":"keyboard";return {type,touch,tablet,mac};})();
+
+  const deviceNotice=(()=>{
+    const labels={ipad:"iPad",iphone:"iPhone",tablet:"Android tablet",android:"Android phone",macos:"Mac",laptop:"Laptop", "touch-device":"Touchscreen device"};
+    const label=labels[deviceProfile.type]||"Device";
+    const input=deviceProfile.touch?"TOUCH CONTROLS ENABLED":"KEYBOARD CONTROLS ENABLED";
+    const el=document.createElement("div");
+    el.id="apexDeviceNotice";el.className="apex-device-notice";el.setAttribute("role","status");el.setAttribute("aria-live","polite");
+    el.innerHTML='<span class="apex-device-notice-icon">✓</span><span><strong>DEVICE DETECTED: '+label+'</strong><small>'+input+'</small></span>';
+    document.body.appendChild(el);
+    const reveal=()=>{if(el.classList.contains("is-visible"))return;el.classList.add("is-visible");window.setTimeout(()=>el.classList.add("is-hiding"),3200);window.setTimeout(()=>el.remove(),3900);};
+    const intro=document.querySelector(".intro-splash");
+    if(intro){
+      intro.addEventListener("animationend",e=>{if(e.target===intro&&e.animationName==="intro-exit")reveal();});
+      const skip=intro.querySelector(".intro-skip-btn");if(skip)skip.addEventListener("click",()=>window.setTimeout(reveal,80),{once:true});
+      window.setTimeout(reveal,9000);
+    }else reveal();
+    return {label,input};
+  })();
   const $ = (id) => document.getElementById(id);
   const players = [
 {name:"Cristiano Ronaldo",rating:999,role:"ST",special:"Power · Finishing",unlockXP:3000,unlockWins:10,glow:"rgba(199,255,74,.2)"},
