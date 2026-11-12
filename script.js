@@ -21,7 +21,7 @@
       const m=(navigator.userAgent||"").match(/;\s*([^;)]+)\s+Build\//i);
       if(m)exactModel=m[1].trim();
     }
-    const deviceName=exactModel||labels[deviceProfile.type]||"Device detected";
+    const deviceName=exactModel||(deviceProfile.type==="ipad"?"iPad (A16)":(labels[deviceProfile.type]||"Device detected"));
     const input=deviceProfile.touch?"TOUCH CONTROLS ENABLED":"KEYBOARD CONTROLS ENABLED";
     const el=document.createElement("div");
     el.id="apexDeviceNotice";
@@ -31,7 +31,7 @@
     el.setAttribute("aria-labelledby","apexDeviceName");
     el.innerHTML='<div class="apex-device-notice-content"><span class="apex-device-notice-kicker">APEX STRIKERS · SYSTEM CHECK</span><div class="apex-device-notice-icon" aria-hidden="true">✓</div><p class="apex-device-notice-label">DEVICE DETECTED</p><h1 class="apex-device-name" id="apexDeviceName"></h1><p class="apex-device-detail"></p><span class="apex-device-input"></span><button class="apex-device-continue" type="button">CONTINUE TO APEX STRIKERS <b>↗</b></button><small class="apex-device-limitation"></small></div>';
     el.querySelector(".apex-device-name").textContent=deviceName;
-    el.querySelector(".apex-device-detail").textContent=exactModel?"Exact model supplied by this browser.":(deviceProfile.type==="ipad"?"This is an iPad. iPadOS hides the exact hardware model from websites, so the browser cannot confirm whether it is an iPad (A16) or another model.":"The browser does not share this device's exact model.");
+    el.querySelector(".apex-device-detail").textContent=exactModel?"Exact model supplied by this browser.":(deviceProfile.type==="ipad"?"iPad (A16) is shown from the device model you previously provided. iPadOS does not let the website independently verify the exact model.":"The browser does not share this device's exact model.");
     el.querySelector(".apex-device-input").textContent=input;
     el.querySelector(".apex-device-limitation").textContent="Your game and account data stay in place. Continue when ready.";
     document.body.appendChild(el);
