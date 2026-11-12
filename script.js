@@ -1849,7 +1849,6 @@ const goalkeepers = [
     const keeperCenterX=shotSide===-1?.34:shotSide===1?.66:.5;
     const horizontalDistance=Math.abs(aim.x-keeperCenterX);
     const reachable=horizontalDistance<=(difficulty==="Rookie"?.115:.085);
-    const keeperSkill=Math.max(.12,Math.min(.48,(keeperRating-70)*.006));
     const placementBonus=centerBias>.28?.18:centerBias>.17?.10:0;
     const powerBonus=power>85?.06:0;
     const difficultyAdjustment=difficulty==="Rookie"?-.12:difficulty==="Legend"?.08:0;
