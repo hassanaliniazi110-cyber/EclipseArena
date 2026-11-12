@@ -1218,7 +1218,7 @@ io.on("connection", socket => {
     }
     socket.join(roomId);
     inviterSockets.forEach(s => s.join(roomId));
-    const match = { players: new Set([invite.from, invite.to]), createdAt: Date.now(), startAt: Date.now(), states: new Map(), timer: null };
+    const match = { players: new Set([invite.from, invite.to]), createdAt: Date.now(), startAt: Date.now(), states: new Map(), lastGoalAt: new Map(), timer: null };
     activeMatches.set(roomId, match);
     invites.delete(roomId);
     io.to(roomId).emit("match:ready", { roomId, startAt: match.startAt, durationSeconds: 90 });
@@ -1250,17 +1250,27 @@ io.on("connection", socket => {
     }
     const state = payload?.state;
     if (!state || !Number.isFinite(Number(state.x)) || !Number.isFinite(Number(state.y))) return;
+    const previousState = match.states.get(id);
+    const previousGoals = previousState?.goals || 0;
+    const requestedGoals = Math.max(0, Math.min(99, Math.floor(Number(state.goals) || 0)));
+    // Reject score rollbacks, multi-goal jumps and implausibly rapid goal updates.
+    if (requestedGoals < previousGoals || requestedGoals > previousGoals + 1) return;
+    if (requestedGoals > previousGoals) {
+      const lastGoalAt = match.lastGoalAt.get(id) || match.startAt;
+      if (now - lastGoalAt < 2500) return;
+      match.lastGoalAt.set(id, now);
+    }
+    const serverClock = Math.min(90, (now - match.startAt) / 1000);
     const safeState = {
       x: Math.max(0.05, Math.min(0.95, Number(state.x))),
       y: Math.max(0.05, Math.min(0.95, Number(state.y))),
-      goals: Math.max(0, Math.min(99, Math.floor(Number(state.goals) || 0))),
+      goals: requestedGoals,
       hasBall: Boolean(state.hasBall),
       ballX: Number.isFinite(Number(state.ballX)) ? Math.max(0.02, Math.min(0.98, Number(state.ballX))) : 0.5,
       ballY: Number.isFinite(Number(state.ballY)) ? Math.max(0.02, Math.min(0.98, Number(state.ballY))) : 0.5,
-      clock: Math.max(0, Math.min(90, Number(state.clock) || 0))
+      clock: serverClock
     };
     match.states.set(id, safeState);
-    const serverClock = Math.min(90, (Date.now() - match.startAt) / 1000);
     socket.to(roomId).emit("match:state", {
       roomId,
       fromName: players.get(id)?.profile.name || "Friend",
@@ -1272,11 +1282,15 @@ io.on("connection", socket => {
   socket.on("disconnect", () => {
     socketsByPlayer.get(id)?.delete(socket);
     if (!socketsByPlayer.get(id)?.size) socketsByPlayer.delete(id);
-    for (const [roomId, match] of activeMatches) {
-      if (match.players.has(id)) {
-        clearTimeout(match.timer);
-        activeMatches.delete(roomId);
-        io.to(roomId).emit("match:ended", { message: "A player disconnected" });
+    // A player may have multiple tabs/devices connected. Only end their match
+    // when their final authenticated socket disconnects.
+    if (!socketsByPlayer.get(id)?.size) {
+      for (const [roomId, match] of activeMatches) {
+        if (match.players.has(id)) {
+          clearTimeout(match.timer);
+          activeMatches.delete(roomId);
+          io.to(roomId).emit("match:ended", { message: "A player disconnected" });
+        }
       }
     }
     for (const friendId of players.get(id)?.friends || []) {
