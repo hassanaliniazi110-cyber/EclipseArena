@@ -960,10 +960,10 @@ const goalkeepers = [
         match.lastAutoTackleAt=now;
         const rating=Number(tackler.ovr)||90;
         const difficultyAdjustment=difficulty==="Legend"?-.13:difficulty==="Rookie"?.13:0;
-        const tackleChance=Math.max(.32,Math.min(.78,.48+(rating-90)*.0025+difficultyAdjustment));
+        const tackleChance=Math.max(.36,Math.min(.82,.56+(rating-90)*.0025+difficultyAdjustment));
         if(Math.random()<tackleChance){
           switchControlToTeammate(pressIndex);
-          match.rankPoints+=20;
+          match.rankPoints+=20;updateRank();
           $("feedback").textContent="AUTO TACKLE! "+match.controlledName.toUpperCase()+" WINS THE BALL · +20 RANK POINTS";
         }else{
           $("feedback").textContent="YOUR TEAM IS PRESSING · CLOSE DOWN THE BALL!";
@@ -2015,13 +2015,16 @@ const goalkeepers = [
       if(now-match.lastTackleAt<650){$("feedback").textContent="TACKLE RECHARGING…";return;}
       match.lastTackleAt=now;
       const targets=[match.rival,...match.rivalTeammates].filter(Boolean);
-      const nearest=targets.reduce((best,actor)=>matchDistance(match.player,actor)<matchDistance(match.player,best)?actor:best,targets[0]||match.rival);
+      const nearest=match.rivalHasBall?match.rival:targets.reduce((best,actor)=>matchDistance(match.ball,actor)<matchDistance(match.ball,best)?actor:best,targets[0]||match.rival);
       const tackleDistance=nearest?matchDistance(match.player,nearest):Infinity;
-      if(!match.hasBall&&tackleDistance<7.5){
+      if(!match.hasBall&&match.rivalHasBall&&tackleDistance<7.5){
         match.hasBall=true;match.rivalHasBall=false;match.passUntil=0;match.passReceiverSlot=-1;match.rankPoints+=20;
-        match.ball={x:match.player.x,y:match.player.y-.025};
+        match.ball={x:match.player.x,y:match.player.y-.025};updateRank();
         $("feedback").textContent="SUCCESSFUL TACKLE! +20 RANK POINTS";
-      }else if(!match.hasBall)$("feedback").textContent="Move closer to an opponent with the ball, then tackle.";
+      }else if(!match.hasBall&&!match.rivalHasBall&&matchDistance(match.player,match.ball)<2.3){
+        match.hasBall=true;match.ball={x:match.player.x,y:match.player.y-.025};
+        $("feedback").textContent="BALL RECOVERED! POSSESSION WON.";
+      }else if(!match.hasBall)$("feedback").textContent="Get closer to the ball carrier, then tackle.";
       else $("feedback").textContent="You already have possession. Pass or shoot!";
     }else if(action==="shoot"){
       if(!match.hasBall){$("feedback").textContent="Win the ball first!";return;}
