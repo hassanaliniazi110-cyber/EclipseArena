@@ -1,5 +1,6 @@
 (() => {
   "use strict";
+  const deviceProfile=(()=>{const ua=navigator.userAgent||"",touch=(navigator.maxTouchPoints||0)>1||("ontouchstart" in window),ipad=/iPad/.test(ua)||(navigator.platform==="MacIntel"&&touch),iphone=/iPhone|iPod/.test(ua),android=/Android/.test(ua),tablet=ipad||(/Android/.test(ua)&&!/Mobile/.test(ua)),mac=/Macintosh|MacIntel|MacPPC/.test(ua)&&!touch;const type=ipad?"ipad":iphone?"iphone":tablet?"tablet":android?"android":mac?"macos":touch?"touch-device":"laptop";document.documentElement.dataset.device=type;document.documentElement.dataset.input=touch?"touch":"keyboard";return {type,touch,tablet,mac};})();
   const $ = (id) => document.getElementById(id);
   const players = [
 {name:"Cristiano Ronaldo",rating:999,role:"ST",special:"Power · Finishing",unlockXP:3000,unlockWins:10,glow:"rgba(199,255,74,.2)"},
@@ -1208,6 +1209,7 @@ const goalkeepers = [
   renderCareerHub();renderPlayers();
 
   function startMode(nextMode){
+    document.documentElement.dataset.activeDevice=deviceProfile.type;
     const isRandomRush=nextMode==="random";
     if(isRandomRush){const choices=["penalty","freekick","longshot","goalkeeping","vsattack","crossbar","survival"];nextMode=choices[Math.floor(Math.random()*choices.length)];}
     mode=nextMode;shotTaken=false;ballAnim=null;keeperMotion=null;
@@ -1232,22 +1234,51 @@ const goalkeepers = [
     cancelAnimationFrame(animationFrame);match.lastTick=performance.now();
     const tick=(now)=>{if(!match.active||match.finished)return;const dt=Math.min(.06,(now-match.lastTick)/1000);match.lastTick=now;if(onlineCfg.onlineMatch&&onlineCfg.matchStartAt){match.clock=Math.min(90,Math.max(0,(Date.now()-onlineCfg.matchStartAt)/1000));}else match.clock+=dt;
       if(match.clock>=90){match.clock=90;endFullMatch();return}
-      const axisX=match.moveX||(match.move==="left"?-1:match.move==="right"?1:0);const axisY=match.moveY||(match.move==="up"?-1:match.move==="down"?1:0);const inputMagnitude=Math.min(1,Math.hypot(axisX,axisY));if(inputMagnitude>0){const worldX=axisX*68,worldY=axisY*105,worldLength=Math.hypot(worldX,worldY)||1,speed=match.sprint?9.2:6.4;match.player.x+=(worldX/worldLength*speed*inputMagnitude*dt)/68;match.player.y+=(worldY/worldLength*speed*inputMagnitude*dt)/105;}
-      match.player.x=Math.max(.08,Math.min(.92,match.player.x));match.player.y=Math.max(.06,Math.min(.94,match.player.y));
-      const dx=match.player.x-match.rival.x,dy=match.player.y-match.rival.y,worldDx=dx*68,worldDy=dy*105,dist=Math.hypot(worldDx,worldDy)||.001;if(!onlineCfg.onlineMatch){const rivalSpeed=4.8;match.rival.x+=worldDx/dist*rivalSpeed*dt/68;match.rival.y+=worldDy/dist*rivalSpeed*dt/105;}
-      if(match.hasBall){match.ball.x=match.player.x;match.ball.y=match.player.y-.022}else{match.ball.x=match.rival.x;match.ball.y=match.rival.y-.022}
-      if(!onlineCfg.onlineMatch&&match.clock-match.lastRivalShot>12){match.lastRivalShot=match.clock;if(Math.random()<.72){match.rivalGoals++;match.hasBall=false;match.player={x:.5,y:.72};match.rival={x:.5,y:.28};match.ball={x:.5,y:.28};$("feedback").textContent="RIVAL SCORES! Regain possession and fight back.";}}
+      const axisX=Math.max(-1,Math.min(1,match.moveX));const axisY=Math.max(-1,Math.min(1,match.moveY));const inputMagnitude=Math.min(1,Math.hypot(axisX,axisY));
+      if(inputMagnitude>.08){const speed=match.sprint?9.4:7.2;const nx=axisX/inputMagnitude,ny=axisY/inputMagnitude;match.player.x+=(nx*speed*dt)/68;match.player.y+=(ny*speed*dt)/105;}
+      match.player.x=Math.max(.035,Math.min(.965,match.player.x));match.player.y=Math.max(.045,Math.min(.955,match.player.y));
+      const dx=match.player.x-match.rival.x,dy=match.player.y-match.rival.y,worldDx=dx*68,worldDy=dy*105,dist=Math.hypot(worldDx,worldDy)||.001;
+      if(!onlineCfg.onlineMatch){const rivalSpeed=5.3,targetX=match.hasBall?match.player.x:match.ball.x,targetY=match.hasBall?match.player.y:match.ball.y,rx=targetX-match.rival.x,ry=targetY-match.rival.y,rl=Math.hypot(rx*68,ry*105)||1;match.rival.x+=(rx*68/rl*rivalSpeed*dt)/68;match.rival.y+=(ry*105/rl*rivalSpeed*dt)/105;
+        if(match.hasBall&&dist<3.0){match.hasBall=false;match.ball.x=match.rival.x;match.ball.y=match.rival.y-.018;$("feedback").textContent="RIVAL WON THE BALL! Close them down and tackle.";}
+        if(!match.hasBall&&Math.hypot((match.player.x-match.ball.x)*68,(match.player.y-match.ball.y)*105)<2.1){match.hasBall=true;$("feedback").textContent="POSSESSION WON!";}
+      }
+      if(match.passUntil&&performance.now()<match.passUntil){const t=1-(match.passUntil-performance.now())/520;match.ball.x=match.passFromX+(match.passToX-match.passFromX)*t;match.ball.y=match.passFromY+(match.passToY-match.passFromY)*t;}
+      else if(match.passUntil){match.passUntil=0;match.hasBall=true;match.ball.x=match.player.x;match.ball.y=match.player.y-.025;}
+      else if(match.hasBall){match.ball.x=match.player.x+axisX*.018;match.ball.y=match.player.y-.025+axisY*.018;}
+      else{match.ball.x=match.rival.x;match.ball.y=match.rival.y-.025;}
+      if(!onlineCfg.onlineMatch&&match.clock-match.lastRivalShot>16){match.lastRivalShot=match.clock;if(Math.random()<.38){match.rivalGoals++;match.hasBall=true;match.player={x:.5,y:.72};match.rival={x:.5,y:.28};match.ball={x:.5,y:.72};$("feedback").textContent="RIVAL SCORES! Kick off and fight back.";}}
       if(onlineCfg.onlineMatch&&onlineCfg.socket&&onlineCfg.socket.connected&&now-onlineCfg.lastStateAt>100){onlineCfg.lastStateAt=now;onlineCfg.socket.emit("match:state",{roomId:onlineCfg.roomId,state:{x:match.player.x,y:match.player.y,goals:match.playerGoals,hasBall:match.hasBall,ballX:match.ball.x,ballY:match.ball.y,clock:match.clock}});}
       const mm=Math.floor(match.clock),ss=Math.floor((match.clock-mm)*60);$("matchClock").textContent=String(mm).padStart(2,"0")+":"+String(ss).padStart(2,"0");$("matchScore").textContent=match.playerGoals+" - "+match.rivalGoals;$("roundLabel").textContent="MATCH LIVE · "+String(mm).padStart(2,"0")+":"+String(ss).padStart(2,"0");drawPitch();animationFrame=requestAnimationFrame(tick);};
     animationFrame=requestAnimationFrame(tick);
   }
   function matchAction(action){
     if(!match.active||match.finished)return;
-    const dist=Math.hypot(match.player.x-match.rival.x,match.player.y-match.rival.y);
+    const dist=Math.hypot((match.player.x-match.rival.x)*68,(match.player.y-match.rival.y)*105);
     if(action==="sprint"){match.sprint=!match.sprint;$("feedback").textContent=match.sprint?"SPRINT ON":"SPRINT OFF";}
-    else if(action==="pass"){if(match.hasBall){match.ball.x=Math.max(.08,Math.min(.92,match.player.x+(match.player.x<.5?.12:-.12)));match.ball.y=Math.max(.08,match.player.y-.12);$("feedback").textContent="PASS! Move into space."}else $("feedback").textContent="You need possession to pass.";}
-    else if(action==="tackle"){if(dist<.24){match.hasBall=true;match.ball.x=match.player.x;match.ball.y=match.player.y;match.rankPoints+=20;$("feedback").textContent="TACKLE WON! +20 RANK POINTS"}else $("feedback").textContent="Get closer to the rival to tackle.";}
-    else if(action==="shoot"){if(!match.hasBall)$("feedback").textContent="Win the ball first!";else if(match.player.y<.30){if(Math.random()>.22){match.playerGoals++;match.rankPoints+=100;$("feedback").textContent="GOOOAL! +100 RANK POINTS"}else $("feedback").textContent="Saved by the rival keeper!";match.hasBall=true;match.player={x:.5,y:.72};match.rival={x:.5,y:.28};match.ball={x:.5,y:.72};}else $("feedback").textContent="Get closer to the opponent goal before shooting.";}
+    else if(action==="pass"){
+      if(!match.hasBall){$("feedback").textContent="Win possession before passing.";return;}
+      const targetX=Math.max(.06,Math.min(.94,match.player.x+(match.player.x<.5?.16:-.16)));
+      const targetY=Math.max(.08,match.player.y-.19);
+      match.passFromX=match.ball.x;match.passFromY=match.ball.y;match.passToX=targetX;match.passToY=targetY;match.passUntil=performance.now()+520;match.hasBall=false;
+      $("feedback").textContent="PASS! Move into the space to receive it.";
+    }
+    else if(action==="tackle"){
+      if(!match.hasBall&&dist<5.2){match.hasBall=true;match.passUntil=0;match.rankPoints+=20;$("feedback").textContent="CLEAN TACKLE! +20 RANK POINTS";}
+      else if(!match.hasBall)$("feedback").textContent="Get closer to the ball carrier to tackle.";
+      else $("feedback").textContent="You have possession. Keep moving!";
+    }
+    else if(action==="shoot"){
+      if(!match.hasBall){$("feedback").textContent="Win the ball first!";return;}
+      if(match.player.y>.53){$("feedback").textContent="Drive forward into the attacking half before shooting.";return;}
+      const distanceFactor=Math.max(0,Math.min(1,(.53-match.player.y)/.40));
+      const wide=Math.abs(match.player.x-.5);
+      const accuracy=Math.max(.34,Math.min(.88,.48+distanceFactor*.34-wide*.22));
+      const scored=Math.random()<accuracy;
+      match.lastShot={start:performance.now(),scored,x:match.player.x};
+      if(scored){match.playerGoals++;match.rankPoints+=100;$("feedback").textContent="GOAL! "+(distanceFactor>.72?"TOP-CLASS FINISH!":"+100 RANK POINTS");}
+      else $("feedback").textContent="SAVED! The goalkeeper got across.";
+      match.hasBall=true;match.passUntil=0;match.player={x:.5,y:.72};match.rival={x:.5,y:.28};match.ball={x:.5,y:.695};match.rival.x=.5;match.rival.y=.28;
+    }
     updateRank();$("matchScore").textContent=match.playerGoals+" - "+match.rivalGoals;drawPitch();
   }
   function updateRank(){const tiers=[["LEGENDARY",1000],["CHAMPION",600],["PRO I",350],["PRO II",200],["PRO III",100],["ROOKIE I",50],["ROOKIE II",20],["ROOKIE III",0]];match.rank=(tiers.find(t=>match.rankPoints>=t[1])||tiers[tiers.length-1])[0];$("matchRank").textContent=match.rank+" · "+match.rankPoints+" PTS";}
