@@ -9,13 +9,21 @@
     "build": "mkdir -p dist && cp index.html script.js match-3d.js style.css fought-knight.css config.js dist/"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.21.2",
-    "express-rate-limit": "^7.5.0",
-    "helmet": "^8.0.0",
-    "socket.io": "^4.8.1"
+    "express": "^4.22.3",
+    "express-rate-limit": "^8.7.4",
+    "helmet": "^8.3.0",
+    "socket.io": "^4.8.4"
+  },
+  "overrides": {
+    "body-parser": "^1.20.8",
+    "path-to-regexp": "0.1.13",
+    "qs": "^6.17.1",
+    "engine.io": "^6.6.10",
+    "socket.io-parser": "^4.2.6",
+    "ws": "^8.21.0"
   }
 }
