@@ -393,7 +393,7 @@
         keeperAway.userData.legs.forEach(l=>l.rotation.set(0,0,0));
         keeperAway.userData.legs[0].rotation.x=Math.sin(time*8)*.12;keeperAway.userData.legs[1].rotation.x=-Math.sin(time*8)*.12;
       }
-      aimMarker.visible=!keeperMode&&!s.finished&&!a;
+      aimMarker.visible=!keeperMode&&!s.finished&&!s.ballAnim;
       if(aimMarker.visible){
         const targetX=((s.aim.x===undefined?.5:s.aim.x)-.5)*22;
         const targetY=.22+clamp((.105-(s.aim.y===undefined?.055:s.aim.y))/.097,0,1)*4.25;
