@@ -279,6 +279,19 @@
       teammateModels.forEach((p,i)=>place(p,own[i][0],own[i][1],"away",time,false));
       rivalSupportModels.forEach((p,i)=>place(p,opp[i][0],opp[i][1],"toward",time,false));
       keeperHome.position.set(0,0,50.5);keeperHome.rotation.y=0;keeperAway.position.set(0,0,-50.5);keeperAway.rotation.y=Math.PI;
+      const shot=m.lastShot,shotAge=shot?now-shot.start:9999;
+      if(shot&&shotAge>=0&&shotAge<760){
+        const diveT=clamp(shotAge/760,0,1),diveEase=Math.sin(Math.PI*diveT),diveSide=shot.x<.43?-1:shot.x>.57?1:0;
+        keeperAway.position.x=diveSide*4.1*diveEase;keeperAway.position.y=.08+1.05*diveEase;
+        keeperAway.rotation.z=-diveSide*.95*diveEase;keeperAway.rotation.x=-.5*diveEase;
+        keeperAway.userData.arms[0].rotation.set(-.8*diveEase,0,diveSide*.9*diveEase);
+        keeperAway.userData.arms[1].rotation.set(-.8*diveEase,0,diveSide*1.05*diveEase);
+        keeperAway.userData.legs[0].rotation.set(-.45*diveEase,0,-diveSide*.4*diveEase);
+        keeperAway.userData.legs[1].rotation.set(.55*diveEase,0,diveSide*.5*diveEase);
+      }else{
+        keeperAway.position.x=0;keeperAway.position.y=0;keeperAway.rotation.z=0;keeperAway.rotation.x=0;
+        keeperAway.userData.arms.forEach(a=>a.rotation.set(0,0,0));keeperAway.userData.legs.forEach(l=>l.rotation.set(0,0,0));
+      }
       keeperHome.userData.label.visible=false;keeperAway.userData.label.visible=false;cameraTarget.set((m.player.x-.5)*2.8,0,(m.player.y-.5)*2.2);
       aimMarker.visible=false;flightTrail.visible=false;ball.position.set((m.ball.x-.5)*FIELD_WIDTH,.24,(m.ball.y-.5)*FIELD_LENGTH);
     }else{
