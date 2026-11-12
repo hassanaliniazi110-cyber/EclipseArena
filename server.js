@@ -54,6 +54,27 @@ const DATA_FILE_CANDIDATES = [...new Set([
   DEFAULT_DATA_FILE,
   path.resolve(process.cwd(), "eclipse-data.json")
 ].flatMap(file => [file, file + ".bak", file + ".backup", file + ".old", file + ".tmp"]))];
+
+// Public legacy leaderboard entries recovered from the November 5 export.
+// These are display-only records: no login credentials or token hashes are stored.
+const LEGACY_LEADERBOARD_PLAYERS = [
+  { id: "EA-4CD88B-8126BD", name: "Monkey D. Luffy", xp: 70, goals: 0, saves: 0, wins: 0, best: 0, player: "Muhammad Arham", goalkeeper: "David Raya", ovr: 92 },
+  { id: "EA-669FD8-01FAC3", name: "Master FC Mobile King", xp: 4490, goals: 110, saves: 4, wins: 12, best: 1700, player: "Muhammad Arham", goalkeeper: "David Raya", ovr: 99 },
+  { id: "EA-CD608D-89E6C0", name: "Eclipse Player", xp: 0, goals: 0, saves: 0, wins: 0, best: 0, player: "Muhammad Arham", goalkeeper: "David Raya", ovr: 92 },
+  { id: "EA-3F79BA-1FE951", name: "Eclipse Player", xp: 0, goals: 0, saves: 0, wins: 0, best: 0, player: "Muhammad Arham", goalkeeper: "David Raya", ovr: 92 },
+  { id: "EA-DDAE82-FAC2C1", name: "Eclipse Player", xp: 0, goals: 0, saves: 0, wins: 0, best: 0, player: "Muhammad Arham", goalkeeper: "David Raya", ovr: 92 },
+  { id: "EA-F356F8-71EBFF", name: "Eclipse Player", xp: 0, goals: 0, saves: 0, wins: 0, best: 0, player: "Muhammad Arham", goalkeeper: "David Raya", ovr: 92 },
+  { id: "EA-76D022-06EE23", name: "Eclipse Player", xp: 590, goals: 12, saves: 2, wins: 1, best: 1000, player: "Muhammad Arham", goalkeeper: "David Raya", ovr: 93 },
+  { id: "EA-531D54-C75733", name: "Umar shoaib", xp: 4450, goals: 123, saves: 9, wins: 2, best: 2500, player: "Muhammad Arham", goalkeeper: "David Raya", ovr: 99 },
+  { id: "EA-819D55-F7B15E", name: "Eclipse Player", xp: 0, goals: 0, saves: 0, wins: 0, best: 0, player: "Muhammad Arham", goalkeeper: "David Raya", ovr: 92 },
+  { id: "EA-EB54E4-344C1A", name: "Master FC Mobile King", xp: 4490, goals: 110, saves: 4, wins: 12, best: 1700, player: "Muhammad Arham", goalkeeper: "David Raya", ovr: 99 },
+  { id: "EA-1585BE-4F82D5", name: "Eclipse Player", xp: 0, goals: 0, saves: 0, wins: 0, best: 0, player: "Muhammad Arham", goalkeeper: "David Raya", ovr: 92 },
+  { id: "EA-00AAD9-07BD43", name: "Eclipse Player", xp: 0, goals: 0, saves: 0, wins: 0, best: 0, player: "Muhammad Arham", goalkeeper: "David Raya", ovr: 92 },
+  { id: "EA-4074F1-22874E", name: "Eclipse Player", xp: 490, goals: 0, saves: 13, wins: 0, best: 1300, player: "Muhammad Arham", goalkeeper: "David Raya", ovr: 92 },
+  { id: "EA-AF8701-077619", name: "Eclipse Player", xp: 0, goals: 0, saves: 0, wins: 0, best: 0, player: "Muhammad Arham", goalkeeper: "David Raya", ovr: 92 },
+  { id: "EA-3A43D1-6C5386", name: "Monkey D. Luffy", xp: 70, goals: 0, saves: 0, wins: 0, best: 0, player: "Muhammad Arham", goalkeeper: "David Raya", ovr: 92 },
+  { id: "EA-B5FADC-B31191", name: "Monkey D. Luffy", xp: 70, goals: 0, saves: 0, wins: 0, best: 0, player: "Muhammad Arham", goalkeeper: "David Raya", ovr: 92 }
+];
 function hashToken(token) { return crypto.createHash("sha256").update(String(token)).digest("hex"); }
 function tokenHashMatches(storedHash, token) {
   if (typeof storedHash !== "string" || !/^[a-f0-9]{64}$/i.test(storedHash)) return false;
@@ -968,20 +989,25 @@ app.get("/api/leaderboard", auth, (req, res) => {
   const limit=Math.max(1,Math.min(50000,requested));
   // Every registered account belongs on the board, even before its first match.
   // Return only public competition stats, never wallets, tokens, or owned-card data.
-  const board = [...players.values()]
-    .map(p => ({
-      id: p.id,
-      name: cleanText(p.profile.name || "Apex Player", 24),
-      xp: Math.max(0, Number(p.profile.xp) || 0),
-      goals: Math.max(0, Number(p.profile.goals) || 0),
-      saves: Math.max(0, Number(p.profile.saves) || 0),
-      wins: Math.max(0, Number(p.profile.wins) || 0),
-      best: Math.max(0, Number(p.profile.best) || 0),
-      player: cleanText(p.profile.player, 40),
-      goalkeeper: cleanText(p.profile.goalkeeper, 40),
-      ovr: Math.max(0, Number(p.profile.ovr) || 0),
-      online: Boolean(socketsByPlayer.get(p.id)?.size)
-    }))
+  const boardById = new Map([...players.values()].map(p => [p.id, {
+    id: p.id,
+    name: cleanText(p.profile.name || "Apex Player", 24),
+    xp: Math.max(0, Number(p.profile.xp) || 0),
+    goals: Math.max(0, Number(p.profile.goals) || 0),
+    saves: Math.max(0, Number(p.profile.saves) || 0),
+    wins: Math.max(0, Number(p.profile.wins) || 0),
+    best: Math.max(0, Number(p.profile.best) || 0),
+    player: cleanText(p.profile.player, 40),
+    goalkeeper: cleanText(p.profile.goalkeeper, 40),
+    ovr: Math.max(0, Number(p.profile.ovr) || 0),
+    online: Boolean(socketsByPlayer.get(p.id)?.size)
+  }]));
+  // Add recovered November 5 profiles for leaderboard display only.
+  // Live authenticated accounts always take priority when an ID overlaps.
+  for (const legacy of LEGACY_LEADERBOARD_PLAYERS) {
+    if (!boardById.has(legacy.id)) boardById.set(legacy.id, { ...legacy, online: false });
+  }
+  const board = [...boardById.values()]
     .sort((a, b) => b.wins - a.wins || b.xp - a.xp || b.goals - a.goals || a.name.localeCompare(b.name))
     .slice(0, limit)
     .map((p, index) => ({ rank: index + 1, ...p }));
