@@ -1894,7 +1894,7 @@ const goalkeepers = [
     const keeperRating=(goalkeepers.find(g=>g.name===selectedGoalkeeper)||goalkeepers[0]).rating;
     const isKeeperMode=mode==="goalkeeping"||mode==="survival";
     // Aim at the visible goal area. Wider corners are harder for the keeper to reach.
-    const inGoal=aim.y>=.012&&aim.y<=.105&&aim.x>=.18&&aim.x<=.82;
+    const inGoal=aim.y>=.012&&aim.y<=.09&&aim.x>=.18&&aim.x<=.82;
     const crossbarHit=mode==="crossbar"&&aim.y>=.012&&aim.y<=.105&&aim.x>=.34&&aim.x<=.66;
     const keeperCenterX=shotSide===-1?.34:shotSide===1?.66:.5;
     const horizontalDistance=Math.abs(aim.x-keeperCenterX);
@@ -1958,7 +1958,7 @@ const goalkeepers = [
   function setAimFromEvent(e){
     if(mode==="headtohead"||shotTaken||mode==="goalkeeping"||mode==="survival")return;
     const rect=canvas.getBoundingClientRect();const x=(e.clientX-rect.left)/rect.width;const y=(e.clientY-rect.top)/rect.height;
-    aim={x:Math.max(.18,Math.min(.82,x)),y:Math.max(.012,Math.min(.105,y))};drawPitch();
+    aim={x:Math.max(.18,Math.min(.82,x)),y:Math.max(.012,Math.min(.09,y))};drawPitch();
   }
   canvas.addEventListener("pointerdown",e=>{canvas.setPointerCapture?.(e.pointerId);setAimFromEvent(e)});
   canvas.addEventListener("pointermove",e=>{if(e.buttons&&mode!=="headtohead")setAimFromEvent(e)});
