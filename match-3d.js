@@ -77,7 +77,7 @@
     const nameLabel=label(root,name||"APEX PLAYER");
     const halo=new T.Mesh(new T.RingGeometry(.68,.79,48),new T.MeshBasicMaterial({color:accentColor||"#75eaff",transparent:true,opacity:.16,side:T.DoubleSide,depthWrite:false}));
     halo.rotation.x=-Math.PI/2;halo.position.y=.035;root.add(halo);
-    root.rotation.y=facing==="away"?Math.PI:0;
+    root.rotation.y=facing==="toward"?Math.PI:0;
     root.userData={arms,legs,halo,label:nameLabel,isKeeper,phase:Math.random()*6.28};return root;
   }
   function makeBall(){
@@ -153,8 +153,8 @@
   function buildActors(){
     playerModel=footballer("YOU","#20c9ec","#dffaff",false,"away");
     rivalModel=footballer("RIVAL","#e34b69","#ffdce4",false,"toward");
-    keeperHome=footballer("KEEPER","#f4b83e","#fff0b0",true,"toward");
-    keeperAway=footballer("KEEPER","#45c8ad","#dcfff6",true,"away");
+    keeperHome=footballer("KEEPER","#f4b83e","#fff0b0",true,"away");
+    keeperAway=footballer("KEEPER","#45c8ad","#dcfff6",true,"toward");
     scene.add(playerModel,rivalModel,keeperHome,keeperAway);
     teammateModels=[[.24,.7],[.36,.62],[.64,.62],[.76,.7]].map(()=>footballer("TEAMMATE","#20c9ec","#dffaff",false,"away"));
     rivalSupportModels=[[.24,.3],[.36,.38],[.64,.38],[.76,.3]].map(()=>footballer("RIVAL","#e34b69","#ffdce4",false,"toward"));
@@ -207,14 +207,14 @@
       const own=[[.24,.7],[.36,.62],[.64,.62],[.76,.7]],opp=[[.24,.3],[.36,.38],[.64,.38],[.76,.3]];
       teammateModels.forEach((p,i)=>place(p,own[i][0],own[i][1],"away",time,false));
       rivalSupportModels.forEach((p,i)=>place(p,opp[i][0],opp[i][1],"toward",time,false));
-      keeperHome.position.set(0,0,19.2);keeperHome.rotation.y=Math.PI;keeperAway.position.set(0,0,-19.2);keeperAway.rotation.y=0;
+      keeperHome.position.set(0,0,19.2);keeperHome.rotation.y=0;keeperAway.position.set(0,0,-19.2);keeperAway.rotation.y=Math.PI;
       keeperHome.userData.label.visible=false;keeperAway.userData.label.visible=false;cameraTarget.set((m.player.x-.5)*2.8,0,(m.player.y-.5)*2.2);
       aimMarker.visible=false;ball.position.set((m.ball.x-.5)*30,.33,(m.ball.y-.5)*40);
     }else{
       teammateModels.forEach(p=>p.visible=false);rivalSupportModels.forEach(p=>p.visible=false);rivalModel.visible=false;keeperHome.visible=false;keeperAway.visible=true;
       if(s.mode==="goalkeeping"||s.mode==="survival"){playerModel.visible=false;keeperAway.position.set(0,0,-19.2);keeperAway.userData.label.visible=true;}
       else{place(playerModel,.5,.76,"away",time,true);keeperAway.position.set(0,0,-19.2);keeperAway.userData.label.visible=true;}
-      keeperAway.rotation.y=0;
+      keeperAway.rotation.y=Math.PI;
       const dive=s.keeperMotion;
       if(dive){const t=clamp((now-dive.start)/(dive.duration||450),0,1),e=1-Math.pow(1-t,2);keeperAway.position.x=(dive.side||0)*5.4*e;keeperAway.rotation.z=-(dive.side||0)*.62*e;keeperAway.userData.arms[0].rotation.z=.9*e;keeperAway.userData.arms[1].rotation.z=-.9*e;}
       else{keeperAway.position.x=0;keeperAway.rotation.z=0;keeperAway.userData.arms[0].rotation.z=0;keeperAway.userData.arms[1].rotation.z=0;}
