@@ -1414,3 +1414,18 @@ svg line,svg polyline,.chart-line,.stat-line,.player-chart-line,.player-stats sv
 .apex-3d-hud-score{font:900 24px 'Orbitron',sans-serif;letter-spacing:2px;color:#fff;text-shadow:0 0 16px rgba(79,216,255,.48)}
 .apex-3d-hud-status{margin-top:4px;text-align:center;font:800 6px 'DM Sans',sans-serif;letter-spacing:1.45px;color:#8eaabd}
 @media(max-width:600px){.apex-3d-hud{padding:7px}.apex-3d-scoreboard{padding:7px 10px;width:min(350px,92%)}.apex-3d-hud-score{font-size:20px}.apex-3d-hud-brand{font-size:8px}}
+
+
+/* Match fullscreen and controls */
+.pitch-wrap{position:relative}
+.apex-fullscreen-btn{position:absolute;z-index:12;top:43px;right:20px;min-height:34px;padding:7px 11px;border:1px solid rgba(173,224,255,.4);border-radius:7px;background:rgba(5,16,29,.88);color:#eefaff;font:800 9px 'DM Sans',sans-serif;letter-spacing:1px;box-shadow:0 5px 20px rgba(0,0,0,.28);backdrop-filter:blur(8px)}
+.apex-fullscreen-btn:hover{border-color:#69dfff;background:rgba(9,33,54,.96)}
+.apex-fullscreen-btn:focus-visible{outline:2px solid #69dfff;outline-offset:3px}
+.pitch-wrap:fullscreen{width:100vw!important;height:100vh!important;height:100dvh!important;max-width:none!important;max-height:none!important;overflow:hidden!important;padding:16px 18px 12px!important;border:0!important;border-radius:0!important;background:radial-gradient(ellipse at 50% 38%,#14334b 0%,#071321 66%,#030811 100%)!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:8px!important}
+.pitch-wrap:fullscreen .pitch-topline{width:min(1400px,96vw);flex:0 0 auto;padding:3px 4px 8px}
+.pitch-wrap:fullscreen #pitch{width:min(96vw,calc((100dvh - 112px)*1.36))!important;max-width:96vw!important;max-height:calc(100dvh - 112px)!important;height:auto!important;aspect-ratio:1.36;flex:0 1 auto}
+.pitch-wrap:fullscreen .aim-tip{display:none}
+.pitch-wrap:fullscreen .apex-fullscreen-btn{top:14px;right:16px}
+.pitch-wrap:fullscreen .match-hud,.pitch-wrap:fullscreen .match-controls{z-index:8}
+.pitch-wrap:fullscreen .match-result{z-index:9}
+@media(max-width:600px){.apex-fullscreen-btn{top:40px;right:12px;padding:6px 8px;font-size:8px}.pitch-wrap:fullscreen{padding:10px 6px!important}.pitch-wrap:fullscreen #pitch{width:96vw!important;max-height:calc(100dvh - 88px)!important}.pitch-wrap:fullscreen .apex-fullscreen-btn{top:8px;right:8px}}
