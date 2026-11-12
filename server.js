@@ -47,6 +47,8 @@ const configuredOrigins = (process.env.ALLOWED_ORIGINS || "")
 const allowedOrigins = [...new Set([...defaultOrigins, ...configuredOrigins])];
 const players = new Map();
 const tokenToPlayer = new Map();
+// Recovery keys that have already been consumed. Replays must never create a fresh account.
+const revokedDeviceRecoveryKeyHashes = new Set();
 const DEFAULT_DATA_FILE = path.join(__dirname, "eclipse-data.json");
 const DATA_FILE = path.resolve(process.cwd(), process.env.ECLIPSE_DATA_FILE || DEFAULT_DATA_FILE);
 const DATA_FILE_CANDIDATES = [...new Set([
@@ -85,6 +87,7 @@ function tokenHashMatches(storedHash, token) {
 function saveData() {
   const data = [...players.values()].map(p => ({
     id: p.id, tokenHash: p.tokenHash, deviceKeyHash: p.deviceKeyHash || "",
+    revokedDeviceKeyHashes: Array.isArray(p.revokedDeviceKeyHashes) ? p.revokedDeviceKeyHashes : [],
     approvalStatus: p.approvalStatus || "pending", createdAt: p.createdAt || "",
     profile: p.profile, friends: [...p.friends], gems: p.gems,
     ownedCards: p.ownedCards, cardLevels: p.cardLevels, draftVouchers: p.draftVouchers,
@@ -184,9 +187,18 @@ function loadData() {
   // in older backups or the previous working-directory location.
   snapshots.sort((a, b) => b.players.length - a.players.length || b.modifiedAt - a.modifiedAt);
   const recovered = new Map();
+  const revokedKeysByPlayer = new Map();
   for (const snapshot of snapshots) {
     for (const p of snapshot.players) {
       if (!recovered.has(p.id)) recovered.set(p.id, p);
+      if (Array.isArray(p.revokedDeviceKeyHashes)) {
+        if (!revokedKeysByPlayer.has(p.id)) revokedKeysByPlayer.set(p.id, new Set());
+        for (const keyHash of p.revokedDeviceKeyHashes) {
+          if (/^[a-f0-9]{64}$/i.test(keyHash || "")) {
+            revokedKeysByPlayer.get(p.id).add(keyHash.toLowerCase());
+          }
+        }
+      }
     }
   }
 
@@ -198,12 +210,13 @@ function loadData() {
     const player = {
       id: p.id,
       tokenHash: p.tokenHash,
+      revokedDeviceKeyHashes: [...(revokedKeysByPlayer.get(p.id) || new Set())],
       deviceKeyHash: /^[a-f0-9]{64}$/i.test(p.deviceKeyHash || "")
         ? p.deviceKeyHash.toLowerCase()
         : (/^[a-f0-9]{64}$/i.test(p.deviceKey || "") ? hashToken(p.deviceKey.toLowerCase()) : ""),
       approvalStatus: "approved",
       createdAt: String(p.createdAt || ""),
-      profile: normalizeProfile(p.profile),
+      profile: normalizeProfile({ ...p.profile, ovr: serverOverallFromXp(p.profile?.xp) }),
       friends: new Set(Array.isArray(p.friends) ? p.friends.filter(validPlayerId).slice(0, 100) : []),
       gems: p.gems === undefined ? 250 : Math.max(0, Math.floor(Number(p.gems) || 0)),
       ownedCards: Array.isArray(p.ownedCards) ? [...new Set(p.ownedCards.filter(x => typeof x === "string").slice(0, 100))] : ["arham"],
@@ -217,12 +230,19 @@ function loadData() {
       draftPity: p.draftPity && typeof p.draftPity === "object" ? p.draftPity : {},
       gameSession: null
     };
+    for (const keyHash of player.revokedDeviceKeyHashes) revokedDeviceRecoveryKeyHashes.add(keyHash);
     players.set(player.id, player);
     tokenToPlayer.set(player.tokenHash, player.id);
   }
 
   const primary = snapshots[0];
-  const migrationNeeded = primary.file !== DATA_FILE || recovered.size > primary.players.length || hasLegacyDeviceKeys;
+  const mergedRevokedCount = [...revokedKeysByPlayer.values()].reduce((sum, set) => sum + set.size, 0);
+  const primaryRevokedCount = primary.players.reduce((sum, p) =>
+    sum + (Array.isArray(p.revokedDeviceKeyHashes)
+      ? new Set(p.revokedDeviceKeyHashes.filter(key => /^[a-f0-9]{64}$/i.test(key || ""))).size
+      : 0), 0);
+  const migrationNeeded = primary.file !== DATA_FILE || recovered.size > primary.players.length ||
+    hasLegacyDeviceKeys || mergedRevokedCount > primaryRevokedCount;
   console.log("[storage] Loaded " + players.size + " registered accounts from " +
     snapshots.length + " valid snapshot(s); primary file: " + path.basename(primary.file) + ".");
   if (migrationNeeded) {
@@ -292,6 +312,10 @@ function verifyAdminTotp(code) {
     if (crypto.timingSafeEqual(expected, supplied)) return true;
   }
   return false;
+}
+function requireOwnerIdentity(req, res, next) {
+  if (!youtubeAdminPlayers.has(req.player.id)) return res.status(403).json({ error: "Owner access required." });
+  next();
 }
 function requireOwner(req, res, next) {
   if (!youtubeAdminPlayers.has(req.player.id)) return res.status(403).json({ error: "Owner access required." });
@@ -379,6 +403,8 @@ const adminLimiter = rateLimit({
 // Slow down repeated authenticator-code guesses without limiting successful checks.
 const totpAttemptLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, limit: 5, skipSuccessfulRequests: true,
+  // This limiter is only reached after owner identity is verified.
+  keyGenerator: req => String(req.player.id),
   standardHeaders: "draft-7", legacyHeaders: false,
   message: { error: "Too many 2FA attempts. Wait 15 minutes before trying again." }
 });
@@ -405,7 +431,7 @@ app.use(cors({
 app.use(express.json({ limit: "12kb", strict: true }));
 app.use((req, res, next) => { if (req.path.startsWith("/api/")) res.setHeader("Cache-Control", "no-store, max-age=0"); next(); });
 app.use(rateLimit({ windowMs: 60 * 1000, limit: 90, standardHeaders: "draft-7", legacyHeaders: false }));
-app.get("/health", auth, adminLimiter, totpAttemptLimiter, requireOwner, (req, res) => {
+app.get("/health", auth, requireOwnerIdentity, adminLimiter, totpAttemptLimiter, requireOwner, (req, res) => {
   // Health diagnostics require the owner's player token plus a current authenticator code.
 
   return res.set("Cache-Control", "no-store").json({
@@ -507,7 +533,7 @@ app.post("/api/youtube/requests", auth, youtubeRequestLimiter, (req, res) => {
   res.status(201).json({ status: "pending", message: "Your request was sent to the owner." });
 });
 
-app.get("/api/admin/audit", auth, adminLimiter, totpAttemptLimiter, requireOwner, (req, res) => {
+app.get("/api/admin/audit", auth, requireOwnerIdentity, adminLimiter, totpAttemptLimiter, requireOwner, (req, res) => {
   try {
     const lines = fs.readFileSync(AUDIT_FILE, "utf8").trim().split(/\r?\n/).filter(Boolean).slice(-100);
     res.json({ events: lines.map(line => { try { return JSON.parse(line); } catch (_) { return null; } }).filter(Boolean) });
@@ -516,10 +542,10 @@ app.get("/api/admin/audit", auth, adminLimiter, totpAttemptLimiter, requireOwner
     return res.status(500).json({ error: "Audit log is temporarily unavailable." });
   }
 });
-app.get("/api/youtube/requests", auth, adminLimiter, totpAttemptLimiter, requireOwner, (req, res) => {
+app.get("/api/youtube/requests", auth, requireOwnerIdentity, adminLimiter, totpAttemptLimiter, requireOwner, (req, res) => {
   res.json({ requests: youtubeAccessData.requests.filter(r => r.status === "pending") });
 });
-app.post("/api/youtube/requests/:requestId/decision", auth, adminLimiter, totpAttemptLimiter, requireOwner, (req, res) => {
+app.post("/api/youtube/requests/:requestId/decision", auth, requireOwnerIdentity, adminLimiter, totpAttemptLimiter, requireOwner, (req, res) => {
   const request = youtubeAccessData.requests.find(r => r.id === req.params.requestId && r.status === "pending");
   if (!request) return res.status(404).json({ error: "Request not found or already handled." });
   const decision = req.body?.decision;
@@ -553,6 +579,9 @@ function auth(req, res, next) {
   }
   next();
 }
+function serverOverallFromXp(xp) {
+  return Math.min(99, 92 + Math.floor(Math.max(0, Number(xp) || 0) / 500));
+}
 function normalizeProfile(input = {}) {
   const n = v => Number.isFinite(Number(v)) ? Math.max(0, Math.min(10000000, Math.floor(Number(v))) ) : 0;
   return {
@@ -569,10 +598,18 @@ app.post("/api/register", registerLimiter, (req, res) => {
   const deviceKeyHash = /^[a-f0-9]{64}$/i.test(rawDeviceKey) ? hashToken(rawDeviceKey.toLowerCase()) : "";
   const deviceMatch = deviceKeyHash && [...players.values()].find(p => p.deviceKeyHash === deviceKeyHash);
   const bearerPlayerId = bearer && tokenToPlayer.get(hashToken(bearer[1]));
+  if (!deviceKeyHash && !bearerPlayerId) {
+    return res.status(400).json({ error: "A valid 32-byte device recovery key is required." });
+  }
+  if (deviceKeyHash && revokedDeviceRecoveryKeyHashes.has(deviceKeyHash)) {
+    auditEvent("register", "device_key_replay_blocked");
+    return res.status(409).json({ error: "This recovery key has already been used. Reconnect using the latest key saved on your device." });
+  }
   const existingId = bearerPlayerId || deviceMatch?.id;
   if (existingId && players.has(existingId)) {
     const existing = players.get(existingId);
-    existing.profile = { ...existing.profile, name: profile.name, player: profile.player, goalkeeper: profile.goalkeeper, ovr: profile.ovr };
+    existing.profile = { ...existing.profile, name: profile.name, player: profile.player, goalkeeper: profile.goalkeeper };
+    existing.profile.ovr = serverOverallFromXp(existing.profile.xp);
     if (deviceKeyHash && (!existing.deviceKeyHash || existing.deviceKeyHash === deviceKeyHash)) existing.deviceKeyHash = deviceKeyHash;
     // A still-valid bearer token is already the active session. Keep it stable so
     // overlapping startup/store requests cannot invalidate one another.
@@ -595,8 +632,19 @@ app.post("/api/register", registerLimiter, (req, res) => {
     }
     let replacementDeviceKey = "";
     if (recoveredByDeviceKey) {
+      // Remember the consumed key so a second tab or copied old key cannot
+      // accidentally register a second account with the same credential.
+      const consumedKeyHash = existing.deviceKeyHash;
+      if (consumedKeyHash && /^[a-f0-9]{64}$/i.test(consumedKeyHash)) {
+        if (!Array.isArray(existing.revokedDeviceKeyHashes)) existing.revokedDeviceKeyHashes = [];
+        if (!existing.revokedDeviceKeyHashes.includes(consumedKeyHash)) {
+          existing.revokedDeviceKeyHashes.push(consumedKeyHash);
+        }
+        revokedDeviceRecoveryKeyHashes.add(consumedKeyHash);
+      }
       replacementDeviceKey = crypto.randomBytes(32).toString("hex");
       existing.deviceKeyHash = hashToken(replacementDeviceKey);
+      auditEvent(existing.id, "account_recovered");
     }
     saveData();
     return res.json({
@@ -610,8 +658,9 @@ app.post("/api/register", registerLimiter, (req, res) => {
   let id;
   do { id = "EA-" + crypto.randomBytes(3).toString("hex").toUpperCase() + "-" + crypto.randomBytes(3).toString("hex").toUpperCase(); } while (players.has(id));
   const token = crypto.randomBytes(32).toString("hex");
-  const safeNewProfile = normalizeProfile({ name: profile.name, player: profile.player, goalkeeper: profile.goalkeeper, ovr: profile.ovr });
-  const player = { id, tokenHash: hashToken(token), deviceKeyHash, approvalStatus: "approved", createdAt: new Date().toISOString(), profile: safeNewProfile, friends: new Set(), gems: 250, draftVouchers: 0, activeDraft: null, ownedCards: ['arham'], cardLevels: { arham: 0 }, rewardDay: '', rewardGemsToday: 0, lastGameClaimAt: 0, eventClaims: {}, gameSession: null };
+  const safeNewProfile = normalizeProfile({ name: profile.name, player: profile.player, goalkeeper: profile.goalkeeper, ovr: 92 });
+  safeNewProfile.ovr = serverOverallFromXp(safeNewProfile.xp);
+  const player = { id, tokenHash: hashToken(token), deviceKeyHash, revokedDeviceKeyHashes: [], approvalStatus: "approved", createdAt: new Date().toISOString(), profile: safeNewProfile, friends: new Set(), gems: 250, draftVouchers: 0, activeDraft: null, ownedCards: ['arham'], cardLevels: { arham: 0 }, rewardDay: '', rewardGemsToday: 0, lastGameClaimAt: 0, eventClaims: {}, gameSession: null };
   players.set(id, player);
   tokenToPlayer.set(player.tokenHash, id);
   saveData();
@@ -683,7 +732,7 @@ app.post("/api/friends/remove", auth,friendLimiter, (req, res) => {
   res.json({ ok: true });
 });
 // Admin can inspect public player profiles only. Authentication tokens and private account secrets are never returned.
-app.get("/api/admin/players", auth, adminLimiter, totpAttemptLimiter, requireOwner, (req, res) => {
+app.get("/api/admin/players", auth, requireOwnerIdentity, adminLimiter, totpAttemptLimiter, requireOwner, (req, res) => {
   const all = [...players.values()].map(publicProfile)
     .sort((a, b) => Number(b.online) - Number(a.online) || b.xp - a.xp || a.name.localeCompare(b.name));
   res.json({ players: all, total: all.length, online: all.filter(p => p.online).length });
@@ -1051,6 +1100,7 @@ app.post("/api/games/complete",auth,gameLimiter,(req,res)=>{
   reward+=eventReward;
   req.player.gems+=reward;syncAdminGemWallet(req.player);
   req.player.profile.xp=Math.min(10000000,req.player.profile.xp+20+eventXp);
+  req.player.profile.ovr=serverOverallFromXp(req.player.profile.xp);
   req.player.rewardGemsToday+=reward;req.player.lastGameClaimAt=Date.now();req.player.gameSession=null;
   saveData();auditEvent(req.player.id,"game_reward_claimed",String(reward));
   if(eventCard)auditEvent(req.player.id,"game_changers_player_awarded",eventCard.id);
