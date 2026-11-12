@@ -111,7 +111,7 @@ const goalkeepers = [
     fullscreenBtn.textContent="⛶ FULLSCREEN";fullscreenBtn.setAttribute("aria-label","Enter fullscreen match view");
     fullscreenBtn.setAttribute("aria-pressed","false");
     const syncFullscreen=()=>{
-      const active=document.fullscreenElement===pitchWrap;
+      const active=document.fullscreenElement===$("gameScreen");
       fullscreenBtn.textContent=active?"✕ EXIT FULLSCREEN":"⛶ FULLSCREEN";
       fullscreenBtn.setAttribute("aria-label",active?"Exit fullscreen match view":"Enter fullscreen match view");
       fullscreenBtn.setAttribute("aria-pressed",String(active));
@@ -120,7 +120,7 @@ const goalkeepers = [
     const toggleFullscreen=async()=>{
       try{
         if(document.fullscreenElement)await document.exitFullscreen();
-        else if(pitchWrap.requestFullscreen)await pitchWrap.requestFullscreen({navigationUI:"hide"});
+        else if($("gameScreen").requestFullscreen)await $("gameScreen").requestFullscreen({navigationUI:"hide"});
         else toast("Fullscreen is not supported by this browser.");
       }catch(_){toast("The browser could not open fullscreen. Try its fullscreen shortcut.");}
     };
