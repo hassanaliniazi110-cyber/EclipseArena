@@ -220,7 +220,6 @@ const goalkeepers = [
       licenseUrl:"https://commons.wikimedia.org/wiki/File:Ederson.png",
       needsCredit:true
     };
-    if(key==="umarshoaib")return null; // User-supplied portrait, not a third-party catalogue photo.
     const fixed=rosterPhotoUrls[key];
     if(fixed)return{
       image:fixed,
