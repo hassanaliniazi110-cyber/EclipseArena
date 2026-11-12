@@ -281,7 +281,9 @@
   }
   function safeState(){try{return getState?getState():null;}catch(_){return null;}}
   function render(now){
-    if(!active||!renderer)return;if(document.hidden){raf=0;return;}raf=requestAnimationFrame(render);
+    if(!active||!renderer)return;
+    if(document.hidden||wrap?.closest("#gameScreen")?.classList.contains("hidden")){raf=0;return;}
+    raf=requestAnimationFrame(render);
     if(now-lastRenderAt<1000/45)return;lastRenderAt=now;
     const rect=sourceCanvas.getBoundingClientRect();if(rect.width<2||rect.height<2)return;
     if(rect.width!==lastWidth||rect.height!==lastHeight)resize();
@@ -430,5 +432,7 @@
     cameraMode=value;return cameraMode;
   }
   function getCameraView(){return cameraMode;}
-  window.ApexMatch3D={init,resize,sync,setZoom,getZoom,setCameraView,getCameraView,setKits,get active(){return active;}};
+  function resume(){if(active&&renderer&&!document.hidden&&!raf)raf=requestAnimationFrame(render);}
+  function pause(){if(raf)cancelAnimationFrame(raf);raf=0;}
+  window.ApexMatch3D={init,resize,sync,resume,pause,setZoom,getZoom,setCameraView,getCameraView,setKits,get active(){return active;}};
 })();
