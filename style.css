@@ -1396,3 +1396,21 @@ svg line,svg polyline,.chart-line,.stat-line,.player-chart-line,.player-stats sv
 .player-card{background-image:linear-gradient(155deg,rgba(255,255,255,.045),transparent 38%),linear-gradient(145deg,rgba(19,32,43,.98),rgba(8,15,22,.98))}
 .player-card .player-name{font-weight:900;letter-spacing:.015em}
 .player-card .player-special{line-height:1.35}
+
+
+/* Real-time WebGL 3D match renderer */
+.pitch-wrap{isolation:isolate;overflow:hidden}
+.apex-3d-canvas{position:absolute;z-index:2;pointer-events:none;display:block;max-width:none;max-height:none;border:0!important;touch-action:none}
+#pitch.apex-2d-hidden{opacity:0!important}
+.apex-3d-hud{position:absolute;z-index:4;pointer-events:none;display:flex;justify-content:center;align-items:flex-start;padding:10px 12px;box-sizing:border-box}
+.apex-3d-scoreboard{width:min(430px,88%);padding:9px 14px 8px;border:1px solid rgba(176,226,255,.34);border-radius:10px;background:linear-gradient(135deg,rgba(5,14,28,.92),rgba(10,27,46,.79));box-shadow:0 10px 34px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.12);backdrop-filter:blur(12px);color:#f5fbff}
+.apex-3d-hud-top,.apex-3d-hud-middle{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.apex-3d-hud-brand{font:900 9px 'Orbitron',sans-serif;letter-spacing:1.2px;color:#eefaff}
+.apex-3d-hud-brand b{color:#59dfff}
+.apex-3d-hud-live{font:800 7px 'DM Sans',sans-serif;letter-spacing:1.2px;color:#b5cbdc}
+.apex-3d-hud-live i{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;background:#73f3ae;box-shadow:0 0 9px #73f3ae}
+.apex-3d-hud-middle{margin-top:5px}
+.apex-3d-hud-mode,.apex-3d-hud-clock{font:800 8px 'DM Sans',sans-serif;letter-spacing:1px;color:#bad0df}
+.apex-3d-hud-score{font:900 24px 'Orbitron',sans-serif;letter-spacing:2px;color:#fff;text-shadow:0 0 16px rgba(79,216,255,.48)}
+.apex-3d-hud-status{margin-top:4px;text-align:center;font:800 6px 'DM Sans',sans-serif;letter-spacing:1.45px;color:#8eaabd}
+@media(max-width:600px){.apex-3d-hud{padding:7px}.apex-3d-scoreboard{padding:7px 10px;width:min(350px,92%)}.apex-3d-hud-score{font-size:20px}.apex-3d-hud-brand{font-size:8px}}
