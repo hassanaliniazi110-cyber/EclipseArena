@@ -4,7 +4,7 @@
   let sourceCanvas=null,wrap=null,glCanvas=null,hud=null,renderer=null,scene=null,camera=null;
   let resizeObserver=null,lastWidth=0,lastHeight=0,active=false,raf=0,getState=null;
   let playerModel,rivalModel,keeperHome,keeperAway,teammateModels=[],rivalSupportModels=[],ball,ballShadow,flightTrail,aimMarker,cameraTarget;
-  let hudMode,hudScore,hudClock,hudStatus,lastPlayerLabel="";
+  let hudMode,hudScore,hudClock,hudStatus,lastPlayerLabel="",cameraZoom=1.25;
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const mat=(color,extra)=>new T.MeshStandardMaterial(Object.assign({color:color||0xffffff,roughness:.62,metalness:.035},extra||{}));
   function box(parent,size,pos,material,cast,receive){
@@ -299,8 +299,11 @@
     const moving=Boolean(s.ballAnim);
     ball.rotation.x+=moving?.055:.009;ball.rotation.z+=moving?.043:.012;
     updateBallShadow();
-    const follow=h2h?cameraTarget.x:0;camera.position.x+=(follow*.18-camera.position.x)*.035;
-    camera.lookAt(cameraTarget.x*.12,0,0);renderer.render(scene,camera);
+    const focusX=h2h?(m.player.x-.5)*30:0,focusZ=h2h?(m.player.y-.5)*40:0;
+    camera.position.x+=(focusX*.28-camera.position.x)*.055;
+    camera.position.y+=((h2h?23:28)-camera.position.y)*.045;
+    camera.position.z+=((h2h?focusZ+29:38)-camera.position.z)*.045;
+    camera.lookAt(focusX*.42,0,focusZ);renderer.render(scene,camera);
   }
   function init(canvas,getter){
     if(active)return true;if(!T||!canvas||!canvas.parentElement)return false;
@@ -315,7 +318,7 @@
       renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
       renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.16;
       if("outputColorSpace" in renderer)renderer.outputColorSpace=T.SRGBColorSpace;
-      scene=new T.Scene();camera=new T.PerspectiveCamera(47,1,.1,180);camera.position.set(0,28,38);
+      scene=new T.Scene();camera=new T.PerspectiveCamera(47,1,.1,180);camera.position.set(0,23,29);camera.zoom=cameraZoom;camera.updateProjectionMatrix();
       buildScene();buildActors();resize();sourceCanvas.classList.add("apex-2d-hidden");
       glCanvas.addEventListener("webglcontextlost",e=>{e.preventDefault();sourceCanvas.classList.remove("apex-2d-hidden");glCanvas.style.display="none";hud.style.display="none";active=false;});
       if(window.ResizeObserver){resizeObserver=new ResizeObserver(resize);resizeObserver.observe(sourceCanvas);resizeObserver.observe(wrap);}
@@ -326,5 +329,7 @@
     }
   }
   function sync(){if(active)updateHUD(safeState()||{});}
-  window.ApexMatch3D={init,resize,sync,get active(){return active;}};
+  function setZoom(value){cameraZoom=clamp(Number(value)||1.25,1,1.9);if(camera){camera.zoom=cameraZoom;camera.updateProjectionMatrix();}return cameraZoom;}
+  function getZoom(){return cameraZoom;}
+  window.ApexMatch3D={init,resize,sync,setZoom,getZoom,get active(){return active;}};
 })();
