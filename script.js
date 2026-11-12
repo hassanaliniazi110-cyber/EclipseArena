@@ -590,21 +590,30 @@ const goalkeepers = [
   };
   function getPlayerPlayStyles(player,isKeeper){
     const name=String(player.name||"");
-    if(PLAYSTYLE_ASSIGNMENTS[name])return PLAYSTYLE_ASSIGNMENTS[name].filter(style=>PLAYSTYLE_ICON_PATHS[style]||style==="First Touch").slice(0,3);
-    if(isKeeper){
+    const rating=Number(player.rating||player.ovr||0);
+    // Pool A is 126+ OVR. It receives up to three level-2 PlayStyles.
+    // Lower tiers receive fewer level-1 styles; players below 110 receive none.
+    const count=rating>=126?3:rating>=120?2:rating>=110?1:0;
+    if(!count)return [];
+    let assigned=PLAYSTYLE_ASSIGNMENTS[name]||null;
+    if(!assigned&&isKeeper){
       const lower=name.toLowerCase();
-      if(lower.includes("neuer"))return ["Rush Out","Footwork","Far Reach"];
-      if(lower.includes("ederson"))return ["Long Ball Pass","Footwork","Rush Out"];
-      if(lower.includes("martínez")||lower.includes("martinez"))return ["1v1 Close Down","Footwork","Far Reach"];
-      if(lower.includes("yashin")||lower.includes("buffon"))return ["Far Reach","Cross Claimer","1v1 Close Down"];
-      if(lower.includes("raya"))return ["Footwork","Long Throw","Cross Claimer"];
-      return ["Far Reach","1v1 Close Down","Cross Claimer"];
+      if(lower.includes("neuer"))assigned=["Rush Out","Footwork","Far Reach"];
+      else if(lower.includes("ederson"))assigned=["Long Ball Pass","Footwork","Rush Out"];
+      else if(lower.includes("martínez")||lower.includes("martinez"))assigned=["1v1 Close Down","Footwork","Far Reach"];
+      else if(lower.includes("yashin")||lower.includes("buffon"))assigned=["Far Reach","Cross Claimer","1v1 Close Down"];
+      else if(lower.includes("raya"))assigned=["Footwork","Long Throw","Cross Claimer"];
+      else assigned=["Far Reach","1v1 Close Down","Cross Claimer"];
     }
-    const role=String(player.role||"").toUpperCase();
-    if(role==="CB"||role==="CDM")return ["Anticipate","Intercept","Block"];
-    if(role==="CM"||role==="CAM")return ["Tiki Taka","Incisive Pass","Relentless"];
-    if(role==="RW"||role==="LW")return ["Rapid","Technical","Flair"];
-    return ["Finesse Shot","Power Shot","First Touch"];
+    if(!assigned){
+      const role=String(player.role||"").toUpperCase();
+      if(role==="CB"||role==="CDM")assigned=["Anticipate","Intercept","Block"];
+      else if(role==="CM"||role==="CAM")assigned=["Tiki Taka","Incisive Pass","Relentless"];
+      else if(role==="RW"||role==="LW")assigned=["Rapid","Technical","Flair"];
+      else assigned=["Finesse Shot","Power Shot","First Touch"];
+    }
+    const level=rating>=126?2:1;
+    return assigned.filter(style=>PLAYSTYLE_ICON_PATHS[style]).slice(0,count).map(style=>({name:style,level}));
   }
   function escapePlayStyleLabel(value){
     return String(value).replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
@@ -615,7 +624,13 @@ const goalkeepers = [
     return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
   }
   function renderPlayStyleBadges(styles){
-    return '<div class="player-playstyles" role="group" aria-label="Player PlayStyles"><span class="player-playstyles-label">PLAYSTYLES</span><div class="player-playstyles-icons">'+styles.map(style=>'<span class="player-playstyle-badge" title="'+escapePlayStyleLabel(style)+'" aria-label="'+escapePlayStyleLabel(style)+'"><img src="'+playStyleIconData(style)+'" alt="" loading="lazy"></span>').join("")+'</div></div>';
+    if(!styles.length)return "";
+    return '<div class="player-playstyles" role="group" aria-label="Player PlayStyles"><div class="player-playstyles-heading">PLAYSTYLES</div><div class="player-playstyles-icons">'+styles.map(style=>{
+      const level=style.level===2?2:1;
+      const tier=level===2?"gold":"silver";
+      const label=escapePlayStyleLabel(style.name);
+      return '<span class="player-playstyle-badge '+tier+'" title="'+label+' · Level '+level+'" aria-label="'+label+' · Level '+level+'"><img src="'+playStyleIconData(style.name)+'" alt="" loading="lazy"><span class="player-playstyle-name">'+label+'</span><span class="player-playstyle-level">LVL '+level+'</span></span>';
+    }).join("")+'</div></div>';
   }
   function playerCard(p, selected, attr, isKeeper){
     const unlocked=isUnlocked(p,isKeeper),xp=career.players[p.name]||0,level=1+Math.floor(xp/100);
@@ -624,7 +639,7 @@ const goalkeepers = [
     const displayRating=(p.name==="Cristiano Ronaldo"||p.name==="Lllllllll FC"?999:(p.name==="Hassan Ali"&&(isKeeper||p.role==="GK")?300:rating));
     const xpNeeded=Math.max(0,(p.unlockXP||0)-(career.unlockXP||0)),winsNeeded=Math.max(0,(p.unlockWins||0)-(career.unlockWins||0));
     const lockLabel=unlocked?"LVL "+level:"🔒 "+xpNeeded+" XP + "+winsNeeded+" MATCH WINS TO UNLOCK";
-    const playStyles=getPlayerPlayStyles(p,isKeeper);
+    const playStyles=getPlayerPlayStyles({...p,rating},isKeeper);
     const labels=isKeeper?["DIV","HAN","KIC","REF","SPD","POS"]:["PAC","SHO","PAS","DRI","DEF","PHY"];
     const offsets=isKeeper?[1,0,-3,2,-2,1]:p.role==="ST"?[0,3,-2,-1,-4,2]:p.role==="RW"||p.role==="LW"?[3,0,-1,3,-5,-2]:p.role==="CAM"||p.role==="CM"?[-1,-1,3,1,0,0]:[0,0,0,0,0,0];
     const attributes=labels.map((label,i)=>'<span><b>'+label+'</b><strong>'+(p.stats&&p.stats[label]!=null?p.stats[label]:Math.min(199,Math.max(45,rating+offsets[i])))+'</strong></span>').join("");
