@@ -79,7 +79,7 @@ const goalkeepers = [
     crossbar:["Hit the bar.","Aim right under the crossbar and time your shot."],
     survival:["Survival saves.","Save as many shots as possible. Hassan makes an almost impossible wall."]
   };
-  let selectedPlayer = "Muhammad Arham", selectedGoalkeeper = "David Raya", difficulty = "Pro", mode = "penalty";
+  let selectedPlayer = "Muhammad Arham", selectedGoalkeeper = "David Raya", difficulty = "Pro", mode = "penalty", h2hChallenge="standard";
   let score = 0, opponentScore = 0, matchMinute = 0, matchAttacks = 0, attempt = 1, aim = {x:.5,y:.27}, power = 78, shotTaken = false, keeperDive = "center", keeperMotion = null, ballAnim = null, animationFrame = 0;
   const canvas = $("pitch"), ctx = canvas.getContext("2d");
   let cw = 900, ch = 620, lastResult = "", shotTimer = null, soundOn = false, masterVolume = 0.65, passcodeFailures=0, passcodeLockUntil=0, lastShotReplay=null, celebrationUntil=0;
@@ -1209,15 +1209,15 @@ const goalkeepers = [
   if(onlineCfg.base)connectPromise=connectOnline();else setServerStatus("Offline mode · backend URL is managed in repository configuration.");
   renderCareerHub();renderPlayers();
 
-  function startMode(nextMode){
+  function startMode(nextMode,challenge="standard"){
     document.documentElement.dataset.activeDevice=deviceProfile.type;
     const isRandomRush=nextMode==="random";
     if(isRandomRush){const choices=["penalty","freekick","longshot","goalkeeping","vsattack","crossbar","survival"];nextMode=choices[Math.floor(Math.random()*choices.length)];}
-    mode=nextMode;shotTaken=false;ballAnim=null;keeperMotion=null;
+    mode=nextMode;h2hChallenge=challenge;shotTaken=false;ballAnim=null;keeperMotion=null;
     activeRewardSessionId=null;activeRewardSessionPromise=null;rewardClaimedThisGame=false;activeRewardEventId=pendingApexEventId;pendingApexEventId="";
     if(onlineCfg.base&&onlineCfg.token)activeRewardSessionPromise=api("/api/games/start",{method:"POST",body:JSON.stringify({mode,eventId:activeRewardEventId})}).then(data=>{activeRewardSessionId=data.sessionId;return data.sessionId;}).catch(error=>{activeRewardSessionId=null;activeRewardSessionPromise=null;toast("Online game session could not start: "+error.message);return null;});
     if(!isRandomRush){recentModes=[nextMode,...recentModes.filter(x=>x!==nextMode)].slice(0,5);try{localStorage.setItem("eclipseRecentModes",JSON.stringify(recentModes));}catch(_){}renderModeTools();}
-    match.active=mode==="headtohead";match.finished=false;match.clock=0;match.playerGoals=0;match.rivalGoals=0;match.rankPoints=0;match.rank="ROOKIE III";match.player={x:.5,y:.72};match.rival={x:.5,y:.28};match.ball={x:.5,y:.72};match.move="";match.moveX=0;match.moveY=0;match.sprint=false;match.hasBall=true;match.lastRivalShot=0;match.passUntil=0;match.lastShot=null;
+    match.active=mode==="headtohead";match.finished=false;match.clock=0;match.playerGoals=0;match.rivalGoals=h2hChallenge==="comeback"?2:0;match.rankPoints=0;match.rank="ROOKIE III";match.player={x:.5,y:.72};match.rival={x:.5,y:.28};match.ball={x:.5,y:.72};match.move="";match.moveX=0;match.moveY=0;match.sprint=false;match.hasBall=true;match.lastRivalShot=0;match.passUntil=0;match.lastShot=null;
     $("matchHud").classList.toggle("hidden",!match.active);$("matchControls").classList.toggle("hidden",!match.active);$("matchCameraControls").classList.toggle("hidden",!match.active);$("matchResult").classList.add("hidden");$("matchResult").textContent="";
     $("powerSlider").classList.toggle("hidden",match.active);$("powerSlider").disabled=match.active;$("shootBtn").classList.toggle("hidden",match.active);$("matchRank").textContent="ROOKIE III · 0 PTS";
     score=0;attempt=1;if(mode==="headtohead"||mode==="vsattack"){opponentScore=0;matchMinute=0;matchAttacks=0;}
@@ -1228,26 +1228,40 @@ const goalkeepers = [
     $("shootBtn").classList.remove("hidden");$("shootBtn").innerHTML=(mode==="goalkeeping"||mode==="survival")?"DIVE / SAVE <span>↗</span>":"SHOOT <span>↗</span>";
     $("nextBtn").classList.add("hidden");$("aimTip").textContent=(mode==="goalkeeping"||mode==="survival")?"CHOOSE A DIVE · THEN SAVE THE SHOT":mode==="crossbar"?"AIM FOR THE CROSSBAR ZONE · THEN SHOOT":"TAP OR DRAG ON THE PITCH TO AIM";
     aim={x:.5,y:.27};keeperDive="center";keeperMotion=null;$("feedback").textContent="Ready when you are.";$("scoreValue").textContent=score;$("roundLabel").textContent="ATTEMPT "+String(attempt).padStart(2,"0");$("difficultyLabel").textContent=difficulty.toUpperCase()+" LEVEL";
-    if(match.active){$("aimTip").textContent="MOVE YOUR PLAYER · PASS · TACKLE · SHOOT";$("roundLabel").textContent="KICK-OFF · 00:00";$("controlHeading").textContent="Play the full match";$("controlText").textContent="Use the touch controls to attack, defend and score.";resizeCanvas();startMatchLoop();}else{resizeCanvas();window.scrollTo({top:0,behavior:"smooth"});}
+    if(match.active){$("aimTip").textContent="MOVE YOUR PLAYER · PASS · TACKLE · SHOOT";$("roundLabel").textContent=h2hChallenge==="comeback"?"COMEBACK · 0–2 DOWN":h2hChallenge==="golden"?"GOLDEN GOAL · FIRST TO SCORE":"KICK-OFF · 00:00";$("controlHeading").textContent=h2hChallenge==="comeback"?"Comeback challenge":h2hChallenge==="golden"?"Golden goal against AI":"H2H · Play against AI";$("controlText").textContent="Move with the joystick, create space, pass, tackle and shoot. AI difficulty: "+difficulty+".";resizeCanvas();startMatchLoop();}else{resizeCanvas();window.scrollTo({top:0,behavior:"smooth"});}
   }
   if($("featuredEventPlay"))$("featuredEventPlay").addEventListener("click",()=>startMode("vsattack"));
   function startMatchLoop(){
     cancelAnimationFrame(animationFrame);match.lastTick=performance.now();
     const tick=(now)=>{if(!match.active||match.finished)return;const dt=Math.min(.06,(now-match.lastTick)/1000);match.lastTick=now;if(onlineCfg.onlineMatch&&onlineCfg.matchStartAt){match.clock=Math.min(90,Math.max(0,(Date.now()-onlineCfg.matchStartAt)/1000));}else match.clock+=dt;
+      if(h2hChallenge==="golden"&&(match.playerGoals>0||match.rivalGoals>0)){match.clock=90;endFullMatch();return}
       if(match.clock>=90){match.clock=90;endFullMatch();return}
       const axisX=Math.max(-1,Math.min(1,match.moveX));const axisY=Math.max(-1,Math.min(1,match.moveY));const inputMagnitude=Math.min(1,Math.hypot(axisX,axisY));
       if(inputMagnitude>.08){const speed=match.sprint?9.4:7.2;const nx=axisX/inputMagnitude,ny=axisY/inputMagnitude;match.player.x+=(nx*speed*dt)/68;match.player.y+=(ny*speed*dt)/105;}
       match.player.x=Math.max(.035,Math.min(.965,match.player.x));match.player.y=Math.max(.045,Math.min(.955,match.player.y));
       const dx=match.player.x-match.rival.x,dy=match.player.y-match.rival.y,worldDx=dx*68,worldDy=dy*105,dist=Math.hypot(worldDx,worldDy)||.001;
-      if(!onlineCfg.onlineMatch){const rivalSpeed=5.3,targetX=match.hasBall?match.player.x:match.ball.x,targetY=match.hasBall?match.player.y:match.ball.y,rx=targetX-match.rival.x,ry=targetY-match.rival.y,rl=Math.hypot(rx*68,ry*105)||1;match.rival.x+=(rx*68/rl*rivalSpeed*dt)/68;match.rival.y+=(ry*105/rl*rivalSpeed*dt)/105;
-        if(match.hasBall&&dist<3.0){match.hasBall=false;match.ball.x=match.rival.x;match.ball.y=match.rival.y-.018;$("feedback").textContent="RIVAL WON THE BALL! Close them down and tackle.";}
-        if(!match.hasBall&&Math.hypot((match.player.x-match.ball.x)*68,(match.player.y-match.ball.y)*105)<2.1){match.hasBall=true;$("feedback").textContent="POSSESSION WON!";}
+      if(!onlineCfg.onlineMatch){
+        const aiLevel=difficulty==="Legend"?7.1:difficulty==="Rookie"?4.0:5.5;
+        const aiHasBall=!match.hasBall,targetX=aiHasBall?.5:match.ball.x,targetY=aiHasBall?.84:match.ball.y;
+        const rx=targetX-match.rival.x,ry=targetY-match.rival.y,rl=Math.hypot(rx*68,ry*105)||1;
+        match.rival.x+=(rx*68/rl*aiLevel*dt)/68;match.rival.y+=(ry*105/rl*aiLevel*dt)/105;
+        match.rival.x=Math.max(.035,Math.min(.965,match.rival.x));match.rival.y=Math.max(.045,Math.min(.955,match.rival.y));
+        const playerToRival=Math.hypot((match.player.x-match.rival.x)*68,(match.player.y-match.rival.y)*105);
+        const ballToPlayer=Math.hypot((match.player.x-match.ball.x)*68,(match.player.y-match.ball.y)*105);
+        const ballToRival=Math.hypot((match.rival.x-match.ball.x)*68,(match.rival.y-match.ball.y)*105);
+        if(match.hasBall&&playerToRival<3.7){match.hasBall=false;match.ball.x=match.rival.x;match.ball.y=match.rival.y-.02;$("feedback").textContent="AI TACKLE! Win the ball back.";}
+        if(!match.hasBall&&ballToPlayer<2.5&&ballToPlayer<ballToRival+.5){match.hasBall=true;$("feedback").textContent="BALL RECOVERED!";}
+        if(!match.hasBall&&match.rival.y>.73&&match.clock-match.lastRivalShot>(difficulty==="Legend"?8:12)){
+          match.lastRivalShot=match.clock;const chance=difficulty==="Legend"?.72:difficulty==="Rookie"?.30:.50;
+          if(Math.random()<chance){match.rivalGoals++;match.hasBall=true;match.player={x:.5,y:.72};match.rival={x:.5,y:.28};match.ball={x:.5,y:.695};$("feedback").textContent="AI SCORES! Kick off and answer back.";}
+          else $("feedback").textContent="AI SHOT WIDE! Take possession.";
+        }
       }
       if(match.passUntil&&performance.now()<match.passUntil){const t=1-(match.passUntil-performance.now())/520;match.ball.x=match.passFromX+(match.passToX-match.passFromX)*t;match.ball.y=match.passFromY+(match.passToY-match.passFromY)*t;}
       else if(match.passUntil){match.passUntil=0;match.hasBall=true;match.ball.x=match.player.x;match.ball.y=match.player.y-.025;}
       else if(match.hasBall){match.ball.x=match.player.x+axisX*.018;match.ball.y=match.player.y-.025+axisY*.018;}
       else{match.ball.x=match.rival.x;match.ball.y=match.rival.y-.025;}
-      if(!onlineCfg.onlineMatch&&match.clock-match.lastRivalShot>16){match.lastRivalShot=match.clock;if(Math.random()<.38){match.rivalGoals++;match.hasBall=true;match.player={x:.5,y:.72};match.rival={x:.5,y:.28};match.ball={x:.5,y:.72};$("feedback").textContent="RIVAL SCORES! Kick off and fight back.";}}
+
       if(onlineCfg.onlineMatch&&onlineCfg.socket&&onlineCfg.socket.connected&&now-onlineCfg.lastStateAt>100){onlineCfg.lastStateAt=now;onlineCfg.socket.emit("match:state",{roomId:onlineCfg.roomId,state:{x:match.player.x,y:match.player.y,goals:match.playerGoals,hasBall:match.hasBall,ballX:match.ball.x,ballY:match.ball.y,clock:match.clock}});}
       const mm=Math.floor(match.clock),ss=Math.floor((match.clock-mm)*60);$("matchClock").textContent=String(mm).padStart(2,"0")+":"+String(ss).padStart(2,"0");$("matchScore").textContent=match.playerGoals+" - "+match.rivalGoals;$("roundLabel").textContent="MATCH LIVE · "+String(mm).padStart(2,"0")+":"+String(ss).padStart(2,"0");drawPitch();animationFrame=requestAnimationFrame(tick);};
     animationFrame=requestAnimationFrame(tick);
@@ -1291,7 +1305,7 @@ const goalkeepers = [
 
     if(success)score+=mode==="goalkeeping"?150:100;
     if(mode==="vsattack"&&matchAttacks>=4)claimGameReward(score);
-    if(mode==="headtohead"||mode==="vsattack"){
+    if(mode==="vsattack"){
       matchAttacks++;
       if(mode==="headtohead"){matchMinute=Math.min(90,matchAttacks*10);if(Math.random()<.34)opponentScore++;}
       else if(Math.random()<.30)opponentScore++;
@@ -1369,7 +1383,7 @@ const goalkeepers = [
       if(won){const r=tournamentWinsThisRun+1;startMode("vsattack");$("gameTitle").innerHTML="WORLD TOUR <em>ROUND "+r+"</em>";$("controlHeading").textContent="World Tour · Round "+r+" of 3";$("controlText").textContent="Win this five-attack round to advance toward the trophy.";toast("Round "+(r-1)+" won! Round "+r+" begins.");renderCareerHub();return;}
       tournamentActive=false;renderCareerHub();$("feedback").textContent="WORLD TOUR ROUND LOST. Win 3 rounds to lift the trophy. Start World Tour to try again.";
     }
-    if((mode==="headtohead"&&matchMinute>=90)||(mode==="vsattack"&&matchAttacks>=5)){
+    if(mode==="vsattack"&&matchAttacks>=5){
       $("feedback").textContent="FULL TIME! Final score: "+Math.floor(score/100)+" - "+opponentScore+". "+(Math.floor(score/100)>opponentScore?"YOU WIN!":Math.floor(score/100)===opponentScore?"DRAW!":"RIVAL WINS!");
       $("nextBtn").classList.add("hidden");$("shootBtn").classList.remove("hidden");$("shootBtn").textContent="PLAY AGAIN ↻";
       $("shootBtn").onclick=()=>startMode(mode);return;
@@ -1398,7 +1412,7 @@ const goalkeepers = [
   document.addEventListener("keydown",e=>{if(!match.active||e.target.matches("input,textarea,select"))return;const key=e.key.toLowerCase();if(["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"].includes(key)){e.preventDefault();heldMatchKeys.add(key);syncMatchKeyboard();}else if(key==="shift"){match.sprint=true;}else if(!e.repeat&&key===" "){e.preventDefault();matchAction("shoot");}else if(!e.repeat&&key==="e"){matchAction("pass");}else if(!e.repeat&&key==="q"){matchAction("tackle");}});
   document.addEventListener("keyup",e=>{const key=e.key.toLowerCase();if(heldMatchKeys.delete(key))syncMatchKeyboard();if(key==="shift")match.sprint=false;});
   window.addEventListener("blur",()=>{heldMatchKeys.clear();match.moveX=0;match.moveY=0;match.sprint=false;});
-  document.querySelectorAll("[data-mode]").forEach(b=>b.addEventListener("click",()=>startMode(b.dataset.mode)));
+  document.querySelectorAll("[data-mode]").forEach(b=>b.addEventListener("click",()=>startMode(b.dataset.mode,b.dataset.challenge||"standard")));
   document.addEventListener("click",e=>{
     const youtubeButton=e.target.closest("[data-open-youtube]");
     if(!youtubeButton)return;
