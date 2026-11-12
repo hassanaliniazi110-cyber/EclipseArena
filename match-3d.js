@@ -139,7 +139,7 @@
   }
   
   function buildScene(){
-    scene.background=new T.Color(0x071321);scene.fog=new T.Fog(0x071321,125,225);
+    scene.background=new T.Color(0x071321);scene.fog=new T.Fog(0x071321,210,380);
     const ground=new T.Mesh(new T.PlaneGeometry(155,190),mat("#081521",{roughness:1}));
     ground.rotation.x=-Math.PI/2;ground.position.y=-1.45;ground.receiveShadow=true;scene.add(ground);
     const turf=new T.Mesh(new T.PlaneGeometry(FIELD_WIDTH,FIELD_LENGTH),mat("#167743",{roughness:.94}));
@@ -171,7 +171,7 @@
     goal(-FIELD_LENGTH/2,-1);goal(FIELD_LENGTH/2,1);
     scene.add(new T.HemisphereLight(0xadcfff,0x15251b,1.02));
     const sun=new T.DirectionalLight(0xffffff,2.05);sun.position.set(-25,48,38);sun.castShadow=true;
-    sun.shadow.mapSize.set(1536,1536);sun.shadow.camera.left=-62;sun.shadow.camera.right=62;sun.shadow.camera.top=78;sun.shadow.camera.bottom=-78;
+    sun.shadow.mapSize.set(1536,1536);sun.shadow.camera.left=-78;sun.shadow.camera.right=78;sun.shadow.camera.top=88;sun.shadow.camera.bottom=-88;sun.shadow.camera.far=220;
     sun.shadow.camera.near=1;sun.shadow.camera.far=180;sun.shadow.bias=-.00025;scene.add(sun);
     [[-47,18,-65],[47,18,-65],[-47,18,65],[47,18,65]].forEach((p,i)=>{
       cylinder(scene,.12,.16,17,[p[0],8.5,p[2]],mat("#25394c",{metalness:.55,roughness:.4}),8);
@@ -392,7 +392,7 @@
       renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.25));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;
       renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.16;
       if("outputColorSpace" in renderer)renderer.outputColorSpace=T.SRGBColorSpace;
-      scene=new T.Scene();camera=new T.PerspectiveCamera(47,1,.1,180);camera.position.set(0,23,29);camera.zoom=cameraZoom;camera.updateProjectionMatrix();
+      scene=new T.Scene();camera=new T.PerspectiveCamera(47,1,.1,400);camera.position.set(0,23,29);camera.zoom=cameraZoom;camera.updateProjectionMatrix();
       buildScene();buildActors();resize();sourceCanvas.classList.add("apex-2d-hidden");
       glCanvas.addEventListener("webglcontextlost",e=>{e.preventDefault();cancelAnimationFrame(raf);sourceCanvas.classList.remove("apex-2d-hidden");glCanvas.style.display="none";hud.style.display="none";active=false;console.warn("Apex 3D context lost; switched to the 2D match view.");});
       if(window.ResizeObserver){resizeObserver=new ResizeObserver(resize);resizeObserver.observe(sourceCanvas);resizeObserver.observe(wrap);}
