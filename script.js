@@ -1307,6 +1307,9 @@ const goalkeepers = [
       for(let i=0;i<28;i++){const x=((i*73+Math.floor(elapsed*.17)*17)%997)/997*w;const y=((i*47+Math.floor(elapsed*.31)*11)%613)/613*h*.58;ctx.fillStyle=["#c7ff4a","#f5f6ed","#ff8c42","#4bbfff"][i%4];ctx.fillRect(x,y,Math.max(3,w*.006),Math.max(5,h*.014));}
       animationFrame=requestAnimationFrame(drawPitch);
     }
+    if(keeperMotion&&!ballAnim&&performance.now()-keeperMotion.start<keeperMotion.duration){
+      animationFrame=requestAnimationFrame(drawPitch);
+    }
   }
   const modeGrid=document.querySelector(".mode-grid"), modeSection=document.querySelector(".mode-section");
   const modeToolbar=document.createElement("div");modeToolbar.className="arena-tools";
