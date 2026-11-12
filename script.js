@@ -469,6 +469,10 @@ const goalkeepers = [
     // Shirt seams, shoulder panels and collar.
     ctx.strokeStyle=p.trim;ctx.lineWidth=.025;ctx.beginPath();ctx.moveTo(-.17,-.40);ctx.lineTo(-.11,-.07);ctx.moveTo(.17,-.40);ctx.lineTo(.11,-.07);ctx.stroke();
     ctx.fillStyle=p.trim;ctx.fillRect(-.22,-.41,.06,.13);ctx.fillRect(.16,-.41,.06,.13);
+    // Small crest and sleeve detailing.
+    ctx.fillStyle="rgba(255,255,255,.92)";ctx.beginPath();ctx.moveTo(-.145,-.31);ctx.lineTo(-.105,-.325);ctx.lineTo(-.065,-.31);ctx.lineTo(-.073,-.245);ctx.lineTo(-.105,-.22);ctx.lineTo(-.137,-.245);ctx.closePath();ctx.fill();
+    ctx.fillStyle=p.trim;ctx.beginPath();ctx.arc(-.105,-.28,.018,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="rgba(255,255,255,.65)";ctx.lineWidth=.012;ctx.beginPath();ctx.moveTo(.19,-.36);ctx.lineTo(.225,-.12);ctx.stroke();
     ctx.strokeStyle=p.trim;ctx.lineWidth=.025;ctx.beginPath();ctx.arc(0,-.42,.065,0,Math.PI);ctx.stroke();
     // Large readable jersey number.
     ctx.fillStyle=p.trim;ctx.font="900 .19px Arial,sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(String(p.number),0,-.245);
@@ -496,6 +500,10 @@ const goalkeepers = [
     ctx.fillStyle="#f4f5f3";ctx.beginPath();ctx.ellipse(-.25+stride*1.45,.405-lift,.13,.058,-.15,0,Math.PI*2);ctx.fill();
     ctx.beginPath();ctx.ellipse(.25-stride*1.45,.39-Math.max(0,-Math.cos(gaitPhase))*.045,.13,.058,.1,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#c7ff4a";ctx.fillRect(-.32+stride*1.45,.43-lift,.12,.025);ctx.fillRect(.19-stride*1.45,.415-Math.max(0,-Math.cos(gaitPhase))*.045,.12,.025);
+    // Cleat studs and glossy toe caps.
+    ctx.fillStyle="rgba(20,28,34,.9)";
+    for(let stud=0;stud<3;stud++){ctx.beginPath();ctx.arc(-.30+stride*1.45+stud*.045,.455-lift,.012,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(.20-stride*1.45+stud*.045,.435-Math.max(0,-Math.cos(gaitPhase))*.045,.012,0,Math.PI*2);ctx.fill();}
+    ctx.fillStyle="rgba(255,255,255,.7)";ctx.beginPath();ctx.ellipse(-.28+stride*1.45,.39-lift,.055,.014,-.2,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(.22-stride*1.45,.38-Math.max(0,-Math.cos(gaitPhase))*.045,.055,.014,.2,0,Math.PI*2);ctx.fill();
     // Short neck only: ears are intentionally omitted.
     const skinGradient=ctx.createRadialGradient(-.055,-.68,.015,.015,-.62,.19);
     skinGradient.addColorStop(0,"#f0c6a5");skinGradient.addColorStop(.55,p.skin);skinGradient.addColorStop(1,"#694332");
@@ -520,6 +528,10 @@ const goalkeepers = [
     ctx.fill();
     ctx.fillStyle="rgba(35,25,20,.72)";
     ctx.beginPath();ctx.arc(-.052,-.625,.012,0,Math.PI*2);ctx.arc(.052,-.625,.012,0,Math.PI*2);ctx.fill();
+    // Eyebrows, nose highlight and soft jaw shadow.
+    ctx.strokeStyle="rgba(35,25,20,.72)";ctx.lineWidth=.018;ctx.beginPath();ctx.moveTo(-.078,-.65);ctx.lineTo(-.025,-.66);ctx.moveTo(.025,-.66);ctx.lineTo(.078,-.65);ctx.stroke();
+    ctx.strokeStyle="rgba(255,225,200,.48)";ctx.lineWidth=.012;ctx.beginPath();ctx.moveTo(0,-.615);ctx.lineTo(.008,-.58);ctx.stroke();
+    ctx.fillStyle="rgba(70,38,28,.16)";ctx.beginPath();ctx.ellipse(0,-.548,.065,.018,0,0,Math.PI*2);ctx.fill();
     ctx.strokeStyle="rgba(70,35,25,.55)";ctx.lineWidth=.012;
     ctx.beginPath();ctx.moveTo(-.035,-.565);ctx.quadraticCurveTo(0,-.55,.035,-.565);ctx.stroke();
     ctx.restore();
@@ -590,6 +602,14 @@ const goalkeepers = [
       ctx.shadowOffsetY=playerSize*.12;
       drawFootballer(px,py,playerSize,rotation,kit,false,name);
       ctx.restore();
+      // Compact floating labels keep teammates identifiable.
+      if(!highlight && name!=="Cristiano Ronaldo"){
+        ctx.save();const labelW=Math.max(38,playerSize*1.75),labelH=Math.max(11,playerSize*.34);
+        ctx.fillStyle="rgba(5,13,18,.72)";ctx.strokeStyle="rgba(255,255,255,.22)";ctx.lineWidth=1;
+        ctx.beginPath();ctx.roundRect(px-labelW/2,py-playerSize*.93,labelW,labelH,4);ctx.fill();ctx.stroke();
+        ctx.fillStyle="#f4f7f4";ctx.font="700 "+Math.max(6,playerSize*.19)+"px sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
+        ctx.fillText(name.length>15?name.slice(0,14)+"…":name,px,py-playerSize*.76);ctx.restore();
+      }
       if(highlight){
         ctx.save();ctx.fillStyle="#f4ffd0";ctx.font="900 "+Math.max(7,w*.012)+"px sans-serif";
         ctx.textAlign="center";ctx.textBaseline="bottom";
@@ -620,6 +640,10 @@ const goalkeepers = [
     ctx.fillStyle=ballGlow;ctx.beginPath();ctx.arc(bx,by,br,0,Math.PI*2);ctx.fill();
     ctx.strokeStyle="#17251c";ctx.lineWidth=Math.max(1,w*.0018);ctx.stroke();
     ctx.fillStyle="#17251c";ctx.beginPath();ctx.arc(bx,by,br*.35,0,Math.PI*2);ctx.fill();
+    // Five-panel ball seams and a specular highlight.
+    ctx.save();ctx.translate(bx,by);ctx.rotate(performance.now()*.0008);ctx.strokeStyle="rgba(23,37,28,.82)";ctx.lineWidth=Math.max(.7,br*.075);
+    for(let panel=0;panel<5;panel++){const a=panel*Math.PI*2/5;ctx.beginPath();ctx.moveTo(Math.cos(a)*br*.35,Math.sin(a)*br*.35);ctx.lineTo(Math.cos(a+.35)*br*.78,Math.sin(a+.35)*br*.78);ctx.stroke();}
+    ctx.fillStyle="rgba(255,255,255,.72)";ctx.beginPath();ctx.arc(-br*.35,-br*.42,br*.14,0,Math.PI*2);ctx.fill();ctx.restore();
     // Match label and score-friendly header.
     ctx.fillStyle="rgba(5,15,10,.78)";ctx.fillRect(w*.32,h*.012,w*.36,h*.045);
     ctx.strokeStyle="rgba(199,255,74,.42)";ctx.lineWidth=1;ctx.strokeRect(w*.32,h*.012,w*.36,h*.045);
