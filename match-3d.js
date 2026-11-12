@@ -79,7 +79,7 @@
     const halo=new T.Mesh(new T.RingGeometry(.68,.79,48),new T.MeshBasicMaterial({color:accentColor||"#75eaff",transparent:true,opacity:.16,side:T.DoubleSide,depthWrite:false}));
     halo.rotation.x=-Math.PI/2;halo.position.y=.035;root.add(halo);
     root.rotation.y=facing==="toward"?Math.PI:0;
-    root.scale.setScalar(1.12);root.userData={arms,legs,halo,label:nameLabel,isKeeper,phase:Math.random()*6.28};return root;
+    root.scale.setScalar(isKeeper?1.48:1.42);root.userData={arms,legs,halo,label:nameLabel,isKeeper,phase:Math.random()*6.28};return root;
   }
   function makeBall(){
     const group=new T.Group();
@@ -112,7 +112,7 @@
   function goal(z,direction){
     const root=new T.Group();scene.add(root);const frame=mat("#eaf6ff",{metalness:.55,roughness:.22});
     const net=new T.LineBasicMaterial({color:0xb9d9ec,transparent:true,opacity:.38});
-    const x1=-3.66,x2=3.66,top=2.44,back=z+direction*2.4;
+    const x1=-5.25,x2=5.25,top=3.05,back=z+direction*2.8;
     segment(root,[x1,.1,z],[x1,top,z],.095,frame);segment(root,[x2,.1,z],[x2,top,z],.095,frame);
     segment(root,[x1,top,z],[x2,top,z],.095,frame);
     segment(root,[x1,.1,z],[x1,.1,back],.035,frame);segment(root,[x2,.1,z],[x2,.1,back],.035,frame);
@@ -320,9 +320,9 @@
     const focusX=h2h?(m.player.x-.5)*FIELD_WIDTH:0,focusZ=h2h?(m.player.y-.5)*FIELD_LENGTH:0;
     const keeperMode=s.mode==="goalkeeping"||s.mode==="survival";
     const cameraX=h2h?focusX*.52:0;
-    const cameraY=h2h?36:keeperMode?39:46;
-    const cameraZ=h2h?focusZ+43:keeperMode?-3:72;
-    const lookZ=h2h?focusZ-5:keeperMode?-43:-8;
+    const cameraY=h2h?29:keeperMode?35:40;
+    const cameraZ=h2h?focusZ+34:keeperMode?-3:62;
+    const lookZ=h2h?focusZ-7:keeperMode?-43:-8;
     camera.position.x+=(cameraX-camera.position.x)*.065;
     camera.position.y+=(cameraY-camera.position.y)*.065;
     camera.position.z+=(cameraZ-camera.position.z)*.065;
