@@ -582,12 +582,43 @@ const goalkeepers = [
     const p=players.find(item=>item.name===value&&!isGoalkeeperPosition(item.role)&&isUnlocked(item,false));
     return p?{name:p.name,ovr:matchOvr(p),role:p.role||"CM"}:{...ACADEMY_TEAMMATES[index]||ACADEMY_TEAMMATES[0]};
   }
+  // FC Mobile 27 Team OVR: ceil(average base OVR) + ceil(average rank) + active Level 5 badge bonuses.
+  // Apex currently fields six players, so the same calculation is applied to those six active slots.
+  let teamRanks={};
+  let activeTeamBadgeCount=0;
+  function normalizeTeamRank(value){
+    const rank=Number(value);
+    return Number.isFinite(rank)?Math.max(0,Math.min(5,Math.floor(rank))):0;
+  }
+  function teamRankRef(slot){
+    if(slot==="captain")return "player:"+selectedPlayer;
+    if(slot==="keeper")return "goalkeeper:"+selectedGoalkeeper;
+    const index=Number(String(slot).replace("mate",""));
+    const name=matchSquadNames[index]||("academy:"+index);
+    return String(name).startsWith("academy:")?String(name):"player:"+name;
+  }
+  function getTeamRank(slot){
+    return normalizeTeamRank(teamRanks[teamRankRef(slot)]);
+  }
+  function setTeamRank(slot,value){
+    teamRanks[teamRankRef(slot)]=normalizeTeamRank(value);
+  }
+  function calculateTeamOvr(){
+    const members=[
+      {slot:"captain",baseOvr:matchOvr(players.find(p=>p.name===selectedPlayer))},
+      ...matchSquadNames.map((name,index)=>({slot:"mate"+index,baseOvr:matchPlayerInfo(name,index).ovr})),
+      {slot:"keeper",baseOvr:matchOvr(goalkeepers.find(p=>p.name===selectedGoalkeeper))}
+    ];
+    const playerCount=members.length||1;
+    const totalBase=members.reduce((sum,member)=>sum+(Number(member.baseOvr)||0),0);
+    const totalRank=members.reduce((sum,member)=>sum+getTeamRank(member.slot),0);
+    const basePart=Math.ceil(totalBase/playerCount);
+    const rankPart=Math.ceil(totalRank/playerCount);
+    const badges=Math.max(0,Math.min(3,Math.floor(Number(activeTeamBadgeCount)||0)));
+    return {total:basePart+rankPart+badges,totalBase,totalRank,playerCount,basePart,rankPart,badges};
+  }
   function matchTeamOverall(){
-    const chosen=matchSquadNames.map((name,i)=>matchPlayerInfo(name,i));
-    const captain=players.find(p=>p.name===selectedPlayer);
-    const keeper=goalkeepers.find(p=>p.name===selectedGoalkeeper);
-    const ratings=[matchOvr(captain),...chosen.map(p=>p.ovr),matchOvr(keeper)];
-    return Math.round(ratings.reduce((sum,value)=>sum+value,0)/ratings.length);
+    return calculateTeamOvr().total;
   }
   function renderMatchSquadPicker(){
     const grid=$("matchSquadSlots");if(!grid)return;
@@ -649,6 +680,14 @@ const goalkeepers = [
       if(FORMATION_PRESETS[saved.formation])teamFormation=saved.formation;
       if(TEAM_KITS[saved.kit])teamKit=saved.kit;
       if(KEEPER_KITS[saved.keeperKit])teamKeeperKit=saved.keeperKit;
+      if(saved.ranks&&typeof saved.ranks==="object"&&!Array.isArray(saved.ranks)){
+        const restoredRanks={};
+        Object.entries(saved.ranks).forEach(([key,value])=>{
+          if(typeof key==="string"&&key.length<=180)restoredRanks[key]=normalizeTeamRank(value);
+        });
+        teamRanks=restoredRanks;
+      }
+      if(saved.activeBadges!==undefined)activeTeamBadgeCount=Math.max(0,Math.min(3,Math.floor(Number(saved.activeBadges)||0)));
     }
   }catch(_){}
   function applyTeamFormation(){
@@ -688,8 +727,21 @@ const goalkeepers = [
     $("teamLayoutFormation").value=teamFormation;
     $("teamLayoutKit").value=teamKit;
     $("teamLayoutKeeperKit").value=teamKeeperKit;
+    document.querySelectorAll("[data-team-rank]").forEach(select=>{
+      const slot=select.dataset.teamRank;
+      select.value=String(getTeamRank(slot));
+      select.onchange=()=>{setTeamRank(slot,select.value);renderTeamLayout();};
+    });
+    const badgeSelect=$("teamLayoutBadgeCount");
+    if(badgeSelect){
+      badgeSelect.value=String(activeTeamBadgeCount);
+      badgeSelect.onchange=()=>{activeTeamBadgeCount=Math.max(0,Math.min(3,Math.floor(Number(badgeSelect.value)||0)));renderTeamLayout();};
+    }
+    const calculation=calculateTeamOvr();
     const overall=$("teamLayoutOvr");
-    if(overall)overall.textContent=matchTeamOverall()+" OVR";
+    if(overall)overall.textContent=calculation.total+" OVR";
+    const breakdown=$("teamLayoutOvrBreakdown");
+    if(breakdown)breakdown.textContent="Base "+calculation.totalBase+"/"+calculation.playerCount+" → "+calculation.basePart+"  +  Rank "+calculation.totalRank+"/"+calculation.playerCount+" → "+calculation.rankPart+"  +  Badges "+calculation.badges;
   }
   function openTeamLayout(){
     window.ApexMatch3D?.pause?.();
@@ -710,7 +762,7 @@ const goalkeepers = [
     selectedPlayer=captain;selectedGoalkeeper=keeper;matchSquadNames=squad;
     teamFormation=$("teamLayoutFormation").value;teamKit=$("teamLayoutKit").value;teamKeeperKit=$("teamLayoutKeeperKit").value;
     applyTeamFormation();applyCurrentTeamKits();
-    try{localStorage.setItem("apexMatchSquadV1",JSON.stringify(matchSquadNames));localStorage.setItem("apexTeamLayoutV1",JSON.stringify({player:selectedPlayer,goalkeeper:selectedGoalkeeper,squad:matchSquadNames,formation:teamFormation,kit:teamKit,keeperKit:teamKeeperKit}));}catch(_){}
+    try{localStorage.setItem("apexMatchSquadV1",JSON.stringify(matchSquadNames));localStorage.setItem("apexTeamLayoutV1",JSON.stringify({player:selectedPlayer,goalkeeper:selectedGoalkeeper,squad:matchSquadNames,formation:teamFormation,kit:teamKit,keeperKit:teamKeeperKit,ranks:{...teamRanks},activeBadges:activeTeamBadgeCount}));}catch(_){}
     renderPlayers();renderMatchSquadPicker();renderTeamLayout();
     $("teamLayoutStatus").textContent="TEAM SAVED · "+selectedPlayer+" · "+selectedGoalkeeper+" · "+teamFormation;
     toast("TEAM LAYOUT SAVED · "+matchTeamOverall()+" OVR");
