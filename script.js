@@ -1846,11 +1846,12 @@ const goalkeepers = [
       const distanceFactor=Math.max(0,Math.min(1,(.53-match.player.y)/.40));
       const wide=Math.abs(match.player.x-.5);
       const ovr=Math.max(70,Number(match.controlledRating)||90);
-      const targetX=match.player.x<.5?.68:.32;
+      // Aim to the far inside corner, keeping the target inside the enlarged goal frame.
+      const targetX=match.player.x<.5?.59:.41;
       const keeperRating=108;
       const shotQuality=.48+distanceFactor*.19+Math.min(.16,(ovr-90)*.0015)-wide*.24;
-      const saveDifficulty=Math.max(.18,Math.min(.82,shotQuality-(keeperRating-100)*.002));
-      const scored=Math.random()<Math.max(.18,Math.min(.78,saveDifficulty));
+      const saveDifficulty=Math.max(.18,Math.min(.88,shotQuality-(keeperRating-100)*.002));
+      const scored=Math.random()<Math.max(.32,Math.min(.88,saveDifficulty+.12));
       const start=performance.now();
       match.lastShot={start,scored,x:targetX};
       match.shotAnim={start,duration:720,fromX:match.ball.x,fromY:match.ball.y,toX:targetX,toY:.025,scored};
