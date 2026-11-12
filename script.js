@@ -83,6 +83,21 @@ const goalkeepers = [
   const canvas = $("pitch"), ctx = canvas.getContext("2d");
   let cw = 900, ch = 620, lastResult = "", shotTimer = null, soundOn = false, masterVolume = 0.65, passcodeFailures=0, passcodeLockUntil=0, lastShotReplay=null, celebrationUntil=0;
   const match = {active:false,finished:false,clock:0,lastTick:0,player:{x:.5,y:.72},rival:{x:.5,y:.28},ball:{x:.5,y:.72},move:"",sprint:false,hasBall:true,playerGoals:0,rivalGoals:0,rankPoints:0,rank:"ROOKIE III",lastRivalShot:0};
+  function getApex3DState(){
+    return {
+      mode,selectedPlayer,selectedGoalkeeper,score,attemptLabel:"ATTEMPT "+attempt,
+      finished:match.finished,aim:{x:aim.x,y:aim.y},
+      match:{
+        active:match.active,finished:match.finished,clock:match.clock,
+        player:{x:match.player.x,y:match.player.y},rival:{x:match.rival.x,y:match.rival.y},
+        ball:{x:match.ball.x,y:match.ball.y},hasBall:match.hasBall,
+        playerGoals:match.playerGoals,rivalGoals:match.rivalGoals
+      },
+      ballAnim:ballAnim?Object.assign({},ballAnim):null,
+      keeperMotion:keeperMotion?Object.assign({},keeperMotion):null
+    };
+  }
+  if(window.ApexMatch3D&&canvas)window.ApexMatch3D.init(canvas,getApex3DState);
 
   let apexAdminMode=false;
   let ownedDraftCardIds=new Set();
@@ -375,7 +390,7 @@ const goalkeepers = [
   function playCue(kind){if(!soundOn)return;const ac=getMusicContext();if(!ac)return;try{ac.resume();const t=ac.currentTime+.01;if(kind==="goal"){tone(523,.12,"triangle",.05,t);tone(659,.16,"triangle",.045,t+.12);tone(784,.22,"triangle",.04,t+.25);}else{tone(220,.14,"sine",.035,t);tone(165,.18,"sine",.025,t+.12);}}catch(_){}}
   function resizeCanvas(){
     const rect=canvas.getBoundingClientRect();if(!rect.width)return;
-    const dpr=Math.min(window.devicePixelRatio||1,1.75);canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.width/1.36*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);cw=rect.width;ch=rect.width/1.36;drawPitch();
+    const dpr=Math.min(window.devicePixelRatio||1,1.75);canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.width/1.36*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);cw=rect.width;ch=rect.width/1.36;window.ApexMatch3D?.resize?.();drawPitch();
   }
   function drawFootballer(cx,cy,size,rotation,jersey,isKeeper,playerName){
     const name=playerName||"",known={
@@ -661,7 +676,7 @@ const goalkeepers = [
   }
   function drawPitch(){
     if(!ctx||!cw||!ch)return;
-    const w=cw,h=ch;ctx.clearRect(0,0,w,h);
+    const w=cw,h=ch;ctx.clearRect(0,0,w,h);window.ApexMatch3D?.sync?.();
     if(mode==="headtohead"){drawFullMatchPitch();return;}
     const grad=ctx.createLinearGradient(0,0,0,h);grad.addColorStop(0,"#1c673b");grad.addColorStop(1,"#0c3c25");ctx.fillStyle=grad;ctx.fillRect(0,0,w,h);
     const stripes=10;for(let i=0;i<stripes;i++){ctx.fillStyle=i%2?"rgba(0,0,0,.055)":"rgba(205,255,203,.045)";ctx.fillRect(i*w/stripes,0,w/stripes,h)}
