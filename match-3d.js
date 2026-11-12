@@ -406,9 +406,9 @@
       hud=document.createElement("div");hud.className="apex-3d-hud";
       hud.innerHTML='<div class="apex-3d-scoreboard"><div class="apex-3d-hud-top"><span class="apex-3d-hud-brand">APEX <b>STRIKERS</b></span><span class="apex-3d-hud-live"><i></i> LIVE ENGINE</span></div><div class="apex-3d-hud-middle"><span class="apex-3d-hud-mode">MATCH</span><strong class="apex-3d-hud-score">0 : 0</strong><span class="apex-3d-hud-clock">00:00</span></div><div class="apex-3d-hud-status">3D MATCH ENGINE · LIVE</div></div>';
       wrap.appendChild(hud);hudMode=hud.querySelector(".apex-3d-hud-mode");hudScore=hud.querySelector(".apex-3d-hud-score");hudClock=hud.querySelector(".apex-3d-hud-clock");hudStatus=hud.querySelector(".apex-3d-hud-status");
-      lowPowerMode=window.matchMedia?.("(max-width: 800px)").matches||Number(navigator.hardwareConcurrency||8)<=4;
+      lowPowerMode=window.matchMedia?.("(max-width: 800px)").matches||Number(navigator.hardwareConcurrency||8)<=4||Number(navigator.deviceMemory||8)<=4||Boolean(navigator.connection?.saveData);
       renderer=new T.WebGLRenderer({canvas:glCanvas,antialias:!lowPowerMode,alpha:false,powerPreference:"high-performance"});
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,lowPowerMode?1:1.25));renderer.shadowMap.enabled=!lowPowerMode;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,lowPowerMode?1:1.25));renderer.shadowMap.enabled=!lowPowerMode;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=!lowPowerMode;renderer.shadowMap.needsUpdate=true;
       renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.16;
       if("outputColorSpace" in renderer)renderer.outputColorSpace=T.SRGBColorSpace;
       scene=new T.Scene();camera=new T.PerspectiveCamera(47,1,.1,400);camera.position.set(0,23,29);camera.zoom=cameraZoom;camera.updateProjectionMatrix();
