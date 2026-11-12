@@ -234,7 +234,7 @@ app.use(cors({
 app.use(express.json({ limit: "12kb", strict: true }));
 app.use((req, res, next) => { if (req.path.startsWith("/api/")) res.setHeader("Cache-Control", "no-store, max-age=0"); next(); });
 app.use(rateLimit({ windowMs: 60 * 1000, limit: 90, standardHeaders: "draft-7", legacyHeaders: false }));
-app.get("/health", (_req, res) => res.json({ ok: true, service: "Eclipse Arena API" }));
+app.get("/health", (_req, res) => res.json({ ok: true, service: "Apex Strikers API", owner2FAConfigured: isAdminTotpConfigured() }));
 // Public, read-only comments endpoint. Keep YOUTUBE_API_KEY on the server, never in frontend files.
 app.get("/api/youtube/comments", youtubeCommentsLimiter, async (req, res) => {
   const videoId = String(req.query.videoId || "");
