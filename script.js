@@ -165,18 +165,19 @@ const goalkeepers = [
   const canvas = $("pitch"), ctx = canvas.getContext("2d");
   let cw = 900, ch = 620, lastResult = "", shotTimer = null, soundOn = false, masterVolume = 0.65, passcodeFailures=0, passcodeLockUntil=0, lastShotReplay=null, celebrationUntil=0;
   const MATCH_FIELD_WIDTH=76,MATCH_FIELD_LENGTH=118;
-  const MATCH_TEAM_FORMATION=[
+  let MATCH_TEAM_FORMATION=[
     {x:.22,y:.71,role:"LW"},{x:.39,y:.61,role:"ST"},
     {x:.61,y:.61,role:"CAM"},{x:.78,y:.71,role:"RW"}
   ];
-  const RIVAL_TEAM_FORMATION=[
+  let RIVAL_TEAM_FORMATION=[
     {x:.22,y:.29,role:"RW"},{x:.39,y:.39,role:"ST"},
     {x:.61,y:.39,role:"CAM"},{x:.78,y:.29,role:"LW"}
   ];
   const match = {active:false,finished:false,clock:0,lastTick:0,player:{x:.5,y:.76},rival:{x:.5,y:.24},ball:{x:.5,y:.76},move:"",moveX:0,moveY:0,sprint:false,hasBall:true,playerGoals:0,rivalGoals:0,rankPoints:0,rank:"ROOKIE III",lastRivalShot:0,rivalHasBall:false,passUntil:0,passFromX:.5,passFromY:.76,passToX:.5,passToY:.5,passReceiverSlot:-1,passStartedAt:0,controlledName:"Muhammad Arham",controlledRating:122,controlledRole:"ST",teammates:[],rivalTeammates:[],lastShot:null};
   function getApex3DState(){
     return {
-      mode,selectedPlayer:match.active?match.controlledName:selectedPlayer,selectedGoalkeeper,score,attemptLabel:"ATTEMPT "+attempt,
+      mode,selectedPlayer:match.active?match.controlledName:selectedPlayer,selectedGoalkeeper,
+      goalkeeperRating:(goalkeepers.find(g=>g.name===selectedGoalkeeper)||goalkeepers[0]).rating,score,attemptLabel:"ATTEMPT "+attempt,
       finished:match.finished,aim:{x:aim.x,y:aim.y},
       match:{
         active:match.active,finished:match.finished,clock:match.clock,
@@ -622,6 +623,98 @@ const goalkeepers = [
       drawPitch();
     }));
   }
+  const FORMATION_PRESETS={
+    "4-3-3":[{x:.22,y:.71,role:"LW"},{x:.39,y:.61,role:"ST"},{x:.61,y:.61,role:"CAM"},{x:.78,y:.71,role:"RW"}],
+    "4-2-3-1":[{x:.22,y:.66,role:"LM"},{x:.39,y:.58,role:"CAM"},{x:.61,y:.58,role:"CAM"},{x:.78,y:.66,role:"RM"}],
+    "4-4-2":[{x:.22,y:.68,role:"LM"},{x:.39,y:.56,role:"ST"},{x:.61,y:.56,role:"ST"},{x:.78,y:.68,role:"RM"}],
+    "3-5-2":[{x:.22,y:.67,role:"LM"},{x:.39,y:.60,role:"CM"},{x:.61,y:.60,role:"CM"},{x:.78,y:.67,role:"RM"}]
+  };
+  const TEAM_KITS={
+    apex:{name:"APEX CYAN",home:"#20c9ec",accent:"#dffaff",keeper:"#c7ff4a",away:"#e34b69"},
+    royal:{name:"ROYAL BLUE",home:"#315de8",accent:"#f2f6ff",keeper:"#ffb52e",away:"#e34b69"},
+    crimson:{name:"CRIMSON RED",home:"#b72b45",accent:"#fff0f2",keeper:"#4dd8ff",away:"#315de8"},
+    classic:{name:"CLASSIC WHITE",home:"#e8edf4",accent:"#263c58",keeper:"#9bff58",away:"#b72b45"}
+  };
+  const KEEPER_KITS={
+    neon:"#c7ff4a",gold:"#f2bd43",purple:"#a879ff",ice:"#62d9ff"
+  };
+  let teamFormation="4-3-3",teamKit="apex",teamKeeperKit="neon";
+  try{
+    const saved=JSON.parse(localStorage.getItem("apexTeamLayoutV1")||"null");
+    if(saved&&typeof saved==="object"){
+      if(players.some(p=>p.name===saved.player&&!isGoalkeeperPosition(p.role)&&isUnlocked(p,false)))selectedPlayer=saved.player;
+      if(goalkeepers.some(p=>p.name===saved.goalkeeper&&isUnlocked(p,true)))selectedGoalkeeper=saved.goalkeeper;
+      if(Array.isArray(saved.squad)&&saved.squad.length===4)matchSquadNames=saved.squad.slice(0,4);
+      if(FORMATION_PRESETS[saved.formation])teamFormation=saved.formation;
+      if(TEAM_KITS[saved.kit])teamKit=saved.kit;
+      if(KEEPER_KITS[saved.keeperKit])teamKeeperKit=saved.keeperKit;
+    }
+  }catch(_){}
+  function applyTeamFormation(){
+    MATCH_TEAM_FORMATION=FORMATION_PRESETS[teamFormation].map(p=>({...p}));
+    RIVAL_TEAM_FORMATION=MATCH_TEAM_FORMATION.map(p=>({x:p.x,y:1-p.y,role:p.role}));
+  }
+  function applyCurrentTeamKits(){
+    const kit=TEAM_KITS[teamKit]||TEAM_KITS.apex;
+    window.ApexMatch3D?.setKits?.(kit.home,kit.accent,KEEPER_KITS[teamKeeperKit]||KEEPER_KITS.neon,kit.away);
+  }
+  function fillTeamLayoutSelect(select,items,selected){
+    if(!select)return;
+    select.replaceChildren();
+    items.forEach(item=>{
+      const option=document.createElement("option");option.value=item.value;option.textContent=item.label;
+      option.selected=item.value===selected;select.appendChild(option);
+    });
+    if(!items.some(item=>item.value===selected)&&items.length)select.value=items[0].value;
+  }
+  function renderTeamLayout(){
+    const captain=$("teamLayoutCaptain"),keeper=$("teamLayoutKeeper");
+    if(!captain||!keeper)return;
+    const outfield=players.filter(p=>!isGoalkeeperPosition(p.role)&&isUnlocked(p,false));
+    const availableKeepers=goalkeepers.filter(p=>isUnlocked(p,true));
+    fillTeamLayoutSelect(captain,outfield.map(p=>({value:p.name,label:p.name+" · "+matchOvr(p)+" OVR"})),selectedPlayer);
+    fillTeamLayoutSelect(keeper,availableKeepers.map(p=>({value:p.name,label:p.name+" · "+p.rating+" OVR"})),selectedGoalkeeper);
+    const used=new Set();
+    for(let i=0;i<4;i++){
+      const select=$("teamLayoutMate"+i);if(!select)continue;
+      const saved=matchSquadNames[i]||("academy:"+i);
+      const options=[{value:"academy:"+i,label:"APEX ACADEMY #"+(i+1)+" · 90 OVR"}];
+      outfield.filter(p=>p.name!==captain.value&&(p.name===saved||!used.has(p.name))).forEach(p=>options.push({value:p.name,label:p.name+" · "+matchOvr(p)+" OVR"}));
+      fillTeamLayoutSelect(select,options,saved);
+      if(!String(select.value).startsWith("academy:"))used.add(select.value);
+      select.onchange=()=>renderTeamLayout();
+    }
+    $("teamLayoutFormation").value=teamFormation;
+    $("teamLayoutKit").value=teamKit;
+    $("teamLayoutKeeperKit").value=teamKeeperKit;
+    const overall=$("teamLayoutOvr");
+    if(overall)overall.textContent=matchTeamOverall()+" OVR";
+  }
+  function openTeamLayout(){
+    $("homeScreen").classList.add("hidden");$("gameScreen").classList.add("hidden");$("youtubeScreen").classList.add("hidden");
+    $("teamLayoutScreen").classList.remove("hidden");renderTeamLayout();window.scrollTo({top:0,behavior:"smooth"});
+  }
+  function closeTeamLayout(){
+    $("teamLayoutScreen").classList.add("hidden");$("homeScreen").classList.remove("hidden");
+    setArenaView("home");window.scrollTo({top:0,behavior:"auto"});
+  }
+  $("teamLayoutCaptain")?.addEventListener("change",renderTeamLayout);
+  $("teamLayoutKeeper")?.addEventListener("change",renderTeamLayout);
+  $("saveTeamLayoutBtn")?.addEventListener("click",()=>{
+    const captain=$("teamLayoutCaptain").value,keeper=$("teamLayoutKeeper").value;
+    const squad=[0,1,2,3].map(i=>$("teamLayoutMate"+i).value);
+    if(new Set(squad).size!==4){$("teamLayoutStatus").textContent="Each teammate slot needs a different player.";return;}
+    if(squad.some(name=>name===captain)){ $("teamLayoutStatus").textContent="Choose a different player for each position.";return;}
+    selectedPlayer=captain;selectedGoalkeeper=keeper;matchSquadNames=squad;
+    teamFormation=$("teamLayoutFormation").value;teamKit=$("teamLayoutKit").value;teamKeeperKit=$("teamLayoutKeeperKit").value;
+    applyTeamFormation();applyCurrentTeamKits();
+    try{localStorage.setItem("apexMatchSquadV1",JSON.stringify(matchSquadNames));localStorage.setItem("apexTeamLayoutV1",JSON.stringify({player:selectedPlayer,goalkeeper:selectedGoalkeeper,squad:matchSquadNames,formation:teamFormation,kit:teamKit,keeperKit:teamKeeperKit}));}catch(_){}
+    renderPlayers();renderMatchSquadPicker();renderTeamLayout();
+    $("teamLayoutStatus").textContent="TEAM SAVED · "+selectedPlayer+" · "+selectedGoalkeeper+" · "+teamFormation;
+    toast("TEAM LAYOUT SAVED · "+matchTeamOverall()+" OVR");
+  });
+  $("teamLayoutBackBtn")?.addEventListener("click",closeTeamLayout);
+  applyTeamFormation();
   function buildMatchTeams(){
     const captain=players.find(p=>p.name===selectedPlayer);
     match.controlledName=selectedPlayer;match.controlledRating=matchOvr(captain);match.controlledRole=captain?.role||"ST";
@@ -1059,16 +1152,16 @@ const goalkeepers = [
   const modeCategories={penalty:"attack",freekick:"attack",longshot:"attack",goalkeeping:"keeper",random:"attack",vsattack:"attack",crossbar:"attack",survival:"keeper",headtohead:"attack"};
   function renderModeTools(){
     const q=$("modeSearch").value.trim().toLowerCase(),f=$("modeFilter").value;
-    modeGrid.querySelectorAll("[data-mode],[data-open-youtube]").forEach(card=>{
-      const key=card.dataset.mode||"youtube",txt=(card.innerText||"").toLowerCase();
+    modeGrid.querySelectorAll("[data-mode],[data-open-youtube],[data-open-team-layout]").forEach(card=>{
+      const key=card.dataset.mode||(card.hasAttribute("data-open-youtube")?"youtube":"teamlayout"),txt=(card.innerText||"").toLowerCase();
       card.hidden=!((!q||txt.includes(q)||key.includes(q))&&(f==="all"||(f==="saved"&&modeFavourites.has(key))||(f==="recent"&&recentModes.includes(key))||(f==="attack"&&modeCategories[key]==="attack")||(f==="keeper"&&modeCategories[key]==="keeper")));
       const star=card.querySelector(".mode-favourite");if(star)star.textContent=modeFavourites.has(key)?"★":"☆";
     });
     $("arenaStats").textContent=career.goals+" goals · "+career.saves+" saves · "+career.xp+" XP · Best "+career.bestScore;
   }
-  modeGrid.querySelectorAll("[data-mode],[data-open-youtube]").forEach(card=>{
+  modeGrid.querySelectorAll("[data-mode],[data-open-youtube],[data-open-team-layout]").forEach(card=>{
     // Mode cards are already buttons, so the favourite control must not be another nested button.
-    const key=card.dataset.mode||"youtube",star=document.createElement("span");
+    const key=card.dataset.mode||(card.hasAttribute("data-open-youtube")?"youtube":"teamlayout"),star=document.createElement("span");
     star.className="mode-favourite";star.textContent=modeFavourites.has(key)?"★":"☆";
     star.setAttribute("role","button");star.setAttribute("tabindex","0");
     star.setAttribute("aria-label","Toggle favourite for "+key);
@@ -1490,6 +1583,7 @@ const goalkeepers = [
     if(mode==="headtohead")onlineCfg.onlineMatch=false;
     match.active=mode==="headtohead";match.finished=false;match.clock=0;match.playerGoals=0;match.rivalGoals=h2hChallenge==="comeback"?2:0;match.rankPoints=0;match.rank="ROOKIE III";match.player={x:.5,y:.76};match.rival={x:.5,y:.24};match.ball={x:.5,y:.76};match.move="";match.moveX=0;match.moveY=0;match.sprint=false;match.hasBall=true;match.rivalHasBall=false;match.lastRivalShot=0;match.passUntil=0;match.passReceiverSlot=-1;match.lastShot=null;match.teammates=[];match.rivalTeammates=[];match.controlledName=selectedPlayer;
     if(match.active){renderMatchSquadPicker();buildMatchTeams();}
+    applyCurrentTeamKits();
     $("matchHud").classList.toggle("hidden",!match.active);$("matchControls").classList.toggle("hidden",!match.active);$("matchSquadPicker")?.classList.toggle("hidden",!match.active);$("matchCameraControls").classList.remove("hidden");$("matchResult").classList.add("hidden");$("matchResult").textContent="";
     $("powerSlider").classList.toggle("hidden",match.active);$("powerSlider").disabled=match.active;$("shootBtn").classList.toggle("hidden",match.active);$("matchRank").textContent="ROOKIE III · 0 PTS";
     score=0;attempt=1;if(mode==="headtohead"||mode==="vsattack"){opponentScore=0;matchMinute=0;matchAttacks=0;}
@@ -1777,6 +1871,8 @@ const goalkeepers = [
   window.addEventListener("blur",()=>{heldMatchKeys.clear();match.moveX=0;match.moveY=0;match.sprint=false;});
   document.querySelectorAll("[data-mode]").forEach(b=>b.addEventListener("click",()=>startMode(b.dataset.mode,b.dataset.challenge||"standard")));
   document.addEventListener("click",e=>{
+    const teamButton=e.target.closest("[data-open-team-layout]");
+    if(teamButton){e.preventDefault();openTeamLayout();return;}
     const youtubeButton=e.target.closest("[data-open-youtube]");
     if(!youtubeButton)return;
     e.preventDefault();
