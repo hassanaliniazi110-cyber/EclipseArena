@@ -122,6 +122,7 @@
             <button class="mode-card crossbar" data-mode="crossbar"><span class="mode-number">07</span><span class="mode-icon">🎯</span><span class="mode-title">CROSSBAR CHALLENGE</span><span class="mode-desc">Hit the target zone beneath the bar.</span><span class="mode-arrow">↗</span></button>
             <button class="mode-card goalie survival-mode" data-mode="survival"><span class="mode-number">08</span><span class="mode-icon">🧤</span><span class="mode-title">SURVIVAL SAVES</span><span class="mode-desc">Choose your dive and keep saving.</span><span class="mode-arrow">↗</span></button>
             <button class="mode-card youtube-area" type="button" data-open-youtube><span class="mode-number">12</span><span class="mode-icon">▶</span><span class="mode-title">YOUTUBE AREA</span><span class="mode-desc">Search channels and watch videos.</span><span class="mode-arrow">↗</span></button>
+            <button class="mode-card team-layout-mode" type="button" data-open-team-layout><span class="mode-number">13</span><span class="mode-icon">🧩</span><span class="mode-title">TEAM LAYOUT</span><span class="mode-desc">Pick your players, goalkeeper, formation and kits.</span><span class="mode-arrow">↗</span></button>
           </div>
         </section>
 
@@ -313,6 +314,42 @@
           <div class="youtube-player-wrap"><iframe id="youtubeAreaPlayer" title="YouTube Area video player" src="about:blank" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
           <p id="youtubeAreaStatus" class="music-status" aria-live="polite">Choose PLAY IN GAME for supported playlists, or OPEN CHANNEL to visit a creator on YouTube. Some videos may block embedded playback.</p>
         </section>
+      </section>
+      <section id="teamLayoutScreen" class="screen team-layout-screen hidden">
+        <div class="game-header team-layout-header">
+          <button id="teamLayoutBackBtn" class="back-btn" type="button">← HOME</button>
+          <div><p class="eyebrow">APEX STRIKERS · CLUB BUILDER</p><h2>TEAM <em>LAYOUT</em></h2></div>
+          <span class="team-layout-badge">YOUR STARTING XI</span>
+        </div>
+        <p class="team-layout-intro">Build your match squad. Your choices are saved on this device and used in H2H matches.</p>
+        <div class="team-layout-grid">
+          <section class="team-layout-card">
+            <p class="eyebrow">STARTING PLAYERS</p>
+            <label class="team-layout-field">CAPTAIN / CONTROLLED PLAYER<select id="teamLayoutCaptain"></select></label>
+            <label class="team-layout-field">GOALKEEPER<select id="teamLayoutKeeper"></select></label>
+            <div class="team-layout-slots">
+              <label class="team-layout-field">TEAMMATE 1<select id="teamLayoutMate0"></select></label>
+              <label class="team-layout-field">TEAMMATE 2<select id="teamLayoutMate1"></select></label>
+              <label class="team-layout-field">TEAMMATE 3<select id="teamLayoutMate2"></select></label>
+              <label class="team-layout-field">TEAMMATE 4<select id="teamLayoutMate3"></select></label>
+            </div>
+          </section>
+          <section class="team-layout-card">
+            <p class="eyebrow">TACTICS & APPEARANCE</p>
+            <label class="team-layout-field">FORMATION<select id="teamLayoutFormation">
+              <option value="4-3-3">4-3-3 ATTACK</option><option value="4-2-3-1">4-2-3-1</option><option value="4-4-2">4-4-2</option><option value="3-5-2">3-5-2</option>
+            </select></label>
+            <label class="team-layout-field">OUTFIELD KIT<select id="teamLayoutKit">
+              <option value="apex">APEX CYAN</option><option value="royal">ROYAL BLUE</option><option value="crimson">CRIMSON RED</option><option value="classic">CLASSIC WHITE</option>
+            </select></label>
+            <label class="team-layout-field">GOALKEEPER KIT<select id="teamLayoutKeeperKit">
+              <option value="neon">NEON GREEN</option><option value="gold">LEGEND GOLD</option><option value="purple">VIOLET</option><option value="ice">ICE BLUE</option>
+            </select></label>
+            <div class="team-layout-rating"><span>TEAM OVERALL</span><strong id="teamLayoutOvr">-- OVR</strong></div>
+            <button id="saveTeamLayoutBtn" class="primary-btn team-layout-save" type="button">SAVE TEAM LAYOUT ✓</button>
+            <p id="teamLayoutStatus" class="team-layout-status" role="status">Choose your players and save your lineup.</p>
+          </section>
+        </div>
       </section>
     </main>
 \n    <footer><span>© APEX STRIKERS</span><span>PLAY FAIR. PLAY BOLD.</span><button id="resetBtn">RESET GAME ↻</button></footer>
