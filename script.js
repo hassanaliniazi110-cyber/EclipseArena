@@ -458,6 +458,13 @@ const goalkeepers = [
     const shirtGradient=ctx.createLinearGradient(-.23,-.43,.24,-.04);
     shirtGradient.addColorStop(0,"rgba(255,255,255,.34)");shirtGradient.addColorStop(.42,jersey);shirtGradient.addColorStop(1,"rgba(0,0,0,.28)");
     ctx.fillStyle=shirtGradient;ctx.beginPath();ctx.moveTo(-.19,-.43);ctx.lineTo(.19,-.43);ctx.lineTo(.25,-.05);ctx.lineTo(-.25,-.05);ctx.closePath();ctx.fill();
+    // Premium match kit: central fabric panel, subtle woven texture and breathing movement.
+    const breathe=1+Math.sin(gaitPhase*.5)*.012;
+    ctx.save();ctx.scale(1,breathe);
+    ctx.fillStyle="rgba(255,255,255,.10)";ctx.beginPath();ctx.moveTo(-.055,-.415);ctx.lineTo(.055,-.415);ctx.lineTo(.075,-.075);ctx.lineTo(-.075,-.075);ctx.closePath();ctx.fill();
+    ctx.strokeStyle="rgba(255,255,255,.13)";ctx.lineWidth=.009;
+    for(let seam=-2;seam<=2;seam++){ctx.beginPath();ctx.moveTo(seam*.052,-.39);ctx.lineTo(seam*.052,-.09);ctx.stroke();}
+    ctx.restore();
     ctx.strokeStyle="rgba(255,255,255,.3)";ctx.lineWidth=.018;ctx.beginPath();ctx.moveTo(-.14,-.37);ctx.lineTo(-.08,-.09);ctx.moveTo(.14,-.37);ctx.lineTo(.08,-.09);ctx.stroke();
     // Shirt seams, shoulder panels and collar.
     ctx.strokeStyle=p.trim;ctx.lineWidth=.025;ctx.beginPath();ctx.moveTo(-.17,-.40);ctx.lineTo(-.11,-.07);ctx.moveTo(.17,-.40);ctx.lineTo(.11,-.07);ctx.stroke();
@@ -527,6 +534,19 @@ const goalkeepers = [
       ctx.fillStyle=i%2?"rgba(0,0,0,.065)":"rgba(220,255,220,.045)";
       ctx.fillRect(i*w/14,0,w/14,h);
     }
+    // Fine-cut turf lanes and subtle stadium floodlight beams add depth without obscuring play.
+    for(let i=0;i<34;i++){
+      const yy=h*(.04+i*.028);
+      ctx.strokeStyle=i%2?"rgba(225,255,230,.025)":"rgba(0,20,10,.045)";
+      ctx.lineWidth=Math.max(1,h*.0012);ctx.beginPath();ctx.moveTo(w*.055,yy);ctx.lineTo(w*.945,yy);ctx.stroke();
+    }
+    ctx.save();ctx.globalCompositeOperation="screen";
+    for(let i=0;i<3;i++){
+      const beam=ctx.createLinearGradient(w*(.12+i*.38),0,w*(.3+i*.25),h*.72);
+      beam.addColorStop(0,"rgba(220,255,235,.055)");beam.addColorStop(1,"rgba(220,255,235,0)");
+      ctx.fillStyle=beam;ctx.beginPath();ctx.moveTo(w*(.08+i*.38),0);ctx.lineTo(w*(.3+i*.38),0);ctx.lineTo(w*(.55+i*.18),h*.78);ctx.lineTo(w*(.2+i*.18),h*.78);ctx.closePath();ctx.fill();
+    }
+    ctx.restore();
     const glow=ctx.createRadialGradient(w*.5,h*.5,5,w*.5,h*.5,w*.62);
     glow.addColorStop(0,"rgba(180,255,190,.08)");glow.addColorStop(1,"rgba(0,0,0,.18)");
     ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);
@@ -563,7 +583,13 @@ const goalkeepers = [
         ctx.ellipse(px,py+playerSize*.34,playerSize*.58,playerSize*.2,0,0,Math.PI*2);ctx.fill();
       }
       ctx.restore();
+      // Layered player lighting gives every footballer a clearer 3D silhouette.
+      ctx.save();
+      ctx.shadowColor=highlight?"rgba(199,255,74,.48)":"rgba(0,0,0,.55)";
+      ctx.shadowBlur=highlight?playerSize*.42:playerSize*.24;
+      ctx.shadowOffsetY=playerSize*.12;
       drawFootballer(px,py,playerSize,rotation,kit,false,name);
+      ctx.restore();
       if(highlight){
         ctx.save();ctx.fillStyle="#f4ffd0";ctx.font="900 "+Math.max(7,w*.012)+"px sans-serif";
         ctx.textAlign="center";ctx.textBaseline="bottom";
@@ -589,7 +615,9 @@ const goalkeepers = [
     // Ball with a small shadow and panel detail.
     const bx=match.ball.x*w,by=match.ball.y*h,br=Math.max(4,w*.008);
     ctx.fillStyle="rgba(0,0,0,.3)";ctx.beginPath();ctx.ellipse(bx+2,by+br*1.5,br*1.25,br*.55,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(bx,by,br,0,Math.PI*2);ctx.fill();
+    const ballGlow=ctx.createRadialGradient(bx-br*.35,by-br*.4,br*.08,bx,by,br*1.35);
+    ballGlow.addColorStop(0,"#ffffff");ballGlow.addColorStop(.72,"#f1f4ec");ballGlow.addColorStop(1,"#aeb8ad");
+    ctx.fillStyle=ballGlow;ctx.beginPath();ctx.arc(bx,by,br,0,Math.PI*2);ctx.fill();
     ctx.strokeStyle="#17251c";ctx.lineWidth=Math.max(1,w*.0018);ctx.stroke();
     ctx.fillStyle="#17251c";ctx.beginPath();ctx.arc(bx,by,br*.35,0,Math.PI*2);ctx.fill();
     // Match label and score-friendly header.
