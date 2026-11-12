@@ -127,7 +127,7 @@
   function goal(z,direction){
     const root=new T.Group();scene.add(root);const frame=mat("#eaf6ff",{metalness:.55,roughness:.22});
     const net=new T.LineBasicMaterial({color:0xb9d9ec,transparent:true,opacity:.38});
-    const x1=-8.8,x2=8.8,top=4.8,back=z+direction*4.6;
+    const x1=-10.4,x2=10.4,top=5.45,back=z+direction*5.2;
     segment(root,[x1,.1,z],[x1,top,z],.095,frame);segment(root,[x2,.1,z],[x2,top,z],.095,frame);
     segment(root,[x1,top,z],[x2,top,z],.095,frame);
     segment(root,[x1,.1,z],[x1,.1,back],.035,frame);segment(root,[x2,.1,z],[x2,.1,back],.035,frame);
@@ -342,13 +342,19 @@
       keeperAway.position.set(0,0,-FIELD_LENGTH/2+1.2);keeperAway.rotation.y=Math.PI;
       const shot=m.lastShot,shotAge=shot?now-shot.start:9999;
       if(shot&&shotAge>=0&&shotAge<760){
-        const diveT=clamp(shotAge/760,0,1),diveEase=Math.sin(Math.PI*diveT),diveSide=shot.x<.43?-1:shot.x>.57?1:0;
-        keeperAway.position.x=diveSide*4.1*diveEase;keeperAway.position.y=.08+1.05*diveEase;
-        keeperAway.rotation.z=-diveSide*.95*diveEase;keeperAway.rotation.x=-.5*diveEase;
-        keeperAway.userData.arms[0].rotation.set(-.8*diveEase,0,diveSide*.9*diveEase);
-        keeperAway.userData.arms[1].rotation.set(-.8*diveEase,0,diveSide*1.05*diveEase);
-        keeperAway.userData.legs[0].rotation.set(-.45*diveEase,0,-diveSide*.4*diveEase);
-        keeperAway.userData.legs[1].rotation.set(.55*diveEase,0,diveSide*.5*diveEase);
+        const diveT=clamp(shotAge/760,0,1),diveSide=shot.x<.43?-1:shot.x>.57?1:0;
+        // Goalkeeper push-off, hand extension and low landing. Avoid the exaggerated vertical leap.
+        const push=Math.sin(Math.min(1,diveT*2.15)*Math.PI/2);
+        const recovery=clamp((diveT-.58)/.42,0,1);
+        const reach=push*(1-recovery*.72),landing=Math.sin(Math.PI*diveT);
+        keeperAway.position.x=diveSide*5.25*reach;
+        keeperAway.position.y=.04+.42*landing;
+        keeperAway.position.z=-FIELD_LENGTH/2+1.2-diveT*.55;
+        keeperAway.rotation.z=-diveSide*1.18*reach;keeperAway.rotation.x=-.16*reach;
+        keeperAway.userData.arms[0].rotation.set(-1.05*reach,0,diveSide*(.42+.52*reach));
+        keeperAway.userData.arms[1].rotation.set(-1.12*reach,0,diveSide*(.62+.48*reach));
+        keeperAway.userData.legs[0].rotation.set(-.28*reach,0,-diveSide*.28*reach);
+        keeperAway.userData.legs[1].rotation.set(.38*reach,0,diveSide*.32*reach);
       }else{
         keeperAway.position.x=0;keeperAway.position.y=0;keeperAway.rotation.z=0;keeperAway.rotation.x=0;
         keeperAway.userData.arms.forEach(a=>a.rotation.set(0,0,0));keeperAway.userData.legs.forEach(l=>l.rotation.set(0,0,0));
