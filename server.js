@@ -587,6 +587,12 @@ app.post("/api/register", registerLimiter, (req, res) => {
     const rotatedToken = crypto.randomBytes(32).toString("hex");
     existing.tokenHash = hashToken(rotatedToken);
     tokenToPlayer.set(existing.tokenHash, existing.id);
+    // Revoke all already-open sockets authenticated with the previous token.
+    const previousSockets = socketsByPlayer.get(existing.id);
+    if (previousSockets) {
+      for (const socket of [...previousSockets]) socket.disconnect(true);
+      socketsByPlayer.delete(existing.id);
+    }
     let replacementDeviceKey = "";
     if (recoveredByDeviceKey) {
       replacementDeviceKey = crypto.randomBytes(32).toString("hex");
