@@ -14,12 +14,12 @@
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Apex Strikers — Ultimate Football Game">
   <meta name="twitter:description" content="A football game with penalty shootouts, free kicks, long shots, and goalkeeping challenges.">
-  <link rel="stylesheet" href="style.css?v=apex-major-team-layout-20261112-v2">
+  <link rel="stylesheet" href="style.css?v=apex-fcm-ovr-20261112-v1">
   <link rel="stylesheet" href="fought-knight.css?v=apex-major-team-layout-20261112-v1">
   <script src="config.js?v=1"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js" defer></script>
   <script src="match-3d.js?v=apex-major-match-engine-20261112-v3" defer></script>
-  <script src="script.js?v=apex-major-team-layout-20261112-v3" defer></script>
+  <script src="script.js?v=apex-fcm-ovr-20261112-v1" defer></script>
 </head>
 <body>
   <div class="intro-splash apex-launch-intro" role="status" aria-label="Entering Apex Strikers">
@@ -321,7 +321,7 @@
           <div><p class="eyebrow">APEX STRIKERS · CLUB BUILDER</p><h2>TEAM <em>LAYOUT</em></h2></div>
           <span class="team-layout-badge">YOUR STARTING SIX</span>
         </div>
-        <p class="team-layout-intro">Build your match squad. Your choices are saved on this device and used in H2H matches.</p>
+        <p class="team-layout-intro">Build your match squad. Your choices are saved on this device and used in H2H matches. Team OVR uses the FC Mobile 27 calculation, adapted to Apex's starting six.</p>
         <div class="team-layout-grid">
           <section class="team-layout-card">
             <p class="eyebrow">STARTING PLAYERS</p>
@@ -332,6 +332,16 @@
               <label class="team-layout-field">TEAMMATE 2<select id="teamLayoutMate1"></select></label>
               <label class="team-layout-field">TEAMMATE 3<select id="teamLayoutMate2"></select></label>
               <label class="team-layout-field">TEAMMATE 4<select id="teamLayoutMate3"></select></label>
+            </div>
+            <div class="team-layout-subheading">PLAYER RANK LEVELS <span>0–5</span></div>
+            <p class="team-layout-formula-note">Set each selected player's rank. Rank averages are rounded up separately. Training does not add Team OVR.</p>
+            <div class="team-layout-ranks">
+              <label class="team-layout-field">CAPTAIN RANK<select data-team-rank="captain"><option value="0">0 · BASE</option><option value="1">1 · GREEN</option><option value="2">2 · BLUE</option><option value="3">3 · PURPLE</option><option value="4">4 · RED</option><option value="5">5 · ORANGE</option></select></label>
+              <label class="team-layout-field">GOALKEEPER RANK<select data-team-rank="keeper"><option value="0">0 · BASE</option><option value="1">1 · GREEN</option><option value="2">2 · BLUE</option><option value="3">3 · PURPLE</option><option value="4">4 · RED</option><option value="5">5 · ORANGE</option></select></label>
+              <label class="team-layout-field">TEAMMATE 1 RANK<select data-team-rank="mate0"><option value="0">0 · BASE</option><option value="1">1 · GREEN</option><option value="2">2 · BLUE</option><option value="3">3 · PURPLE</option><option value="4">4 · RED</option><option value="5">5 · ORANGE</option></select></label>
+              <label class="team-layout-field">TEAMMATE 2 RANK<select data-team-rank="mate1"><option value="0">0 · BASE</option><option value="1">1 · GREEN</option><option value="2">2 · BLUE</option><option value="3">3 · PURPLE</option><option value="4">4 · RED</option><option value="5">5 · ORANGE</option></select></label>
+              <label class="team-layout-field">TEAMMATE 3 RANK<select data-team-rank="mate2"><option value="0">0 · BASE</option><option value="1">1 · GREEN</option><option value="2">2 · BLUE</option><option value="3">3 · PURPLE</option><option value="4">4 · RED</option><option value="5">5 · ORANGE</option></select></label>
+              <label class="team-layout-field">TEAMMATE 4 RANK<select data-team-rank="mate3"><option value="0">0 · BASE</option><option value="1">1 · GREEN</option><option value="2">2 · BLUE</option><option value="3">3 · PURPLE</option><option value="4">4 · RED</option><option value="5">5 · ORANGE</option></select></label>
             </div>
           </section>
           <section class="team-layout-card">
@@ -345,7 +355,12 @@
             <label class="team-layout-field">GOALKEEPER KIT<select id="teamLayoutKeeperKit">
               <option value="neon">NEON GREEN</option><option value="gold">LEGEND GOLD</option><option value="purple">VIOLET</option><option value="ice">ICE BLUE</option>
             </select></label>
+            <label class="team-layout-field">ACTIVE LEVEL-5 TEAM BADGES<select id="teamLayoutBadgeCount">
+              <option value="0">0 · NONE</option><option value="1">1 · +1 OVR</option><option value="2">2 · +2 OVR</option><option value="3">3 · +3 OVR</option>
+            </select></label>
+            <p class="team-layout-formula-note">Only active Level 5 badges count here. Each adds +1 Team OVR, up to three.</p>
             <div class="team-layout-rating"><span>TEAM OVERALL</span><strong id="teamLayoutOvr">-- OVR</strong></div>
+            <p id="teamLayoutOvrBreakdown" class="team-layout-ovr-breakdown">Base average + rank average + badges</p>
             <button id="saveTeamLayoutBtn" class="primary-btn team-layout-save" type="button">SAVE TEAM LAYOUT ✓</button>
             <p id="teamLayoutStatus" class="team-layout-status" role="status">Choose your players and save your lineup.</p>
           </section>
