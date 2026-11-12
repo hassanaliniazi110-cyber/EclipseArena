@@ -4,7 +4,7 @@
   let sourceCanvas=null,wrap=null,glCanvas=null,hud=null,renderer=null,scene=null,camera=null;
   let resizeObserver=null,lastWidth=0,lastHeight=0,active=false,raf=0,getState=null,lastRenderAt=0,lowPowerMode=false;
   let playerModel,rivalModel,keeperHome,keeperAway,teammateModels=[],rivalSupportModels=[],ball,ballShadow,flightTrail,aimMarker,cameraTarget;
-  let hudMode,hudScore,hudClock,hudStatus,lastPlayerLabel="",cameraZoom=1,cameraMode="sideline";
+  let hudMode,hudScore,hudClock,hudStatus,lastPlayerLabel="",cameraZoom=1,cameraMode="behind";
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const FIELD_WIDTH=84,FIELD_LENGTH=130;
   const mat=(color,extra)=>new T.MeshStandardMaterial(Object.assign({color:color||0xffffff,roughness:.62,metalness:.035},extra||{}));
@@ -226,9 +226,12 @@
     if(w!==lastWidth||h!==lastHeight){lastWidth=w;lastHeight=h;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
   }
   function place(model,x,y,facing,time,highlight){
-    model.position.set((x-.5)*FIELD_WIDTH,0,(y-.5)*FIELD_LENGTH);model.rotation.y=facing==="toward"?Math.PI:0;model.visible=true;
+    model.position.set((x-.5)*FIELD_WIDTH,0,(y-.5)*FIELD_LENGTH);model.visible=true;
     const d=model.userData,previous=d.lastPosition;
-    const moved=previous?Math.hypot((x-previous.x)*FIELD_WIDTH,(y-previous.y)*FIELD_LENGTH):0;
+    const deltaX=previous?(x-previous.x)*FIELD_WIDTH:0,deltaZ=previous?(y-previous.y)*FIELD_LENGTH:0;
+    const moved=Math.hypot(deltaX,deltaZ);
+    if(moved>.012)model.rotation.y=Math.atan2(-deltaX,-deltaZ);
+    else if(!previous)model.rotation.y=facing==="toward"?Math.PI:0;
     d.lastPosition={x,y};
     const stride=moved>.018?.62:.075,phase=time*(moved>.018?12.5:2.1)+d.phase;
     d.legs[0].rotation.x=Math.sin(phase)*stride;d.legs[1].rotation.x=-Math.sin(phase)*stride;
