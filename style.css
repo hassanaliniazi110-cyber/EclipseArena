@@ -1963,3 +1963,21 @@ html[data-device="ipad"] #shootBtn{display:none!important}
 .player-playstyle-badge img{display:block;width:19px;height:19px;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,.55));}
 .player-card.selected .player-playstyle-badge{border-color:rgba(199,255,74,.72);background:linear-gradient(145deg,#526b73,#142a36);}
 @media(max-width:650px){.player-playstyles{padding:5px 6px}.player-playstyle-badge{width:25px;height:25px;flex-basis:25px}.player-playstyle-badge img{width:18px;height:18px}}
+
+
+/* Rarity tiers and readable PlayStyle names. Level 1 is silver; level 2 is gold. */
+.player-playstyles{display:block;margin:8px 0 7px;padding:6px 7px;border:1px solid rgba(115,190,255,.22);border-radius:8px;background:linear-gradient(110deg,rgba(8,20,34,.96),rgba(18,38,57,.9));}
+.player-playstyles-heading{margin:0 0 5px;color:#c8d8e8;font-size:7px;font-weight:950;letter-spacing:.13em;text-align:left;}
+.player-playstyles-icons{display:flex;align-items:stretch;justify-content:flex-start;gap:5px;flex-wrap:wrap;min-width:0;}
+.player-playstyle-badge{display:flex;flex:1 1 0;min-width:48px;max-width:76px;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px 3px;border:1px solid;border-radius:7px;text-align:center;}
+.player-playstyle-badge img{display:block;width:22px;height:22px;object-fit:contain;}
+.player-playstyle-name{display:block;max-width:100%;color:#fff;font-size:7px;font-weight:850;line-height:1.12;overflow-wrap:anywhere;}
+.player-playstyle-level{display:block;font-size:6px;font-weight:950;letter-spacing:.08em;line-height:1.1;}
+.player-playstyle-badge.silver{border-color:#b9c5d1;background:linear-gradient(145deg,rgba(219,228,238,.27),rgba(74,88,105,.35) 55%,rgba(20,29,41,.96));box-shadow:inset 0 1px rgba(255,255,255,.36),0 2px 7px rgba(0,0,0,.26);}
+.player-playstyle-badge.silver img{filter:drop-shadow(0 0 3px rgba(225,237,248,.52));}
+.player-playstyle-badge.silver .player-playstyle-level{color:#dbe5ef;}
+.player-playstyle-badge.gold{border-color:#f6d36d;background:linear-gradient(145deg,rgba(255,230,145,.42),rgba(174,119,24,.36) 55%,rgba(49,34,12,.96));box-shadow:inset 0 1px rgba(255,255,255,.55),0 0 9px rgba(255,196,57,.2),0 2px 7px rgba(0,0,0,.3);}
+.player-playstyle-badge.gold img{filter:sepia(.3) saturate(1.65) drop-shadow(0 0 4px rgba(255,214,94,.7));}
+.player-playstyle-badge.gold .player-playstyle-name{color:#fff4d0;}
+.player-playstyle-badge.gold .player-playstyle-level{color:#ffe08a;}
+@media(max-width:650px){.player-playstyles{padding:5px}.player-playstyle-badge{min-width:44px;padding:4px 2px}.player-playstyle-badge img{width:20px;height:20px}.player-playstyle-name{font-size:6.5px}}
