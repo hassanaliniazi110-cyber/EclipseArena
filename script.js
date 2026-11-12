@@ -946,7 +946,7 @@ const goalkeepers = [
     const rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return;
     const dpr=Math.min(window.devicePixelRatio||1,1.75);canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);cw=rect.width;ch=rect.height;window.ApexMatch3D?.resize?.();drawPitch();
   }
-  function drawFootballer(cx,cy,size,rotation,jersey,isKeeper,playerName){
+  function drawFootballer(cx,cy,size,rotation,jersey,isKeeper,playerName,divePose=false){
     const name=playerName||"",known={
       "Lllllllll FC":{number:99,hair:"#292018",skin:"#bd8967",shorts:"#302718",trim:"#ffe39a",style:"curly"},
       "Hassan Ali":{number:1,hair:"#171717",skin:"#b77d58",shorts:"#182331",trim:"#c7ff4a",style:"short"},
@@ -1012,8 +1012,9 @@ const goalkeepers = [
     if(kit){p.shorts=kit.shorts;p.trim=kit.trim;jersey=kit.shirt;}
     ctx.save();ctx.translate(cx,cy);ctx.rotate(rotation);ctx.scale(size,size);ctx.lineCap="round";ctx.lineJoin="round";
     const gaitPhase=performance.now()/125+(name.length%9)*.7;
-    const stride=Math.sin(gaitPhase)*.105;
-    const lift=Math.max(0,Math.cos(gaitPhase))*.045;
+    const keeperInDive=Boolean(isKeeper&&divePose);
+    const stride=keeperInDive?0:Math.sin(gaitPhase)*.105;
+    const lift=keeperInDive?0:Math.max(0,Math.cos(gaitPhase))*.045;
     // Animated contact shadow and running stride give each footballer life.
     ctx.fillStyle="rgba(0,0,0,.32)";ctx.beginPath();ctx.ellipse(0,.43,.39,.085,0,0,Math.PI*2);ctx.fill();
     ctx.strokeStyle="#18222b";ctx.lineWidth=.115;
@@ -1248,16 +1249,18 @@ const goalkeepers = [
     if(mode==="freekick"){for(let i=0;i<5;i++){ctx.fillStyle="#e9e8d8";ctx.fillRect(w*(.39+i*.045),h*.34,w*.03,h*.025)}}
     if(mode==="longshot"){ctx.setLineDash([6,6]);ctx.strokeStyle="rgba(199,255,74,.7)";ctx.beginPath();ctx.arc(w*.5,h*.27,w*.16,0,Math.PI*2);ctx.stroke();ctx.setLineDash([])}
     // Draw exactly ONE goalkeeper at the goal line. Keep the dive pose after the ball arrives.
-    const keeperT = keeperMotion ? Math.min(1,(performance.now()-keeperMotion.start)/keeperMotion.duration) : 0;
-    const diving = Boolean(keeperMotion);
-    const side = keeperMotion ? keeperMotion.side : 0;
-    const diveProgress = diving ? (1-Math.pow(1-keeperT,2)) : 0;
-    const diveRange=selectedGoalkeeper==="Hassan Ali"?.22:.16;
-    const kx = w*.5 + (diving ? side*w*diveRange*diveProgress : 0);
-    const ky = h*.135 - (diving ? h*(selectedGoalkeeper==="Hassan Ali"?.085:.055)*Math.sin(keeperT*Math.PI/2) : 0);
-    const rotation = diving ? side*1.25*diveProgress : 0;
+    const keeperT=keeperMotion?Math.min(1,(performance.now()-keeperMotion.start)/(keeperMotion.duration||700)):0;
+    const diving=Boolean(keeperMotion);
+    const side=keeperMotion?keeperMotion.side:0;
+    const eased=diving?1-Math.pow(1-keeperT,2):0;
+    const diveLift=diving?Math.sin(Math.PI*Math.min(1,keeperT/.72))*.018:0;
+    const targetX=diving&&Number.isFinite(keeperMotion.targetX)?keeperMotion.targetX:.5;
+    // Move the keeper across the goal toward the chosen/actual shot lane, not just a tiny hop.
+    const kx=w*(.5+(targetX-.5)*.92*eased);
+    const ky=h*.135+(diving?h*(.012-diveLift):0);
+    const rotation=diving?side*1.42*Math.min(1,eased*1.18):0;
     const keeperKits = {"Hassan Ali":"#c7ff4a","Ehan Ali":"#bd7bff","Alisson":"#f2cf35","Thibaut Courtois":"#3cbd78","Manuel Neuer":"#f28b35","Ederson":"#f28b35","Marc-André ter Stegen":"#39b86a","Gianluigi Donnarumma":"#242936","Emiliano Martínez":"#65baff","Jan Oblak":"#39b86a","David Raya":"#39b86a","Mike Maignan":"#f2cf35","Lev Yashin":"#191919","Muhammad Arham":"#ff6b6b"}; const keeperJersey=KEEPER_KITS[teamKeeperKit]||keeperKits[selectedGoalkeeper]||"#ff8c42";
-    drawFootballer(kx,ky,Math.max(12,w*.105),rotation,keeperJersey,true,selectedGoalkeeper);
+    drawFootballer(kx,ky,Math.max(12,w*.105),rotation,keeperJersey,true,selectedGoalkeeper,diving&&keeperT>.08);
     ctx.fillStyle="rgba(5,15,10,.82)";ctx.fillRect(w*.5-w*.095,h*.205,w*.19,h*.026);
     ctx.fillStyle="#f2f7f2";ctx.font="800 "+Math.max(8,w*.013)+"px sans-serif";ctx.textAlign="center";
     ctx.fillText(selectedGoalkeeper.toUpperCase(),w*.5,h*.224);
@@ -2004,7 +2007,7 @@ const goalkeepers = [
     // The keeper reacts toward the actual shot, not a random direction.
     const shotSide=aim.x<.43?-1:aim.x>.57?1:0;
     // Hassan reads the shot perfectly and commits to its actual direction.
-    keeperMotion={side:shotSide,start:performance.now(),duration:500};
+    keeperMotion={side:shotSide,targetX:aim.x,start:performance.now(),duration:700};
     drawPitch();
 
     const centerBias=Math.abs(aim.x-.5);
@@ -2052,8 +2055,13 @@ const goalkeepers = [
     const keeperRating=(goalkeepers.find(g=>g.name===selectedGoalkeeper)||goalkeepers[0]).rating;
     const reactionBonus=isHassan?1:Math.max(0,(keeperRating-85)*.008);
     const save=isHassan?true:(matchedDive?Math.random()<Math.min(.99,.72+reactionBonus):Math.random()<Math.min(.78,.08+reactionBonus+(difficulty==="Rookie"?.12:0)));
-    ballAnim={fromX:cw*.5,fromY:ch*.28,toX:aim.x*cw,toY:aim.y*ch,start:performance.now(),duration:430};keeperMotion={side:isHassan?(targetSide==="left"?-1:targetSide==="right"?1:0):(keeperDive==="left"?-1:keeperDive==="right"?1:0),start:performance.now(),duration:430};drawPitch();
-    setTimeout(()=>{finishAttempt(save,save?"INCREDIBLE SAVE! "+selectedGoalkeeper+" reads the shot!":"GOAL CONCEDED. Read the direction next time.");drawPitch()},450);
+    const diveSide=isHassan?(targetSide==="left"?-1:targetSide==="right"?1:0):(keeperDive==="left"?-1:keeperDive==="right"?1:0);
+    const diveTargetX=isHassan?aim.x:(keeperDive==="left"?.28:keeperDive==="right"?.72:.5);
+    ballAnim={fromX:cw*.5,fromY:ch*.28,toX:aim.x*cw,toY:aim.y*ch,start:performance.now(),duration:560};
+    keeperMotion={side:diveSide,targetX:diveTargetX,start:performance.now(),duration:700};
+    drawPitch();
+    const keeperRecovery=setInterval(()=>{if(!keeperMotion)return;drawPitch();},32);
+    setTimeout(()=>{clearInterval(keeperRecovery);finishAttempt(save,save?"INCREDIBLE SAVE! "+selectedGoalkeeper+" reads the shot!":"GOAL CONCEDED. Read the direction next time.");keeperMotion=null;drawPitch();},760);
   }
   function nextAttempt(){
     if(mode==="vsattack"&&matchAttacks>=5&&tournamentActive){
