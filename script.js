@@ -15,7 +15,7 @@
     const compactModel=rawModel.replace(/^\\[|\\]$/g,"").trim();
     const modelUpper=compactModel.toUpperCase();
     const lenovo=/\\bLENOVO\\b/i.test(compactModel)||/^TB[0-9A-Z-]+$/i.test(compactModel)||/^YT-[0-9A-Z-]+$/i.test(compactModel);
-    const samsungTab=/^SM-[XT][0-9A-Z]+$/i.test(modelUpper);
+    const samsungTab=/^(?:SAMSUNG\\s*)?SM-[XT][0-9A-Z]+$/i.test(modelUpper);
     const pixelTablet=/PIXEL TABLET/i.test(compactModel);
     const xiaomiPad=/\\b(XIAOMI|REDMI|POCO)\\b.*\\b(PAD|PAD SE|PAD PRO)\\b/i.test(compactModel);
     const oneplusPad=/ONEPLUS.*PAD/i.test(compactModel);
@@ -23,6 +23,7 @@
     const knownTablet=lenovo||samsungTab||pixelTablet||xiaomiPad||oneplusPad||huaweiPad||/\\b(TABLET|TAB|PAD)\\b/i.test(compactModel);
     const tablet=ipad||(android&&(!/\\bMobile\\b/i.test(ua)||knownTablet));
     const type=ipad?"ipad":iphone?"iphone":(android&&tablet)?"android-tablet":android?"android-phone":mac?"macos":touch?"touch-device":"laptop";
+    const touchControls=ipad||iphone||tablet||android;
     let manufacturer="";
     if(lenovo)manufacturer="Lenovo";
     else if(samsungTab||/\\bSAMSUNG\\b/i.test(compactModel))manufacturer="Samsung";
@@ -32,9 +33,9 @@
     else if(huaweiPad)manufacturer="Huawei";
     const modelName=compactModel?(lenovo?("Lenovo Tab "+compactModel.replace(/^LENOVO\\s*/i,"")):samsungTab?("Samsung Galaxy Tab "+compactModel):manufacturer?(manufacturer+" "+compactModel):compactModel):"";
     document.documentElement.dataset.device=type;
-    document.documentElement.dataset.input=touch?"touch":"keyboard";
+    document.documentElement.dataset.input=touchControls?"touch":"keyboard";
     document.documentElement.dataset.manufacturer=manufacturer.toLowerCase();
-    return {type,touch,tablet,mac,android,manufacturer,modelName,rawModel};
+    return {type,touch:touchControls,tablet,mac,android,manufacturer,modelName,rawModel};
   })();
 
   const deviceNotice=(()=>{
