@@ -202,7 +202,6 @@ const goalkeepers = [
   // Pitch-only immersive fullscreen. The soundtrack and side panel stay outside this element.
   const pitchWrap=canvas?.closest(".pitch-wrap");
   let lastFullscreenPitchTap=0;
-  if(pitchWrap&&!pitchWrap.querySelector(".match-keyboard-hint")){const hint=document.createElement("div");hint.className="match-keyboard-hint";hint.textContent="MOVE  WASD / ARROWS   ·   PASS  E   ·   SHOOT  SPACE   ·   TACKLE  Q   ·   SPRINT  SHIFT";pitchWrap.appendChild(hint);}
   if(pitchWrap&&!pitchWrap.querySelector(".apex-fullscreen-btn")){
     const fullscreenBtn=document.createElement("button");
     fullscreenBtn.type="button";fullscreenBtn.className="apex-fullscreen-btn";
@@ -228,10 +227,7 @@ const goalkeepers = [
     pitchWrap.appendChild(fullscreenBtn);
     document.addEventListener("fullscreenchange",syncFullscreen);
     document.addEventListener("keydown",event=>{
-      if(event.key==="Escape"&&pitchWrap.classList.contains("apex-pitch-fullscreen-fallback")){pitchWrap.classList.remove("apex-pitch-fullscreen-fallback");syncFullscreen();return;}
-      if(event.key.toLowerCase()!=="f"||event.metaKey||event.ctrlKey||event.altKey||
-        event.target.matches("input,textarea,select")||$("gameScreen").classList.contains("hidden"))return;
-      event.preventDefault();toggleFullscreen();
+      if(event.key==="Escape"&&pitchWrap.classList.contains("apex-pitch-fullscreen-fallback")){pitchWrap.classList.remove("apex-pitch-fullscreen-fallback");syncFullscreen();}
     });
     pitchWrap.addEventListener("pointerup",event=>{
       if(!isPitchFullscreen()||event.target.closest("button")||event.target.closest(".match-joystick"))return;
@@ -1973,11 +1969,7 @@ const goalkeepers = [
     document.querySelectorAll("[data-camera-view]").forEach(x=>x.classList.toggle("selected",x===b));
   }));
   document.querySelectorAll("[data-camera-zoom]").forEach(b=>b.addEventListener("click",()=>{const current=window.ApexMatch3D?.getZoom?.()||1;const action=b.dataset.cameraZoom;window.ApexMatch3D?.setZoom?.(action==="reset"?1:current+(action==="in"?.12:-.12));}));
-  const heldMatchKeys=new Set();
-  function syncMatchKeyboard(){if(!match.active)return;match.moveX=(heldMatchKeys.has("a")||heldMatchKeys.has("arrowleft")?-1:0)+(heldMatchKeys.has("d")||heldMatchKeys.has("arrowright")?1:0);match.moveY=(heldMatchKeys.has("w")||heldMatchKeys.has("arrowup")?-1:0)+(heldMatchKeys.has("s")||heldMatchKeys.has("arrowdown")?1:0);}
-  document.addEventListener("keydown",e=>{if(!match.active||e.target.matches("input,textarea,select"))return;const key=e.key.toLowerCase();if(["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"].includes(key)){e.preventDefault();heldMatchKeys.add(key);syncMatchKeyboard();}else if(key==="shift"){match.sprint=true;}else if(!e.repeat&&key===" "){e.preventDefault();matchAction("shoot");}else if(!e.repeat&&key==="e"){matchAction("pass");}else if(!e.repeat&&key==="q"){matchAction("tackle");}});
-  document.addEventListener("keyup",e=>{const key=e.key.toLowerCase();if(heldMatchKeys.delete(key))syncMatchKeyboard();if(key==="shift")match.sprint=false;});
-  window.addEventListener("blur",()=>{heldMatchKeys.clear();match.moveX=0;match.moveY=0;match.sprint=false;});
+  // Gameplay is touch-only. Avoid capturing keyboard input while the pitch is fullscreen.
   document.querySelectorAll("[data-mode]").forEach(b=>b.addEventListener("click",()=>startMode(b.dataset.mode,b.dataset.challenge||"standard")));
   document.addEventListener("click",e=>{
     const teamButton=e.target.closest("[data-open-team-layout]");
