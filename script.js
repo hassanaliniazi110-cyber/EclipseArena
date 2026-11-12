@@ -1120,7 +1120,9 @@ const goalkeepers = [
         later(()=>overlay.classList.add("walkout-cinema-start"),120);
         later(()=>{phase.textContent="THE STADIUM GOES DARK";headline.textContent="ONE PLAYER. ONE MOMENT.";stage.classList.add("walkout-power-up");},900);
         reveal("NATIONALITY",country,2500);reveal("CLUB / TEAM",team,4300);reveal("PLAYER STATUS",status,6100);reveal("POSITION",position,7900);
-        later(finishWalkout,9900);
+        later(()=>{phase.textContent="THE CROWD ERUPTS";headline.textContent="A NEW ERA BEGINS";stage.classList.add("walkout-crowd-eruption");},5200);
+        later(()=>{phase.textContent="LIGHTS ON";headline.textContent="REVEALING YOUR SIGNING";stage.classList.add("walkout-final-flash");},6100);
+        later(finishWalkout,7600);
       };
       const choices=$("apexDraftChoices");
       const renderDraft=draft=>{choices.replaceChildren();if(!draft||!draft.id)return;selectedDraftEvent=draft.eventId==="game-changers"?"game-changers":"apex-ascension";panel.querySelectorAll("[data-draft-event]").forEach(btn=>btn.classList.toggle("selected",btn.dataset.draftEvent===selectedDraftEvent));const heading=document.createElement("h4");heading.className="draft-choice-heading";heading.textContent=(selectedDraftEvent==="game-changers"?"GAME CHANGERS":"APEX ASCENSION")+" · MYSTERY PLAYER PACK";const note=document.createElement("p");note.className="draft-mystery-note";note.textContent="One player is sealed inside. No previews. No choices. The identity stays hidden until the final reveal.";const open=document.createElement("button");open.type="button";open.className="draft-open-pack-btn";open.textContent="⚡ OPEN MY PLAYER PACK";open.addEventListener("click",async()=>{open.disabled=true;open.textContent="OPENING PACK...";$("apexPackStatus").textContent="The stadium is going dark...";try{const result=await api("/api/store/draft/choose",{method:"POST",body:JSON.stringify({draftId:draft.id})});$("apexPackStatus").textContent=result.pick.duplicate?(result.pick.upgraded?"DUPLICATE SIGNED · CARD UPGRADED!":"DUPLICATE SIGNED · MAX LEVEL"):"NEW PLAYER SIGNED · "+result.pick.name.toUpperCase();updateTopGemBalance(result.gems);showSigningReveal(result.pick);await loadApexStore();}catch(error){$("apexPackStatus").textContent=error.message;open.disabled=false;open.textContent="TRY OPENING AGAIN";}});choices.append(heading,note,open);choices.dataset.pickCount="1";};
@@ -1206,7 +1208,6 @@ const goalkeepers = [
   renderCareerHub();renderPlayers();
 
   function startMode(nextMode){
-    if(!onlineAccountApproved){toast("MATCH LOCKED · Connect an account and wait for owner approval before playing.");setServerStatus("MATCH LOCKED · Your Apex Strikers account must be approved first.");return;}
     const isRandomRush=nextMode==="random";
     if(isRandomRush){const choices=["penalty","freekick","longshot","goalkeeping","vsattack","crossbar","survival"];nextMode=choices[Math.floor(Math.random()*choices.length)];}
     mode=nextMode;shotTaken=false;ballAnim=null;keeperMotion=null;
