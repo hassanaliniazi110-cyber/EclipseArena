@@ -4,7 +4,7 @@
   let sourceCanvas=null,wrap=null,glCanvas=null,hud=null,renderer=null,scene=null,camera=null;
   let resizeObserver=null,lastWidth=0,lastHeight=0,active=false,raf=0,getState=null,lastRenderAt=0,lowPowerMode=false;
   let playerModel,rivalModel,keeperHome,keeperAway,teammateModels=[],rivalSupportModels=[],ball,ballShadow,flightTrail,aimMarker,cameraTarget;
-  let hudMode,hudScore,hudClock,hudStatus,lastPlayerLabel="",cameraZoom=1,cameraMode="behind";
+  let hudMode,hudScore,hudClock,hudStatus,lastPlayerLabel="",cameraZoom=1,cameraMode="player";
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const FIELD_WIDTH=84,FIELD_LENGTH=130;
   const mat=(color,extra)=>new T.MeshStandardMaterial(Object.assign({color:color||0xffffff,roughness:.62,metalness:.035},extra||{}));
@@ -404,8 +404,8 @@
       camX=0;camY=FIELD_LENGTH*1.08;camZ=12;
       lookX=0;lookY=0;lookAtZ=0;
     }else if(cameraMode==="player"){
-      camX=focusX;camY=12;camZ=playerZ+10;
-      lookX=focusX;lookY=1.5;lookAtZ=playerZ-13;
+      camX=focusX;camY=4.8;camZ=playerZ+3.8;
+      lookX=focusX;lookY=2.4;lookAtZ=playerZ-20;
     }else{
       camX=focusX*.72;camY=23;camZ=playerZ+25;
       lookX=focusX*.45;lookY=0;lookAtZ=playerZ-17;
@@ -426,7 +426,7 @@
       if(getComputedStyle(wrap).position==="static")wrap.style.position="relative";
       glCanvas=document.createElement("canvas");glCanvas.className="apex-3d-canvas";glCanvas.setAttribute("aria-hidden","true");wrap.appendChild(glCanvas);
       hud=document.createElement("div");hud.className="apex-3d-hud";
-      hud.innerHTML='<div class="apex-3d-scoreboard"><div class="apex-3d-hud-top"><span class="apex-3d-hud-brand">APEX <b>STRIKERS</b></span><span class="apex-3d-hud-live"><i></i> LIVE ENGINE</span></div><div class="apex-3d-hud-middle"><span class="apex-3d-hud-mode">MATCH</span><strong class="apex-3d-hud-score">0 : 0</strong><span class="apex-3d-hud-clock">00:00</span></div><div class="apex-3d-hud-status">3D MATCH ENGINE · LIVE</div></div>';
+      hud.innerHTML='<div class="apex-3d-scoreboard"><div class="apex-3d-hud-top"><span class="apex-3d-hud-brand">APEX <b>STRIKERS</b></span><span class="apex-3d-hud-live"><i></i> LIVE</span></div><div class="apex-3d-hud-middle"><span class="apex-3d-hud-mode">MATCH</span><strong class="apex-3d-hud-score">0 : 0</strong><span class="apex-3d-hud-clock">00:00</span></div></div><div class="apex-3d-hud-status">BALL IN PLAY</div>';
       wrap.appendChild(hud);hudMode=hud.querySelector(".apex-3d-hud-mode");hudScore=hud.querySelector(".apex-3d-hud-score");hudClock=hud.querySelector(".apex-3d-hud-clock");hudStatus=hud.querySelector(".apex-3d-hud-status");
       lowPowerMode=window.matchMedia?.("(max-width: 800px)").matches||Number(navigator.hardwareConcurrency||8)<=4||Number(navigator.deviceMemory||8)<=4||Boolean(navigator.connection?.saveData);
       renderer=new T.WebGLRenderer({canvas:glCanvas,antialias:!lowPowerMode,alpha:false,powerPreference:"high-performance"});
