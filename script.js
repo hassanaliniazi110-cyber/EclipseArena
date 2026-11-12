@@ -1639,8 +1639,8 @@ const goalkeepers = [
     const show=isTouch&&mode!=="headtohead"&&$("gameScreen")&&!$("gameScreen").classList.contains("hidden");
     panel.classList.toggle("hidden",!show);
     directions.classList.toggle("hidden",!show||!isKeeper);
-    main.classList.toggle("hidden",!show||isKeeper);
-    main.textContent=shotTaken?"NEXT ATTACK →":"SHOOT ↗";
+    main.classList.toggle("hidden",!show);
+    main.textContent=shotTaken?"NEXT ATTACK →":(isKeeper?"DIVE / SAVE ↗":"SHOOT ↗");
     $("shootBtn")?.classList.toggle("hidden",match.active||deviceProfile.type==="ipad");
   }
   function startMode(nextMode,challenge="standard"){
@@ -1993,8 +1993,6 @@ const goalkeepers = [
   $("shootBtn").addEventListener("click",()=>{if(mode==="goalkeeping"||mode==="survival")dive();else shoot()});$("nextBtn").addEventListener("click",nextAttempt);
   $("virtualMainAction")?.addEventListener("click",()=>{if(shotTaken)nextAttempt();else if(mode==="goalkeeping"||mode==="survival")dive();else shoot();});
   document.querySelectorAll("[data-virtual-dive]").forEach(b=>b.addEventListener("click",()=>{keeperDive=b.dataset.virtualDive;document.querySelectorAll("[data-virtual-dive]").forEach(x=>x.classList.toggle("selected",x===b));$("feedback").textContent="Dive selected: "+keeperDive.toUpperCase()+". Tap DIVE / SAVE."; }));
-  $("virtualKeeperDirections")?.addEventListener("dblclick",e=>{if(e.target.closest("[data-virtual-dive]"))return;dive();});
-  $("virtualKeeperDirections")?.addEventListener("click",e=>{if(e.target.closest("[data-virtual-dive]"))return;dive();});
 
   $("powerSlider").addEventListener("input",e=>{power=Number(e.target.value);$("powerReadout").textContent=power+"%"});
   document.querySelectorAll("[data-dive]").forEach(b=>b.addEventListener("click",()=>{keeperDive=b.dataset.dive;document.querySelectorAll("[data-dive]").forEach(x=>x.style.borderColor=x===b?"#c7ff4a":"");$("feedback").textContent="Dive selected: "+keeperDive.toUpperCase()+". Press save when ready."}));
