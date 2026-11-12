@@ -261,7 +261,7 @@
   }
   function safeState(){try{return getState?getState():null;}catch(_){return null;}}
   function render(now){
-    if(!active||!renderer)return;raf=requestAnimationFrame(render);if(document.hidden)return;
+    if(!active||!renderer)return;if(document.hidden){raf=0;return;}raf=requestAnimationFrame(render);
     const rect=sourceCanvas.getBoundingClientRect();if(rect.width<2||rect.height<2)return;
     if(rect.width!==lastWidth||rect.height!==lastHeight)resize();
     const s=safeState();if(!s)return;const time=now/1000,h2h=s.mode==="headtohead",m=s.match||{};
@@ -338,14 +338,16 @@
       hud.innerHTML='<div class="apex-3d-scoreboard"><div class="apex-3d-hud-top"><span class="apex-3d-hud-brand">APEX <b>STRIKERS</b></span><span class="apex-3d-hud-live"><i></i> LIVE ENGINE</span></div><div class="apex-3d-hud-middle"><span class="apex-3d-hud-mode">MATCH</span><strong class="apex-3d-hud-score">0 : 0</strong><span class="apex-3d-hud-clock">00:00</span></div><div class="apex-3d-hud-status">3D MATCH ENGINE · LIVE</div></div>';
       wrap.appendChild(hud);hudMode=hud.querySelector(".apex-3d-hud-mode");hudScore=hud.querySelector(".apex-3d-hud-score");hudClock=hud.querySelector(".apex-3d-hud-clock");hudStatus=hud.querySelector(".apex-3d-hud-status");
       renderer=new T.WebGLRenderer({canvas:glCanvas,antialias:true,alpha:false,powerPreference:"high-performance"});
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=true;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.25));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;
       renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.16;
       if("outputColorSpace" in renderer)renderer.outputColorSpace=T.SRGBColorSpace;
       scene=new T.Scene();camera=new T.PerspectiveCamera(47,1,.1,180);camera.position.set(0,23,29);camera.zoom=cameraZoom;camera.updateProjectionMatrix();
       buildScene();buildActors();resize();sourceCanvas.classList.add("apex-2d-hidden");
       glCanvas.addEventListener("webglcontextlost",e=>{e.preventDefault();cancelAnimationFrame(raf);sourceCanvas.classList.remove("apex-2d-hidden");glCanvas.style.display="none";hud.style.display="none";active=false;console.warn("Apex 3D context lost; switched to the 2D match view.");});
       if(window.ResizeObserver){resizeObserver=new ResizeObserver(resize);resizeObserver.observe(sourceCanvas);resizeObserver.observe(wrap);}
-      window.addEventListener("resize",resize,{passive:true});active=true;raf=requestAnimationFrame(render);return true;
+      window.addEventListener("resize",resize,{passive:true});
+      document.addEventListener("visibilitychange",()=>{if(!active||!renderer)return;if(document.hidden){cancelAnimationFrame(raf);raf=0;}else if(!raf){raf=requestAnimationFrame(render);}});
+      active=true;if(!document.hidden)raf=requestAnimationFrame(render);return true;
     }catch(error){
       if(sourceCanvas)sourceCanvas.classList.remove("apex-2d-hidden");if(glCanvas)glCanvas.remove();if(hud)hud.remove();
       renderer=null;active=false;console.warn("Apex 3D renderer unavailable; using the 2D fallback.",error);return false;
