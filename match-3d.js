@@ -173,7 +173,7 @@
     const sun=new T.DirectionalLight(0xffffff,2.05);sun.position.set(-25,48,38);sun.castShadow=true;
     sun.shadow.mapSize.set(1536,1536);sun.shadow.camera.left=-78;sun.shadow.camera.right=78;sun.shadow.camera.top=88;sun.shadow.camera.bottom=-88;sun.shadow.camera.far=220;
     sun.shadow.camera.near=1;sun.shadow.camera.far=180;sun.shadow.bias=-.00025;scene.add(sun);
-    [[-47,18,-65],[47,18,-65],[-47,18,65],[47,18,65]].forEach((p,i)=>{
+    [[-60,18,-80],[60,18,-80],[-60,18,80],[60,18,80]].forEach((p,i)=>{
       cylinder(scene,.12,.16,17,[p[0],8.5,p[2]],mat("#25394c",{metalness:.55,roughness:.4}),8);
       const light=new T.PointLight(i%2?0xb7e7ff:0xe7f4ff,125,68,2);light.position.set(p[0],17,p[2]);scene.add(light);
       const panel=new T.Mesh(new T.BoxGeometry(2.8,.28,1),new T.MeshBasicMaterial({color:0xe8f9ff}));panel.position.set(p[0],16.8,p[2]);scene.add(panel);
