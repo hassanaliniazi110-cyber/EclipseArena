@@ -349,7 +349,18 @@ app.use(cors({
 app.use(express.json({ limit: "12kb", strict: true }));
 app.use((req, res, next) => { if (req.path.startsWith("/api/")) res.setHeader("Cache-Control", "no-store, max-age=0"); next(); });
 app.use(rateLimit({ windowMs: 60 * 1000, limit: 90, standardHeaders: "draft-7", legacyHeaders: false }));
-app.get("/health", (_req, res) => res.set("Cache-Control", "no-store").json({ ok: true, service: "Apex Strikers API", registeredPlayers: players.size, owner2FAConfigured: isAdminTotpConfigured() }));
+app.get("/health", (req, res) => {
+  // Health diagnostics are owner-only. Never expose player counts or configuration publicly.
+  if (!isAdminTotpConfigured() || !verifyAdminTotp(req.get("X-Admin-2FA"))) {
+    return res.status(404).json({ error: "Not found." });
+  }
+  return res.set("Cache-Control", "no-store").json({
+    ok: true,
+    service: "Apex Strikers API",
+    registeredPlayers: players.size,
+    owner2FAConfigured: true
+  });
+});
 // Public, read-only comments endpoint. Keep YOUTUBE_API_KEY on the server, never in frontend files.
 app.get("/api/youtube/comments", youtubeCommentsLimiter, async (req, res) => {
   const videoId = String(req.query.videoId || "");
