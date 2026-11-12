@@ -197,38 +197,51 @@ const goalkeepers = [
     };
   }
   if(window.ApexMatch3D&&canvas)window.ApexMatch3D.init(canvas,getApex3DState);
-  // Fullscreen match view.
+  // Pitch-only immersive fullscreen. The soundtrack and side panel stay outside this element.
   const pitchWrap=canvas?.closest(".pitch-wrap");
+  let lastFullscreenPitchTap=0;
   if(pitchWrap&&!pitchWrap.querySelector(".match-keyboard-hint")){const hint=document.createElement("div");hint.className="match-keyboard-hint";hint.textContent="MOVE  WASD / ARROWS   ·   PASS  E   ·   SHOOT  SPACE   ·   TACKLE  Q   ·   SPRINT  SHIFT";pitchWrap.appendChild(hint);}
   if(pitchWrap&&!pitchWrap.querySelector(".apex-fullscreen-btn")){
     const fullscreenBtn=document.createElement("button");
     fullscreenBtn.type="button";fullscreenBtn.className="apex-fullscreen-btn";
-    fullscreenBtn.textContent="⛶ FULLSCREEN";fullscreenBtn.setAttribute("aria-label","Enter fullscreen match view");
+    fullscreenBtn.textContent="⛶ FULLSCREEN";fullscreenBtn.setAttribute("aria-label","Enter pitch-only fullscreen");
     fullscreenBtn.setAttribute("aria-pressed","false");
+    const isPitchFullscreen=()=>document.fullscreenElement===pitchWrap||pitchWrap.classList.contains("apex-pitch-fullscreen-fallback");
     const syncFullscreen=()=>{
-      const active=document.fullscreenElement===$("gameScreen");
-      fullscreenBtn.textContent=active?"✕ EXIT FULLSCREEN":"⛶ FULLSCREEN";
-      fullscreenBtn.setAttribute("aria-label",active?"Exit fullscreen match view":"Enter fullscreen match view");
+      const active=isPitchFullscreen();
+      fullscreenBtn.textContent=active?"✕ EXIT":"⛶ FULLSCREEN";
+      fullscreenBtn.setAttribute("aria-label",active?"Exit pitch-only fullscreen":"Enter pitch-only fullscreen");
       fullscreenBtn.setAttribute("aria-pressed",String(active));
       requestAnimationFrame(()=>{resizeCanvas();window.ApexMatch3D?.resize?.();});
     };
     const toggleFullscreen=async()=>{
       try{
-        if(document.fullscreenElement)await document.exitFullscreen();
-        else if($("gameScreen").requestFullscreen)await $("gameScreen").requestFullscreen({navigationUI:"hide"});
-        else toast("Fullscreen is not supported by this browser.");
-      }catch(_){toast("The browser could not open fullscreen. Try its fullscreen shortcut.");}
+        if(document.fullscreenElement){await document.exitFullscreen();}
+        else if(pitchWrap.classList.contains("apex-pitch-fullscreen-fallback")){pitchWrap.classList.remove("apex-pitch-fullscreen-fallback");syncFullscreen();}
+        else if(pitchWrap.requestFullscreen){await pitchWrap.requestFullscreen({navigationUI:"hide"});}
+        else{pitchWrap.classList.add("apex-pitch-fullscreen-fallback");syncFullscreen();}
+      }catch(_){pitchWrap.classList.add("apex-pitch-fullscreen-fallback");syncFullscreen();}
     };
     fullscreenBtn.addEventListener("click",toggleFullscreen);
     pitchWrap.appendChild(fullscreenBtn);
     document.addEventListener("fullscreenchange",syncFullscreen);
     document.addEventListener("keydown",event=>{
+      if(event.key==="Escape"&&pitchWrap.classList.contains("apex-pitch-fullscreen-fallback")){pitchWrap.classList.remove("apex-pitch-fullscreen-fallback");syncFullscreen();return;}
       if(event.key.toLowerCase()!=="f"||event.metaKey||event.ctrlKey||event.altKey||
         event.target.matches("input,textarea,select")||$("gameScreen").classList.contains("hidden"))return;
       event.preventDefault();toggleFullscreen();
     });
+    pitchWrap.addEventListener("pointerup",event=>{
+      if(!isPitchFullscreen()||event.target.closest("button")||event.target.closest(".match-joystick"))return;
+      const now=performance.now();
+      if(now-lastFullscreenPitchTap<330){
+        lastFullscreenPitchTap=0;
+        if(match.active)matchAction("shoot");
+        else if(mode==="goalkeeping"||mode==="survival")dive();
+        else shoot();
+      }else lastFullscreenPitchTap=now;
+    });
   }
-
   let apexAdminMode=false;
   let ownedDraftCardIds=new Set(),ownedDraftCardLevels={};
   const normalizePlayerName=value=>String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"");
