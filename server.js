@@ -425,14 +425,31 @@ function pruneExpiredInvites() {
 
 
 app.disable("x-powered-by");
-app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  referrerPolicy: { policy: "no-referrer" },
+  hsts: { maxAge: 31536000, includeSubDomains: true, preload: false }
+}));
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+  res.setHeader("X-DNS-Prefetch-Control", "off");
+  next();
+});
 app.use(cors({
   origin(origin, callback) {
+    // Requests without Origin are allowed for non-browser health tooling;
+    // browser origins must match the explicit allowlist.
     if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
     return callback(new Error("Origin is not allowed"));
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Admin-2FA"]
+  allowedHeaders: ["Content-Type", "Authorization", "X-Admin-2FA"],
+  maxAge: 600,
+  credentials: false
 }));
 app.use(express.json({ limit: "12kb", strict: true }));
 app.use((req, res, next) => { if (req.path.startsWith("/api/")) res.setHeader("Cache-Control", "no-store, max-age=0"); next(); });
@@ -579,9 +596,10 @@ function auth(req, res, next) {
   const id = match && tokenToPlayer.get(hashToken(match[1]));
   if (!id || !players.has(id)) return res.status(401).json({ error: "Authentication required. Reconnect to the server." });
   req.player = players.get(id);
+  // Authentication must never silently grant account approval.
   if (req.player.approvalStatus !== "approved") {
-    req.player.approvalStatus = "approved";
-    saveData();
+    auditEvent(id, "blocked_unapproved_account_access");
+    return res.status(403).json({ error: "This account is not approved for access." });
   }
   next();
 }
@@ -1180,10 +1198,19 @@ const io = new Server(server, {
   connectTimeout: 10000
 });
 io.use((socket, next) => {
+  // Socket.IO's CORS option alone does not protect WebSocket upgrades.
+  // Enforce the browser Origin here as well as authenticating the player token.
+  const origin = socket.handshake.headers.origin;
+  if (typeof origin !== "string" || !allowedOrigins.includes(origin)) {
+    return next(new Error("Origin is not allowed"));
+  }
   const id = cleanText(socket.handshake.auth?.playerId, 24).toUpperCase();
   const token = String(socket.handshake.auth?.token || "");
   const player = players.get(id);
-  if (!player || !/^[a-f0-9]{64}$/i.test(token) || !tokenHashMatches(player.tokenHash, token)) return next(new Error("Authentication required"));
+  if (!player || player.approvalStatus !== "approved" ||
+      !/^[a-f0-9]{64}$/i.test(token) || !tokenHashMatches(player.tokenHash, token)) {
+    return next(new Error("Authentication required"));
+  }
   socket.data.playerId = id;
   next();
 });
