@@ -1550,3 +1550,17 @@ html[data-device="macos"] .match-keyboard-hint,html[data-device="laptop"] .match
 .game-screen:has(#matchControls:not(.hidden)) #pitch{min-height:520px;aspect-ratio:1.38}
 @media(max-width:700px){#pitch{min-height:360px}.game-screen:has(#matchControls:not(.hidden)) #pitch{min-height:430px;aspect-ratio:1.08}}
 @media(orientation:landscape) and (max-height:600px){.game-screen:has(#matchControls:not(.hidden)) #pitch{min-height:0;height:calc(100dvh - 135px);aspect-ratio:1.5}}
+
+.mode-card.h2h-mode{position:relative;isolation:isolate;overflow:hidden;border-color:rgba(199,255,74,.72)!important;background:radial-gradient(ellipse at 82% 15%,rgba(199,255,74,.2),transparent 48%),linear-gradient(145deg,#24321a,#111812 72%)!important;box-shadow:inset 0 1px #ffffff22,0 12px 28px #0005}
+.mode-card.h2h-mode:before{content:"";position:absolute;inset:-80% -30%;z-index:-1;background:linear-gradient(115deg,transparent 43%,#d8ff9b22 50%,transparent 57%);transform:translateX(-65%) rotate(10deg);animation:h2hCardSweep 5s ease-in-out infinite}
+.mode-card.h2h-mode .mode-title{color:#e5ffad!important;text-shadow:0 0 18px #c7ff4a55}
+@keyframes h2hCardSweep{0%,65%,100%{transform:translateX(-65%) rotate(10deg)}82%{transform:translateX(65%) rotate(10deg)}}
+.intro-splash{background:radial-gradient(ellipse at 50% 45%,#354b18 0%,#151b12 34%,#020403 78%)!important}
+.intro-splash:before{content:"";position:absolute;inset:-35%;background:conic-gradient(from 0deg,transparent 0 68%,#c7ff4a28 76%,transparent 84%);animation:apexIntroOrbit 9s linear infinite;pointer-events:none}
+@keyframes apexIntroOrbit{to{transform:rotate(360deg)}}
+.apex-player-card.draft-player-card{transform-style:preserve-3d;box-shadow:0 20px 42px #000b,0 0 0 1px #dfff9b55,inset 0 0 26px #dfff9b22}
+.apex-player-card.draft-player-card:after{background:linear-gradient(90deg,#fff6c2,#c7ff4a,#fff6c2)!important;box-shadow:0 0 18px #c7ff4a99}
+.apex-player-card.draft-player-card.icon{box-shadow:0 20px 48px #000c,0 0 30px #f7d27a77,inset 0 0 28px #ffe6a044}
+.apex-signing-stage{background:radial-gradient(ellipse at 50% 55%,#c7ff4a20,transparent 56%),linear-gradient(180deg,#10180e,#030604)!important}
+.apex-player-card.draft-player-card.signing-hero-card{filter:drop-shadow(0 0 28px #c7ff4a66)}
+@media(prefers-reduced-motion:reduce){.mode-card.h2h-mode:before,.intro-splash:before{animation:none!important}}
