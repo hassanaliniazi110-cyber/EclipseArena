@@ -982,6 +982,7 @@ io.on("connection", socket => {
   socket.on("match:state", payload => {
     const now = Date.now();
     if (now - lastStatePacketAt < 80) return;
+    if (!socketWithinLimit(socket, "match:state", 12, 1000)) return;
     lastStatePacketAt = now;
     const roomId = cleanText(payload?.roomId, 32);
     const match = activeMatches.get(roomId);
