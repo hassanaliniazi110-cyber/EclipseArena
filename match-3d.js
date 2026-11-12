@@ -2,11 +2,11 @@
   "use strict";
   const T = window.THREE;
   let sourceCanvas=null,wrap=null,glCanvas=null,hud=null,renderer=null,scene=null,camera=null;
-  let resizeObserver=null,lastWidth=0,lastHeight=0,active=false,raf=0,getState=null;
+  let resizeObserver=null,lastWidth=0,lastHeight=0,active=false,raf=0,getState=null,lastRenderAt=0,lowPowerMode=false;
   let playerModel,rivalModel,keeperHome,keeperAway,teammateModels=[],rivalSupportModels=[],ball,ballShadow,flightTrail,aimMarker,cameraTarget;
   let hudMode,hudScore,hudClock,hudStatus,lastPlayerLabel="",cameraZoom=1,cameraMode="sideline";
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-  const FIELD_WIDTH=76,FIELD_LENGTH=118;
+  const FIELD_WIDTH=84,FIELD_LENGTH=130;
   const mat=(color,extra)=>new T.MeshStandardMaterial(Object.assign({color:color||0xffffff,roughness:.62,metalness:.035},extra||{}));
   function box(parent,size,pos,material,cast,receive){
     const m=new T.Mesh(new T.BoxGeometry(size[0],size[1],size[2]),material);
@@ -79,7 +79,7 @@
     const halo=new T.Mesh(new T.RingGeometry(.68,.79,48),new T.MeshBasicMaterial({color:accentColor||"#75eaff",transparent:true,opacity:.16,side:T.DoubleSide,depthWrite:false}));
     halo.rotation.x=-Math.PI/2;halo.position.y=.035;root.add(halo);
     root.rotation.y=facing==="toward"?Math.PI:0;
-    root.scale.setScalar(isKeeper?1.48:1.42);root.userData={arms,legs,halo,label:nameLabel,isKeeper,phase:Math.random()*6.28};return root;
+    root.scale.setScalar(isKeeper?1.48:1.42);root.userData={arms,legs,halo,label:nameLabel,isKeeper,phase:Math.random()*6.28,kitMaterial:kit,sockMaterial:socks,trimMaterial:trim};return root;
   }
   function makeBall(){
     const group=new T.Group();
@@ -112,7 +112,7 @@
   function goal(z,direction){
     const root=new T.Group();scene.add(root);const frame=mat("#eaf6ff",{metalness:.55,roughness:.22});
     const net=new T.LineBasicMaterial({color:0xb9d9ec,transparent:true,opacity:.38});
-    const x1=-6.1,x2=6.1,top=3.8,back=z+direction*3.4;
+    const x1=-7.1,x2=7.1,top=4.2,back=z+direction*4;
     segment(root,[x1,.1,z],[x1,top,z],.095,frame);segment(root,[x2,.1,z],[x2,top,z],.095,frame);
     segment(root,[x1,top,z],[x2,top,z],.095,frame);
     segment(root,[x1,.1,z],[x1,.1,back],.035,frame);segment(root,[x2,.1,z],[x2,.1,back],.035,frame);
@@ -127,8 +127,8 @@
     function row(side,end){
       const count=end?34:32,rows=7,mesh=new T.InstancedMesh(geo,material,count*rows),d=new T.Object3D();let n=0;
       for(let r=0;r<rows;r++)for(let i=0;i<count;i++){
-        if(!end)d.position.set(side*(42.5+r*.72),3.7+r*.56,-59+i*3.8);
-        else {d.position.set(-38+i*2.3,3.7+r*.56,side*(65.5+r*.72));d.rotation.y=side<0?0:Math.PI;}
+        if(!end)d.position.set(side*(47.5+r*.78),3.7+r*.58,-67+i*4.2);
+        else {d.position.set(-43+i*2.55,3.7+r*.58,side*(73.5+r*.78));d.rotation.y=side<0?0:Math.PI;}
         d.scale.set(1,1,1);d.updateMatrix();mesh.setMatrixAt(n,d.matrix);
         if(mesh.setColorAt)mesh.setColorAt(n,new T.Color(colors[(i*3+r*5)%colors.length]));n++;
       }
@@ -140,7 +140,7 @@
   
   function buildScene(){
     scene.background=new T.Color(0x071321);scene.fog=new T.Fog(0x071321,210,380);
-    const ground=new T.Mesh(new T.PlaneGeometry(155,190),mat("#081521",{roughness:1}));
+    const ground=new T.Mesh(new T.PlaneGeometry(175,215),mat("#081521",{roughness:1}));
     ground.rotation.x=-Math.PI/2;ground.position.y=-1.45;ground.receiveShadow=true;scene.add(ground);
     const turf=new T.Mesh(new T.PlaneGeometry(FIELD_WIDTH,FIELD_LENGTH),mat("#167743",{roughness:.94}));
     turf.rotation.x=-Math.PI/2;turf.receiveShadow=true;scene.add(turf);
@@ -159,10 +159,10 @@
     boxMark(20.16,16.5,-L/2,1);boxMark(9.16,5.5,-L/2,1);
     boxMark(20.16,16.5,L/2,-1);boxMark(9.16,5.5,L/2,-1);
     const sideStand=mat("#12263c",{roughness:.86});
-    box(scene,[6.2,9,128],[-44.5,4.4,0],sideStand,false,true);
-    box(scene,[6.2,9,128],[44.5,4.4,0],sideStand,false,true);
-    box(scene,[88,9,6.2],[0,4.4,-66.5],sideStand,false,true);
-    box(scene,[88,9,6.2],[0,4.4,66.5],sideStand,false,true);
+    box(scene,[6.8,9,146],[-52,4.4,0],sideStand,false,true);
+    box(scene,[6.8,9,146],[52,4.4,0],sideStand,false,true);
+    box(scene,[100,9,6.8],[0,4.4,-76.5],sideStand,false,true);
+    box(scene,[100,9,6.8],[0,4.4,76.5],sideStand,false,true);
     seats();
     const led=mat("#06334a",{emissive:0x0879a0,emissiveIntensity:1.4,roughness:.35});
     [-1,1].forEach(side=>box(scene,[.24,.72,114],[side*39.2,.44,0],led,false,false));
@@ -183,6 +183,18 @@
     scene.add(new T.Points(particles,new T.PointsMaterial({color:0xd9f2ff,size:.09,transparent:true,opacity:.55})));
   }
   
+  function applyModelKit(model,shirtColor,accentColor){
+    const data=model?.userData;if(!data)return;
+    if(data.kitMaterial)data.kitMaterial.color.set(shirtColor);
+    if(data.sockMaterial)data.sockMaterial.color.set(shirtColor);
+    if(data.trimMaterial)data.trimMaterial.color.set(accentColor||"#eafaff");
+  }
+  function setKits(homeColor,accentColor,keeperColor,awayColor){
+    const home=homeColor||"#20c9ec",accent=accentColor||"#dffaff",keeper=keeperColor||"#c7ff4a",away=awayColor||"#e34b69";
+    applyModelKit(playerModel,home,accent);teammateModels.forEach(p=>applyModelKit(p,home,accent));
+    applyModelKit(keeperHome,keeper,accent);applyModelKit(keeperAway,keeper,accent);
+    applyModelKit(rivalModel,away,"#ffdce4");rivalSupportModels.forEach(p=>applyModelKit(p,away,"#ffdce4"));
+  }
   function buildActors(){
     playerModel=footballer("YOU","#20c9ec","#dffaff",false,"away");
     rivalModel=footballer("RIVAL","#e34b69","#ffdce4",false,"toward");
@@ -270,6 +282,7 @@
   function safeState(){try{return getState?getState():null;}catch(_){return null;}}
   function render(now){
     if(!active||!renderer)return;if(document.hidden){raf=0;return;}raf=requestAnimationFrame(render);
+    if(now-lastRenderAt<1000/45)return;lastRenderAt=now;
     const rect=sourceCanvas.getBoundingClientRect();if(rect.width<2||rect.height<2)return;
     if(rect.width!==lastWidth||rect.height!==lastHeight)resize();
     const s=safeState();if(!s)return;const time=now/1000,h2h=s.mode==="headtohead",m=s.match||{};
@@ -281,6 +294,8 @@
     if(activeLabel!==lastPlayerLabel)lastPlayerLabel=activeLabel;
     if(h2h){
       playerModel.visible=true;rivalModel.visible=true;keeperHome.visible=true;keeperAway.visible=true;
+      setActorLabel(keeperHome,(s.selectedGoalkeeper||"GOALKEEPER")+" · "+(s.goalkeeperRating||"")+" OVR");
+      setActorLabel(keeperAway,"AI GOALKEEPER");
       place(playerModel,m.player.x===undefined?.5:m.player.x,m.player.y===undefined?.72:m.player.y,"away",time,true);
       place(rivalModel,m.rival.x===undefined?.5:m.rival.x,m.rival.y===undefined?.28:m.rival.y,"toward",time,false);
       teammateModels.forEach((p,i)=>{
@@ -314,8 +329,8 @@
       aimMarker.visible=false;flightTrail.visible=false;ball.position.set((m.ball.x-.5)*FIELD_WIDTH,.24,(m.ball.y-.5)*FIELD_LENGTH);
     }else{
       teammateModels.forEach(p=>p.visible=false);rivalSupportModels.forEach(p=>p.visible=false);rivalModel.visible=false;keeperHome.visible=false;keeperAway.visible=true;
-      if(s.mode==="goalkeeping"||s.mode==="survival"){playerModel.visible=false;keeperAway.position.set(0,0,-FIELD_LENGTH/2+1.2);keeperAway.userData.label.visible=true;}
-      else{place(playerModel,.5,.76,"away",time,true);keeperAway.position.set(0,0,-FIELD_LENGTH/2+1.2);keeperAway.userData.label.visible=true;}
+      if(s.mode==="goalkeeping"||s.mode==="survival"){playerModel.visible=false;setActorLabel(keeperAway,(s.selectedGoalkeeper||"GOALKEEPER")+" · "+(s.goalkeeperRating||"")+" OVR");keeperAway.position.set(0,0,-FIELD_LENGTH/2+1.2);keeperAway.userData.label.visible=true;}
+      else{place(playerModel,.5,.76,"away",time,true);setActorLabel(keeperAway,(s.selectedGoalkeeper||"GOALKEEPER")+" · "+(s.goalkeeperRating||"")+" OVR");keeperAway.position.set(0,0,-FIELD_LENGTH/2+1.2);keeperAway.userData.label.visible=true;}
       keeperAway.rotation.y=Math.PI;
       const keeperMode=s.mode==="goalkeeping"||s.mode==="survival";
       const dive=s.keeperMotion;
@@ -388,8 +403,9 @@
       hud=document.createElement("div");hud.className="apex-3d-hud";
       hud.innerHTML='<div class="apex-3d-scoreboard"><div class="apex-3d-hud-top"><span class="apex-3d-hud-brand">APEX <b>STRIKERS</b></span><span class="apex-3d-hud-live"><i></i> LIVE ENGINE</span></div><div class="apex-3d-hud-middle"><span class="apex-3d-hud-mode">MATCH</span><strong class="apex-3d-hud-score">0 : 0</strong><span class="apex-3d-hud-clock">00:00</span></div><div class="apex-3d-hud-status">3D MATCH ENGINE · LIVE</div></div>';
       wrap.appendChild(hud);hudMode=hud.querySelector(".apex-3d-hud-mode");hudScore=hud.querySelector(".apex-3d-hud-score");hudClock=hud.querySelector(".apex-3d-hud-clock");hudStatus=hud.querySelector(".apex-3d-hud-status");
-      renderer=new T.WebGLRenderer({canvas:glCanvas,antialias:true,alpha:false,powerPreference:"high-performance"});
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.25));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;
+      lowPowerMode=window.matchMedia?.("(max-width: 800px)").matches||Number(navigator.hardwareConcurrency||8)<=4;
+      renderer=new T.WebGLRenderer({canvas:glCanvas,antialias:!lowPowerMode,alpha:false,powerPreference:"high-performance"});
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,lowPowerMode?1:1.25));renderer.shadowMap.enabled=!lowPowerMode;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;
       renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.16;
       if("outputColorSpace" in renderer)renderer.outputColorSpace=T.SRGBColorSpace;
       scene=new T.Scene();camera=new T.PerspectiveCamera(47,1,.1,400);camera.position.set(0,23,29);camera.zoom=cameraZoom;camera.updateProjectionMatrix();
@@ -413,5 +429,5 @@
     cameraMode=value;return cameraMode;
   }
   function getCameraView(){return cameraMode;}
-  window.ApexMatch3D={init,resize,sync,setZoom,getZoom,setCameraView,getCameraView,get active(){return active;}};
+  window.ApexMatch3D={init,resize,sync,setZoom,getZoom,setCameraView,getCameraView,setKits,get active(){return active;}};
 })();
