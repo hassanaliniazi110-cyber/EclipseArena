@@ -82,7 +82,7 @@ const goalkeepers = [
   let score = 0, opponentScore = 0, matchMinute = 0, matchAttacks = 0, attempt = 1, aim = {x:.5,y:.27}, power = 78, shotTaken = false, keeperDive = "center", keeperMotion = null, ballAnim = null, animationFrame = 0;
   const canvas = $("pitch"), ctx = canvas.getContext("2d");
   let cw = 900, ch = 620, lastResult = "", shotTimer = null, soundOn = false, masterVolume = 0.65, passcodeFailures=0, passcodeLockUntil=0, lastShotReplay=null, celebrationUntil=0;
-  const match = {active:false,finished:false,clock:0,lastTick:0,player:{x:.5,y:.72},rival:{x:.5,y:.28},ball:{x:.5,y:.72},move:"",sprint:false,hasBall:true,playerGoals:0,rivalGoals:0,rankPoints:0,rank:"ROOKIE III",lastRivalShot:0};
+  const match = {active:false,finished:false,clock:0,lastTick:0,player:{x:.5,y:.72},rival:{x:.5,y:.28},ball:{x:.5,y:.72},move:"",moveX:0,moveY:0,sprint:false,hasBall:true,playerGoals:0,rivalGoals:0,rankPoints:0,rank:"ROOKIE III",lastRivalShot:0};
   function getApex3DState(){
     return {
       mode,selectedPlayer,selectedGoalkeeper,score,attemptLabel:"ATTEMPT "+attempt,
@@ -426,8 +426,8 @@ const goalkeepers = [
   function awardProgress(success){career.attempts++;if(success){if(mode==="goalkeeping"||mode==="survival")career.saves++;else career.goals++;}const earned=10+(success?20:0),progressionPlayer=(mode==="goalkeeping"||mode==="survival")?selectedGoalkeeper:selectedPlayer;career.xp+=earned;career.unlockXP=(career.unlockXP||0)+earned;career.players[progressionPlayer]=(career.players[progressionPlayer]||0)+earned;career.bestScore=Math.max(career.bestScore,score);career.achievements=career.achievements||{};const milestones=[["firstAttempt",career.attempts>=1,"First Whistle"],["firstGoal",career.goals>=1,"First Goal"],["hatTrick",career.goals>=3,"Hat-Trick Hero"],["keeperWall",career.saves>=5,"Keeper Wall"],["xp1000",career.xp>=1000,"XP Collector"]];const newlyUnlocked=[];milestones.forEach(([id,earnedNow,label])=>{if(earnedNow&&!career.achievements[id]){career.achievements[id]=true;newlyUnlocked.push(label);}});saveCareer();renderPlayers();const unlocked=newlyUnlocked.length?" · ACHIEVEMENT UNLOCKED: "+newlyUnlocked.join(", "):"";return "CAREER · "+career.goals+" goals · "+career.saves+" saves · "+career.xp+" XP · BEST "+career.bestScore+" · "+progressionPlayer+" LVL "+(1+Math.floor((career.players[progressionPlayer]||0)/100))+unlocked;}
   function playCue(kind){if(!soundOn)return;const ac=getMusicContext();if(!ac)return;try{ac.resume();const t=ac.currentTime+.01;if(kind==="goal"){tone(523,.12,"triangle",.05,t);tone(659,.16,"triangle",.045,t+.12);tone(784,.22,"triangle",.04,t+.25);}else{tone(220,.14,"sine",.035,t);tone(165,.18,"sine",.025,t+.12);}}catch(_){}}
   function resizeCanvas(){
-    const rect=canvas.getBoundingClientRect();if(!rect.width)return;
-    const dpr=Math.min(window.devicePixelRatio||1,1.75);canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.width/1.36*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);cw=rect.width;ch=rect.width/1.36;window.ApexMatch3D?.resize?.();drawPitch();
+    const rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return;
+    const dpr=Math.min(window.devicePixelRatio||1,1.75);canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);cw=rect.width;ch=rect.height;window.ApexMatch3D?.resize?.();drawPitch();
   }
   function drawFootballer(cx,cy,size,rotation,jersey,isKeeper,playerName){
     const name=playerName||"",known={
@@ -1202,8 +1202,8 @@ const goalkeepers = [
     activeRewardSessionId=null;activeRewardSessionPromise=null;rewardClaimedThisGame=false;activeRewardEventId=pendingApexEventId;pendingApexEventId="";
     if(onlineCfg.base&&onlineCfg.token)activeRewardSessionPromise=api("/api/games/start",{method:"POST",body:JSON.stringify({mode,eventId:activeRewardEventId})}).then(data=>{activeRewardSessionId=data.sessionId;return data.sessionId;}).catch(error=>{activeRewardSessionId=null;activeRewardSessionPromise=null;toast("Online game session could not start: "+error.message);return null;});
     if(!isRandomRush){recentModes=[nextMode,...recentModes.filter(x=>x!==nextMode)].slice(0,5);try{localStorage.setItem("eclipseRecentModes",JSON.stringify(recentModes));}catch(_){}renderModeTools();}
-    match.active=mode==="headtohead";match.finished=false;match.clock=0;match.playerGoals=0;match.rivalGoals=0;match.rankPoints=0;match.rank="ROOKIE III";match.player={x:.5,y:.72};match.rival={x:.5,y:.28};match.ball={x:.5,y:.72};match.move="";match.sprint=false;match.hasBall=true;match.lastRivalShot=0;
-    $("matchHud").classList.toggle("hidden",!match.active);$("matchControls").classList.toggle("hidden",!match.active);$("matchResult").classList.add("hidden");$("matchResult").textContent="";
+    match.active=mode==="headtohead";match.finished=false;match.clock=0;match.playerGoals=0;match.rivalGoals=0;match.rankPoints=0;match.rank="ROOKIE III";match.player={x:.5,y:.72};match.rival={x:.5,y:.28};match.ball={x:.5,y:.72};match.move="";match.moveX=0;match.moveY=0;match.sprint=false;match.hasBall=true;match.lastRivalShot=0;
+    $("matchHud").classList.toggle("hidden",!match.active);$("matchControls").classList.toggle("hidden",!match.active);$("matchCameraControls").classList.toggle("hidden",!match.active);$("matchResult").classList.add("hidden");$("matchResult").textContent="";
     $("powerSlider").classList.toggle("hidden",match.active);$("powerSlider").disabled=match.active;$("shootBtn").classList.toggle("hidden",match.active);$("matchRank").textContent="ROOKIE III · 0 PTS";
     score=0;attempt=1;if(mode==="headtohead"||mode==="vsattack"){opponentScore=0;matchMinute=0;matchAttacks=0;}
     $("homeScreen").classList.add("hidden");$("gameScreen").classList.remove("hidden");
@@ -1220,7 +1220,7 @@ const goalkeepers = [
     cancelAnimationFrame(animationFrame);match.lastTick=performance.now();
     const tick=(now)=>{if(!match.active||match.finished)return;const dt=Math.min(.06,(now-match.lastTick)/1000);match.lastTick=now;if(onlineCfg.onlineMatch&&onlineCfg.matchStartAt){match.clock=Math.min(90,Math.max(0,(Date.now()-onlineCfg.matchStartAt)/1000));}else match.clock+=dt;
       if(match.clock>=90){match.clock=90;endFullMatch();return}
-      const step=(match.sprint?.38:.25)*dt;if(match.move==="up")match.player.y-=step;if(match.move==="down")match.player.y+=step;if(match.move==="left")match.player.x-=step;if(match.move==="right")match.player.x+=step;
+      const step=(match.sprint?.48:.34)*dt;const axisX=match.moveX||(match.move==="left"?-1:match.move==="right"?1:0);const axisY=match.moveY||(match.move==="up"?-1:match.move==="down"?1:0);const magnitude=Math.hypot(axisX,axisY);const axisScale=magnitude>1?1/magnitude:1;match.player.x+=axisX*axisScale*step;match.player.y+=axisY*axisScale*step;
       match.player.x=Math.max(.08,Math.min(.92,match.player.x));match.player.y=Math.max(.06,Math.min(.94,match.player.y));
       const dx=match.player.x-match.rival.x,dy=match.player.y-match.rival.y,dist=Math.hypot(dx,dy)||.001;if(!onlineCfg.onlineMatch){match.rival.x+=dx/dist*.12*dt;match.rival.y+=dy/dist*.12*dt;}
       if(match.hasBall){match.ball.x=match.player.x;match.ball.y=match.player.y-.022}else{match.ball.x=match.rival.x;match.ball.y=match.rival.y-.022}
@@ -1337,14 +1337,23 @@ const goalkeepers = [
     $("shootBtn").onclick=null;drawPitch();
   }
   function setAimFromEvent(e){
-    if(shotTaken||mode==="goalkeeping"||mode==="survival")return;
+    if(mode==="headtohead"||shotTaken||mode==="goalkeeping"||mode==="survival")return;
     const rect=canvas.getBoundingClientRect();const x=(e.clientX-rect.left)/rect.width;const y=(e.clientY-rect.top)/rect.height;
     aim={x:Math.max(.1,Math.min(.9,x)),y:Math.max(.06,Math.min(.42,y))};drawPitch();
   }
   canvas.addEventListener("pointerdown",e=>{canvas.setPointerCapture?.(e.pointerId);setAimFromEvent(e)});
-  canvas.addEventListener("pointermove",e=>{if(e.buttons)setAimFromEvent(e)});
-  document.querySelectorAll("[data-move]").forEach(b=>{const clear=()=>{if(match.move===b.dataset.move)match.move="";};b.addEventListener("pointerdown",e=>{e.preventDefault();match.move=b.dataset.move;b.setPointerCapture?.(e.pointerId)});b.addEventListener("pointerup",clear);b.addEventListener("pointercancel",clear);b.addEventListener("lostpointercapture",clear);});
+  canvas.addEventListener("pointermove",e=>{if(e.buttons&&mode!=="headtohead")setAimFromEvent(e)});
+  const joystick=$("matchJoystick"),joystickThumb=$("matchJoystickThumb");let joystickPointer=null;
+  function resetJoystick(){joystickPointer=null;match.moveX=0;match.moveY=0;if(joystickThumb)joystickThumb.style.transform="translate(0,0)";}
+  function moveJoystick(e){if(joystickPointer!==e.pointerId||!joystick)return;const r=joystick.getBoundingClientRect(),radius=Math.max(24,Math.min(r.width,r.height)*.34);let dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);const len=Math.hypot(dx,dy);if(len>radius){dx=dx/len*radius;dy=dy/len*radius;}match.moveX=dx/radius;match.moveY=dy/radius;if(joystickThumb)joystickThumb.style.transform="translate("+dx+"px,"+dy+"px)";}
+  if(joystick){joystick.addEventListener("pointerdown",e=>{if(!match.active)return;e.preventDefault();joystickPointer=e.pointerId;joystick.setPointerCapture?.(e.pointerId);moveJoystick(e);});joystick.addEventListener("pointermove",moveJoystick);["pointerup","pointercancel","lostpointercapture"].forEach(type=>joystick.addEventListener(type,resetJoystick));}
   document.querySelectorAll("[data-action]").forEach(b=>b.addEventListener("click",()=>matchAction(b.dataset.action)));
+  document.querySelectorAll("[data-camera-zoom]").forEach(b=>b.addEventListener("click",()=>{const current=window.ApexMatch3D?.getZoom?.()||1.25;const action=b.dataset.cameraZoom;window.ApexMatch3D?.setZoom?.(action==="reset"?1.25:current+(action==="in"?.12:-.12));}));
+  const heldMatchKeys=new Set();
+  function syncMatchKeyboard(){if(!match.active)return;match.moveX=(heldMatchKeys.has("a")||heldMatchKeys.has("arrowleft")?-1:0)+(heldMatchKeys.has("d")||heldMatchKeys.has("arrowright")?1:0);match.moveY=(heldMatchKeys.has("w")||heldMatchKeys.has("arrowup")?-1:0)+(heldMatchKeys.has("s")||heldMatchKeys.has("arrowdown")?1:0);}
+  document.addEventListener("keydown",e=>{if(!match.active||e.target.matches("input,textarea,select"))return;const key=e.key.toLowerCase();if(["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"].includes(key)){e.preventDefault();heldMatchKeys.add(key);syncMatchKeyboard();}else if(key==="shift"){match.sprint=true;}else if(!e.repeat&&key===" "){e.preventDefault();matchAction("shoot");}else if(!e.repeat&&key==="e"){matchAction("pass");}else if(!e.repeat&&key==="q"){matchAction("tackle");}});
+  document.addEventListener("keyup",e=>{const key=e.key.toLowerCase();if(heldMatchKeys.delete(key))syncMatchKeyboard();if(key==="shift")match.sprint=false;});
+  window.addEventListener("blur",()=>{heldMatchKeys.clear();match.moveX=0;match.moveY=0;match.sprint=false;});
   document.querySelectorAll("[data-mode]").forEach(b=>b.addEventListener("click",()=>startMode(b.dataset.mode)));
   document.addEventListener("click",e=>{
     const youtubeButton=e.target.closest("[data-open-youtube]");
@@ -1356,7 +1365,7 @@ const goalkeepers = [
   document.querySelectorAll("[data-difficulty]").forEach(b=>b.addEventListener("click",()=>{difficulty=b.dataset.difficulty;document.querySelectorAll("[data-difficulty]").forEach(x=>x.classList.toggle("selected",x===b));}));
 
   $("playNowBtn").addEventListener("click",()=>{document.querySelector(".mode-section")?.scrollIntoView({behavior:"smooth",block:"start"});toast("Choose a challenge to begin")});
-  $("backBtn").addEventListener("click",()=>{if(mode!=="headtohead"&&mode!=="vsattack"&&!rewardClaimedThisGame)claimGameReward(score);match.active=false;cancelAnimationFrame(animationFrame);$("matchHud").classList.add("hidden");$("matchControls").classList.add("hidden");$("gameScreen").classList.add("hidden");$("homeScreen").classList.remove("hidden");ballAnim=null;cancelAnimationFrame(animationFrame);window.scrollTo({top:0,behavior:"auto"})});
+  $("backBtn").addEventListener("click",()=>{if(mode!=="headtohead"&&mode!=="vsattack"&&!rewardClaimedThisGame)claimGameReward(score);match.active=false;cancelAnimationFrame(animationFrame);$("matchHud").classList.add("hidden");$("matchControls").classList.add("hidden");$("matchCameraControls").classList.add("hidden");resetJoystick();$("gameScreen").classList.add("hidden");$("homeScreen").classList.remove("hidden");ballAnim=null;cancelAnimationFrame(animationFrame);window.scrollTo({top:0,behavior:"auto"})});
   $("shootBtn").addEventListener("click",()=>{if(mode==="goalkeeping"||mode==="survival")dive();else shoot()});$("nextBtn").addEventListener("click",nextAttempt);
   $("powerSlider").addEventListener("input",e=>{power=Number(e.target.value);$("powerReadout").textContent=power+"%"});
   document.querySelectorAll("[data-dive]").forEach(b=>b.addEventListener("click",()=>{keeperDive=b.dataset.dive;document.querySelectorAll("[data-dive]").forEach(x=>x.style.borderColor=x===b?"#c7ff4a":"");$("feedback").textContent="Dive selected: "+keeperDive.toUpperCase()+". Press save when ready."}));
