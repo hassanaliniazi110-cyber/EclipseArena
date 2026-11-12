@@ -1631,6 +1631,18 @@ const goalkeepers = [
   if(onlineCfg.base){connectPromise=connectOnline();startFriendPresenceRefresh();}else setServerStatus("Offline mode · backend URL is managed in repository configuration.");
   renderCareerHub();renderPlayers();
 
+  function syncUniversalTouchControls(){
+    const panel=$("universalTouchControls"),main=$("virtualMainAction"),directions=$("virtualKeeperDirections");
+    if(!panel||!main||!directions)return;
+    const isKeeper=mode==="goalkeeping"||mode==="survival";
+    const isTouch=Boolean(deviceProfile&&deviceProfile.touch);
+    const show=isTouch&&mode!=="headtohead"&&$("gameScreen")&&!$("gameScreen").classList.contains("hidden");
+    panel.classList.toggle("hidden",!show);
+    directions.classList.toggle("hidden",!show||!isKeeper);
+    main.classList.toggle("hidden",!show||isKeeper);
+    main.textContent=shotTaken?"NEXT ATTACK →":"SHOOT ↗";
+    $("shootBtn")?.classList.toggle("hidden",match.active||deviceProfile.type==="ipad");
+  }
   function startMode(nextMode,challenge="standard"){
     document.documentElement.dataset.activeDevice=deviceProfile.type;
     const isRandomRush=nextMode==="random";
@@ -1644,15 +1656,16 @@ const goalkeepers = [
     if(match.active){renderMatchSquadPicker();buildMatchTeams();}
     applyCurrentTeamKits();
     $("matchHud").classList.toggle("hidden",!match.active);$("matchControls").classList.toggle("hidden",!match.active);$("matchSquadPicker")?.classList.toggle("hidden",!match.active);$("matchCameraControls").classList.remove("hidden");$("matchResult").classList.add("hidden");$("matchResult").textContent="";
-    $("powerSlider").classList.toggle("hidden",match.active);$("powerSlider").disabled=match.active;$("shootBtn").classList.toggle("hidden",match.active);$("matchRank").textContent="ROOKIE III · 0 PTS";
+    $("powerSlider").classList.toggle("hidden",match.active);$("powerSlider").disabled=match.active;$("shootBtn").classList.toggle("hidden",match.active||deviceProfile.type==="ipad");$("matchRank").textContent="ROOKIE III · 0 PTS";
     score=0;attempt=1;if(mode==="headtohead"||mode==="vsattack"){opponentScore=0;matchMinute=0;matchAttacks=0;}
     $("homeScreen").classList.add("hidden");$("gameScreen").classList.remove("hidden");window.ApexMatch3D?.resume?.();
     $("gameTitle").innerHTML=modeNames[mode]+" <em>MODE</em>";$("controlHeading").textContent=modeText[mode][0];$("controlText").textContent=modeText[mode][1];
     if(isRandomRush){$("gameTitle").innerHTML="RANDOM <em>RUSH</em>";$("controlHeading").textContent="Surprise challenge: "+modeNames[mode];$("controlText").textContent="Random Rush picked "+modeNames[mode]+". Finish the challenge, then try again for a different surprise.";}
     $("keeperPad").classList.toggle("hidden",mode!=="goalkeeping"&&mode!=="survival");
-    $("shootBtn").classList.remove("hidden");$("shootBtn").innerHTML=(mode==="goalkeeping"||mode==="survival")?"DIVE / SAVE <span>↗</span>":"SHOOT <span>↗</span>";
+    $("shootBtn").classList.toggle("hidden",deviceProfile.type==="ipad");$("shootBtn").innerHTML=(mode==="goalkeeping"||mode==="survival")?"DIVE / SAVE <span>↗</span>":"SHOOT <span>↗</span>";
     $("nextBtn").classList.add("hidden");$("aimTip").textContent=(mode==="goalkeeping"||mode==="survival")?"CHOOSE A DIVE · THEN SAVE THE SHOT":mode==="crossbar"?"AIM FOR THE CROSSBAR ZONE · THEN SHOOT":"TAP OR DRAG ON THE PITCH TO AIM";
     aim={x:.5,y:.27};keeperDive="center";keeperMotion=null;$("feedback").textContent="Ready when you are.";$("scoreValue").textContent=score;$("roundLabel").textContent="ATTEMPT "+String(attempt).padStart(2,"0");$("difficultyLabel").textContent=difficulty.toUpperCase()+" LEVEL";
+    syncUniversalTouchControls();
     if(match.active){$("aimTip").textContent="MOVE YOUR PLAYER · PASS · TACKLE · SHOOT";$("roundLabel").textContent=h2hChallenge==="comeback"?"COMEBACK · 0–2 DOWN":h2hChallenge==="golden"?"GOLDEN GOAL · FIRST TO SCORE":"KICK-OFF · 00:00";$("controlHeading").textContent=h2hChallenge==="comeback"?"Comeback challenge":h2hChallenge==="golden"?"Golden goal against AI":"H2H · Play against AI";$("controlText").textContent="Move with the joystick, create space, pass, tackle and shoot. AI difficulty: "+difficulty+".";resizeCanvas();startMatchLoop();}else{resizeCanvas();window.scrollTo({top:0,behavior:"smooth"});}
   }
   if($("featuredEventPlay"))$("featuredEventPlay").addEventListener("click",()=>startMode("vsattack"));
@@ -1858,7 +1871,7 @@ const goalkeepers = [
     }
     $("scoreValue").textContent=mode==="headtohead"||mode==="vsattack"?Math.floor(score/100)+"-"+opponentScore:score;
     const careerLine=awardProgress(success);playCue(success?"goal":"save");if(success&&mode!=="goalkeeping"&&mode!=="survival")celebrationUntil=performance.now()+900;if(mode==="vsattack"&&matchAttacks>=5&&Math.floor(score/100)>opponentScore&&!tournamentActive){career.tournamentWins++;career.unlockWins=(career.unlockWins||0)+1;saveCareer();message+=" 🏆 VS ATTACK WON! Total wins: "+career.tournamentWins;}if(success&&mode!=="goalkeeping"&&mode!=="survival")message="🏆 "+message+"  ✨ GOAL CELEBRATION!";$("feedback").textContent=message+"  |  "+careerLine+"  |  Press R to replay your last shot.";
-    $("shootBtn").classList.add("hidden");$("nextBtn").classList.remove("hidden");
+    $("shootBtn").classList.add("hidden");$("nextBtn").classList.remove("hidden");syncUniversalTouchControls();
     $("nextBtn").textContent=(mode==="headtohead"&&matchMinute>=90)||(mode==="vsattack"&&matchAttacks>=5)?"FINISH MATCH":"NEXT ATTACK →";
     $("roundLabel").textContent=mode==="headtohead"?matchMinute+"' · "+(matchMinute>=90?"FULL TIME":"MATCH LIVE"):mode==="vsattack"?"ATTACK "+matchAttacks+" / 5":"ATTEMPT "+String(attempt).padStart(2,"0")+" · COMPLETE";
   }
@@ -1935,7 +1948,7 @@ const goalkeepers = [
       $("shootBtn").onclick=()=>startMode(mode);return;
     }
     attempt++;shotTaken=false;ballAnim=null;keeperMotion=null;aim={x:.5,y:.27};
-    $("shootBtn").classList.remove("hidden");$("shootBtn").textContent=(mode==="goalkeeping"||mode==="survival")?"DIVE / SAVE ↗":"SHOOT ↗";
+    $("shootBtn").classList.toggle("hidden",deviceProfile.type==="ipad");$("shootBtn").textContent=(mode==="goalkeeping"||mode==="survival")?"DIVE / SAVE ↗":"SHOOT ↗";syncUniversalTouchControls();
     $("nextBtn").classList.add("hidden");$("feedback").textContent="Next attack. Make it count.";
     $("roundLabel").textContent=mode==="headtohead"?(matchMinute+10)+"' · MATCH LIVE":mode==="vsattack"?"ATTACK "+(matchAttacks+1)+" / 5":"ATTEMPT "+String(attempt).padStart(2,"0");
     $("shootBtn").onclick=null;drawPitch();
@@ -1978,6 +1991,11 @@ const goalkeepers = [
   $("playNowBtn").addEventListener("click",()=>{document.querySelector(".mode-section")?.scrollIntoView({behavior:"smooth",block:"start"});toast("Choose a challenge to begin")});
   $("backBtn").addEventListener("click",()=>{if(mode!=="headtohead"&&mode!=="vsattack"&&!rewardClaimedThisGame)claimGameReward(score);match.active=false;cancelAnimationFrame(animationFrame);$("matchHud").classList.add("hidden");$("matchControls").classList.add("hidden");$("matchCameraControls").classList.add("hidden");resetJoystick();window.ApexMatch3D?.pause?.();$("gameScreen").classList.add("hidden");$("homeScreen").classList.remove("hidden");ballAnim=null;cancelAnimationFrame(animationFrame);window.scrollTo({top:0,behavior:"auto"})});
   $("shootBtn").addEventListener("click",()=>{if(mode==="goalkeeping"||mode==="survival")dive();else shoot()});$("nextBtn").addEventListener("click",nextAttempt);
+  $("virtualMainAction")?.addEventListener("click",()=>{if(shotTaken)nextAttempt();else if(mode==="goalkeeping"||mode==="survival")dive();else shoot();});
+  document.querySelectorAll("[data-virtual-dive]").forEach(b=>b.addEventListener("click",()=>{keeperDive=b.dataset.virtualDive;document.querySelectorAll("[data-virtual-dive]").forEach(x=>x.classList.toggle("selected",x===b));$("feedback").textContent="Dive selected: "+keeperDive.toUpperCase()+". Tap DIVE / SAVE."; }));
+  $("virtualKeeperDirections")?.addEventListener("dblclick",e=>{if(e.target.closest("[data-virtual-dive]"))return;dive();});
+  $("virtualKeeperDirections")?.addEventListener("click",e=>{if(e.target.closest("[data-virtual-dive]"))return;dive();});
+
   $("powerSlider").addEventListener("input",e=>{power=Number(e.target.value);$("powerReadout").textContent=power+"%"});
   document.querySelectorAll("[data-dive]").forEach(b=>b.addEventListener("click",()=>{keeperDive=b.dataset.dive;document.querySelectorAll("[data-dive]").forEach(x=>x.style.borderColor=x===b?"#c7ff4a":"");$("feedback").textContent="Dive selected: "+keeperDive.toUpperCase()+". Press save when ready."}));
   $("keeperPad").addEventListener("dblclick",dive);
