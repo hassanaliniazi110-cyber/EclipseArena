@@ -1930,3 +1930,26 @@ html[data-device="ipad"] #shootBtn{display:none!important}
 
 /* Precision shot controls: visible power/curl selector. */
 .curl-style-btn{width:100%;min-height:42px;margin:8px 0 12px;border:1px solid rgba(199,255,74,.42);border-radius:8px;background:linear-gradient(135deg,#17251b,#0b120d);color:#dce9d8;font-size:10px;font-weight:900;letter-spacing:1.2px;touch-action:manipulation}.curl-style-btn.selected{background:linear-gradient(110deg,#c7ff4a,#e6ff9d);border-color:#c7ff4a;color:#10180c;box-shadow:0 0 18px rgba(199,255,74,.2)}
+
+/* Apex Strikers major player presentation and Pool A visual pass */
+.player-card{min-height:184px;padding:10px 10px 12px;background:linear-gradient(150deg,#1b3040 0%,#101c2b 55%,#101711 100%);border-color:rgba(174,215,245,.2);border-radius:13px;box-shadow:0 9px 22px rgba(0,0,0,.22);transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease}
+.player-card:hover,.player-card:focus-visible{transform:translateY(-4px);border-color:rgba(199,255,74,.72);box-shadow:0 14px 30px rgba(0,0,0,.34),0 0 20px rgba(199,255,74,.1)}
+.player-card-photo{position:absolute;inset:0 0 auto;width:100%;height:100px;object-fit:cover;object-position:center 22%;mask-image:linear-gradient(#000 55%,transparent 100%);opacity:.9}
+.player-card-copy{position:relative;z-index:1;padding-top:74px}
+.player-card .player-rating{font-size:31px;text-shadow:0 2px 12px rgba(0,0,0,.65)}
+.player-card .player-role,.player-card .player-name,.player-card .player-special{text-shadow:0 2px 5px #07101a}
+.player-playstyle{display:inline-flex;flex-wrap:wrap;gap:4px;align-items:center;margin:7px 0 8px;padding:4px 7px;border:1px solid rgba(94,211,255,.28);border-radius:6px;background:rgba(8,22,35,.78);color:#d9f5ff;font-size:9px;font-weight:900;letter-spacing:.04em}
+.player-playstyle span{color:#6bdcff;font-size:7px;letter-spacing:.12em}
+.player-card .fc-attributes{position:relative;z-index:1}
+.apex-player-card.pool-a-gallery-card{min-height:320px;border:1px solid rgba(199,255,74,.48);background:radial-gradient(ellipse at 50% 18%,rgba(199,255,74,.22),transparent 48%),linear-gradient(155deg,#1b2d40,#101923 58%,#172319);box-shadow:0 14px 32px rgba(0,0,0,.3),inset 0 1px rgba(255,255,255,.1);transition:transform .24s ease,border-color .24s ease,box-shadow .24s ease}
+.apex-player-card.pool-a-gallery-card:hover{transform:translateY(-6px) scale(1.015);border-color:#e4ff9a;box-shadow:0 20px 42px rgba(0,0,0,.4),0 0 24px rgba(199,255,74,.16)}
+.apex-player-card.pool-a-gallery-card .apex-card-portrait{width:116px;height:142px;border-radius:48% 48% 12% 12%;box-shadow:0 12px 24px rgba(0,0,0,.35);border-color:rgba(220,255,170,.6)}
+.apex-player-card.pool-a-gallery-card .apex-card-portrait img{object-position:center 18%;filter:saturate(1.08) contrast(1.04)}
+.apex-player-card.pool-a-gallery-card .apex-card-rating{font-size:2rem;text-shadow:0 2px 12px rgba(0,0,0,.55)}
+.apex-player-card.pool-a-gallery-card .apex-card-name{font-size:.95rem;letter-spacing:.015em}
+.apex-player-card.pool-a-gallery-card .apex-card-footer{gap:5px}
+.apex-player-card.pool-a-gallery-card.show-stats{min-height:370px}
+.pitch-wrap{background:radial-gradient(ellipse at 50% 35%,#173b32,#07131a 80%);border-color:rgba(108,214,255,.25)}
+#pitch{border-color:rgba(199,255,74,.42);box-shadow:inset 0 0 30px rgba(0,0,0,.22)}
+@media(max-width:700px){.player-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.player-card{min-height:190px}.apex-player-card.pool-a-gallery-card{min-height:300px}}
+@media(prefers-reduced-motion:reduce){.player-card,.apex-player-card.pool-a-gallery-card{transition:none}.player-card:hover,.apex-player-card.pool-a-gallery-card:hover{transform:none}}
