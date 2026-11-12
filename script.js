@@ -1626,7 +1626,23 @@ const goalkeepers = [
       }
     }catch(error){list.textContent="Could not load account requests: "+error.message;}
   }
-  $("accountRefreshRequests")?.addEventListener("click",refreshAccountRequests);
+  $("accountRefreshRequests")?.addEventListener("click",async()=>{
+    const button=$("accountRefreshRequests");
+    if(button){button.disabled=true;button.textContent="CONNECTING…";}
+    try{
+      if(!onlineCfg.base)throw new Error("The Apex Strikers backend URL is missing from config.js.");
+      if(!onlineCfg.token){
+        await connectOnline();
+        if(!onlineCfg.token)throw new Error("Server connection did not create a session. Check the server status in Friends & Online.");
+      }
+      await refreshAccountRequests();
+    }catch(error){
+      const list=$("accountOwnerRequestList");
+      if(list)list.textContent="Could not connect to the Apex Strikers server: "+error.message;
+    }finally{
+      if(button){button.disabled=false;button.textContent="CONNECT SERVER & REFRESH";}
+    }
+  });
 
   function setYouTubeOwnerNotice(message){
     const gate=$("youtubeAccessGate");if(gate)gate.textContent=message;
