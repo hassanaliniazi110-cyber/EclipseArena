@@ -1402,8 +1402,8 @@ svg line,svg polyline,.chart-line,.stat-line,.player-chart-line,.player-stats sv
 .pitch-wrap{isolation:isolate;overflow:hidden}
 .apex-3d-canvas{position:absolute;z-index:2;pointer-events:none;display:block;max-width:none;max-height:none;border:0!important;touch-action:none}
 #pitch.apex-2d-hidden{opacity:0!important}
-.apex-3d-hud{position:absolute;z-index:4;pointer-events:none;display:flex;justify-content:center;align-items:flex-start;padding:10px 12px;box-sizing:border-box}
-.apex-3d-scoreboard{width:min(430px,88%);padding:9px 14px 8px;border:1px solid rgba(176,226,255,.34);border-radius:10px;background:linear-gradient(135deg,rgba(5,14,28,.92),rgba(10,27,46,.79));box-shadow:0 10px 34px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.12);backdrop-filter:blur(12px);color:#f5fbff}
+.apex-3d-hud{position:absolute;z-index:4;pointer-events:none;display:block;padding:0;box-sizing:border-box}
+.apex-3d-scoreboard{position:absolute;top:10px;right:10px;width:min(250px,54%);padding:7px 10px 6px;border:1px solid rgba(176,226,255,.34);border-radius:10px;background:linear-gradient(135deg,rgba(5,14,28,.92),rgba(10,27,46,.79));box-shadow:0 10px 34px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.12);backdrop-filter:blur(12px);color:#f5fbff}
 .apex-3d-hud-top,.apex-3d-hud-middle{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .apex-3d-hud-brand{font:900 9px 'Orbitron',sans-serif;letter-spacing:1.2px;color:#eefaff}
 .apex-3d-hud-brand b{color:#59dfff}
@@ -1412,8 +1412,8 @@ svg line,svg polyline,.chart-line,.stat-line,.player-chart-line,.player-stats sv
 .apex-3d-hud-middle{margin-top:5px}
 .apex-3d-hud-mode,.apex-3d-hud-clock{font:800 8px 'DM Sans',sans-serif;letter-spacing:1px;color:#bad0df}
 .apex-3d-hud-score{font:900 24px 'Orbitron',sans-serif;letter-spacing:2px;color:#fff;text-shadow:0 0 16px rgba(79,216,255,.48)}
-.apex-3d-hud-status{margin-top:4px;text-align:center;font:800 6px 'DM Sans',sans-serif;letter-spacing:1.45px;color:#8eaabd}
-@media(max-width:600px){.apex-3d-hud{padding:7px}.apex-3d-scoreboard{padding:7px 10px;width:min(350px,92%)}.apex-3d-hud-score{font-size:20px}.apex-3d-hud-brand{font-size:8px}}
+.apex-3d-hud-status{position:absolute;left:10px;bottom:10px;max-width:46%;padding:7px 10px;border:1px solid rgba(176,226,255,.22);border-radius:8px;background:rgba(5,14,28,.72);backdrop-filter:blur(8px);text-align:left;font:800 7px 'DM Sans',sans-serif;letter-spacing:1px;color:#d7e8f4}
+@media(max-width:600px){.apex-3d-scoreboard{top:7px;right:7px;padding:6px 8px;width:min(205px,57%)}.apex-3d-hud-score{font-size:17px}.apex-3d-hud-brand{font-size:7px}.apex-3d-hud-status{left:7px;bottom:7px;max-width:43%;padding:6px 8px;font-size:6px}}
 
 
 /* Fullscreen mode expands the complete game view so the shooting controls remain available. */
