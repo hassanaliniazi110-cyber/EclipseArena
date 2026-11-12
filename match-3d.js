@@ -261,7 +261,7 @@
   }
   function safeState(){try{return getState?getState():null;}catch(_){return null;}}
   function render(now){
-    raf=requestAnimationFrame(render);if(!active||!renderer||document.hidden)return;
+    if(!active||!renderer)return;raf=requestAnimationFrame(render);if(document.hidden)return;
     const rect=sourceCanvas.getBoundingClientRect();if(rect.width<2||rect.height<2)return;
     if(rect.width!==lastWidth||rect.height!==lastHeight)resize();
     const s=safeState();if(!s)return;const time=now/1000,h2h=s.mode==="headtohead",m=s.match||{};
