@@ -326,6 +326,12 @@ const adminLimiter = rateLimit({
   windowMs: 60 * 1000, limit: 20, standardHeaders: "draft-7", legacyHeaders: false,
   message: { error: "Too many owner actions. Please wait before trying again." }
 });
+// Slow down repeated authenticator-code guesses without limiting successful checks.
+const totpAttemptLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, limit: 5, skipSuccessfulRequests: true,
+  standardHeaders: "draft-7", legacyHeaders: false,
+  message: { error: "Too many 2FA attempts. Wait 15 minutes before trying again." }
+});
 const friendLimiter = rateLimit({
   windowMs: 60 * 1000, limit: 18, standardHeaders: "draft-7", legacyHeaders: false,
   message: { error: "Too many friend actions. Please wait a moment." }
@@ -349,9 +355,10 @@ app.use(cors({
 app.use(express.json({ limit: "12kb", strict: true }));
 app.use((req, res, next) => { if (req.path.startsWith("/api/")) res.setHeader("Cache-Control", "no-store, max-age=0"); next(); });
 app.use(rateLimit({ windowMs: 60 * 1000, limit: 90, standardHeaders: "draft-7", legacyHeaders: false }));
-app.get("/health", (req, res) => {
+app.get("/health", totpAttemptLimiter, (req, res) => {
   // Health diagnostics are owner-only. Never expose player counts or configuration publicly.
   if (!isAdminTotpConfigured() || !verifyAdminTotp(req.get("X-Admin-2FA"))) {
+    auditEvent("health", "health_2fa_failed");
     return res.status(404).json({ error: "Not found." });
   }
   return res.set("Cache-Control", "no-store").json({
@@ -420,12 +427,6 @@ app.get("/api/youtube/access", auth, (req, res) => {
   const playerId = req.player.id;
   const latest = [...youtubeAccessData.requests].reverse().find(r => r.playerId === playerId);
   const isAdmin = youtubeAdminPlayers.has(playerId);
-  // Temporary troubleshooting log: reports only the current player ID, admin count, and match result.
-  console.log("[YouTube admin check]", {
-    currentPlayerId: playerId,
-    configuredAdminCount: youtubeAdminPlayers.size,
-    isAdmin
-  });
   // Owners always have access; other players need a one-entry owner approval.
   const allowed = isAdmin || youtubeIsApproved(playerId);
   // Consume one-entry approvals only for non-owner players.
@@ -436,13 +437,7 @@ app.get("/api/youtube/access", auth, (req, res) => {
   return res.json({
     allowed,
     isAdmin,
-    requestStatus: latest?.status || "none",
-    diagnostics: {
-      currentPlayerId: playerId,
-      adminIdConfigured: youtubeAdminPlayers.size > 0,
-      configuredAdminCount: youtubeAdminPlayers.size,
-      currentPlayerIsAdmin: isAdmin
-    }
+    requestStatus: latest?.status || "none"
   });
 });
 app.post("/api/youtube/leave", auth, (req, res) => {
@@ -465,7 +460,7 @@ app.post("/api/youtube/requests", auth, youtubeRequestLimiter, (req, res) => {
   res.status(201).json({ status: "pending", message: "Your request was sent to the owner." });
 });
 
-app.get("/api/admin/audit", auth, adminLimiter, requireOwner, (req, res) => {
+app.get("/api/admin/audit", auth, adminLimiter, totpAttemptLimiter, requireOwner, (req, res) => {
   try {
     const lines = fs.readFileSync(AUDIT_FILE, "utf8").trim().split(/\r?\n/).filter(Boolean).slice(-100);
     res.json({ events: lines.map(line => { try { return JSON.parse(line); } catch (_) { return null; } }).filter(Boolean) });
@@ -474,10 +469,10 @@ app.get("/api/admin/audit", auth, adminLimiter, requireOwner, (req, res) => {
     return res.status(500).json({ error: "Audit log is temporarily unavailable." });
   }
 });
-app.get("/api/youtube/requests", auth, adminLimiter, requireOwner, (req, res) => {
+app.get("/api/youtube/requests", auth, adminLimiter, totpAttemptLimiter, requireOwner, (req, res) => {
   res.json({ requests: youtubeAccessData.requests.filter(r => r.status === "pending") });
 });
-app.post("/api/youtube/requests/:requestId/decision", auth, adminLimiter, requireOwner, (req, res) => {
+app.post("/api/youtube/requests/:requestId/decision", auth, adminLimiter, totpAttemptLimiter, requireOwner, (req, res) => {
   const request = youtubeAccessData.requests.find(r => r.id === req.params.requestId && r.status === "pending");
   if (!request) return res.status(404).json({ error: "Request not found or already handled." });
   const decision = req.body?.decision;
@@ -622,7 +617,7 @@ app.post("/api/friends/remove", auth,friendLimiter, (req, res) => {
   res.json({ ok: true });
 });
 // Admin can inspect public player profiles only. Authentication tokens and private account secrets are never returned.
-app.get("/api/admin/players", auth, adminLimiter, requireOwner, (req, res) => {
+app.get("/api/admin/players", auth, adminLimiter, totpAttemptLimiter, requireOwner, (req, res) => {
   const all = [...players.values()].map(publicProfile)
     .sort((a, b) => Number(b.online) - Number(a.online) || b.xp - a.xp || a.name.localeCompare(b.name));
   res.json({ players: all, total: all.length, online: all.filter(p => p.online).length });
