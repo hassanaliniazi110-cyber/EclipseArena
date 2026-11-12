@@ -1927,3 +1927,6 @@ html[data-device="laptop"] .match-controls:not(.hidden){
   .virtual-main-action{min-width:100px;min-height:70px}
 }
 html[data-device="ipad"] #shootBtn{display:none!important}
+
+/* Precision shot controls: visible power/curl selector. */
+.curl-style-btn{width:100%;min-height:42px;margin:8px 0 12px;border:1px solid rgba(199,255,74,.42);border-radius:8px;background:linear-gradient(135deg,#17251b,#0b120d);color:#dce9d8;font-size:10px;font-weight:900;letter-spacing:1.2px;touch-action:manipulation}.curl-style-btn.selected{background:linear-gradient(110deg,#c7ff4a,#e6ff9d);border-color:#c7ff4a;color:#10180c;box-shadow:0 0 18px rgba(199,255,74,.2)}
