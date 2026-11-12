@@ -262,7 +262,7 @@
   }
   function updateHUD(s){
     if(!hudMode||!s)return;const h=s.mode==="headtohead",m=s.match||{};
-    hudMode.textContent=h?"APEX STRIKERS · 5v5":"APEX STRIKERS · "+String(s.mode||"MATCH").toUpperCase();
+    hudMode.textContent=h?"APEX STRIKERS · 6v6":"APEX STRIKERS · "+String(s.mode||"MATCH").toUpperCase();
     hudScore.textContent=h?(m.playerGoals+"  :  "+m.rivalGoals):(s.score+" · "+s.attemptLabel);
     hudClock.textContent=h?("MATCH "+Math.floor(m.clock||0)+"'"):(s.selectedPlayer||"PLAYER").toUpperCase();
     hudStatus.textContent=s.finished?"FULL TIME":(h?(m.hasBall?"BALL · "+(m.controlledName||"YOU")+" · "+(m.controlledRating||"")+" OVR":m.rivalHasBall?"RIVAL POSSESSION":"BALL IN PLAY"):"3D MATCH ENGINE · LIVE");
@@ -405,7 +405,7 @@
     }
   }
   function sync(){if(active)updateHUD(safeState()||{});}
-  function setZoom(value){cameraZoom=clamp(Number(value)||1,1,1.9);if(camera){camera.zoom=cameraZoom;camera.updateProjectionMatrix();}return cameraZoom;}
+  function setZoom(value){cameraZoom=clamp(Number(value)||1,.75,1.9);if(camera){camera.zoom=cameraZoom;camera.updateProjectionMatrix();}return cameraZoom;}
   function getZoom(){return cameraZoom;}
   function setCameraView(value){
     const allowed=["sideline","broadcast","behind","tactical","player"];
