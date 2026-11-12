@@ -227,7 +227,7 @@
     flightTrail=new T.Line(trailGeometry,new T.LineBasicMaterial({color:0x8deaff,transparent:true,opacity:.72,depthWrite:false}));
     flightTrail.visible=false;scene.add(flightTrail);
     aimMarker=new T.Mesh(new T.RingGeometry(.7,.96,56),new T.MeshBasicMaterial({color:0xc7ff4a,transparent:true,opacity:.95,side:T.DoubleSide}));
-    aimMarker.rotation.x=-Math.PI/2;aimMarker.position.y=.045;scene.add(aimMarker);
+    aimMarker.rotation.x=0;aimMarker.position.y=2.2;scene.add(aimMarker);
     const guideGeometry=new T.BufferGeometry().setFromPoints([new T.Vector3(0,.28,30),new T.Vector3(0,2,-FIELD_LENGTH/2-.7)]);
     aimGuide=new T.Line(guideGeometry,new T.LineDashedMaterial({color:0xc7ff4a,dashSize:1.25,gapSize:.72,transparent:true,opacity:.8}));aimGuide.computeLineDistances();scene.add(aimGuide);
     cameraTarget=new T.Vector3(0,0,0);
@@ -354,7 +354,15 @@
         keeperAway.userData.arms.forEach(a=>a.rotation.set(0,0,0));keeperAway.userData.legs.forEach(l=>l.rotation.set(0,0,0));
       }
       keeperHome.userData.label.visible=false;keeperAway.userData.label.visible=false;cameraTarget.set((m.player.x-.5)*2.8,0,(m.player.y-.5)*2.2);
-      aimMarker.visible=false;
+      // In H2H, preview the far-post target while the player has possession in the attacking half.
+      const h2hTargetX=m.player.x<.5?.59:.41;
+      const h2hPreview=Boolean(m.hasBall)&&m.player.y<=.53&&!m.shotAnim&&!s.finished;
+      aimMarker.visible=h2hPreview;
+      if(h2hPreview){
+        const tx=(h2hTargetX-.5)*FIELD_WIDTH,ty=2.65,tz=-FIELD_LENGTH/2-.7;
+        aimMarker.position.set(tx,ty,tz);
+        aimGuide.geometry.setFromPoints([new T.Vector3((m.ball.x-.5)*FIELD_WIDTH,.28,(m.ball.y-.5)*FIELD_LENGTH),new T.Vector3(tx,ty,tz)]);aimGuide.computeLineDistances();aimGuide.visible=true;
+      }else if(aimGuide)aimGuide.visible=false;
       const matchShot=m.shotAnim;
       if(matchShot){
         const t=clamp((now-matchShot.start)/(matchShot.duration||720),0,1),ease=1-Math.pow(1-t,2);
@@ -397,7 +405,7 @@
       if(aimMarker.visible){
         const targetX=((s.aim.x===undefined?.5:s.aim.x)-.5)*22;
         const targetY=.22+clamp((.105-(s.aim.y===undefined?.055:s.aim.y))/.097,0,1)*4.25;
-        aimMarker.position.set(targetX,.05,-FIELD_LENGTH/2-.7);
+        aimMarker.position.set(targetX,targetY,-FIELD_LENGTH/2-.7);
         const startX=(.522-.5)*FIELD_WIDTH,startZ=(.735-.5)*FIELD_LENGTH;
         aimGuide.geometry.setFromPoints([new T.Vector3(startX,.28,startZ),new T.Vector3(targetX,targetY,-FIELD_LENGTH/2-.7)]);aimGuide.computeLineDistances();aimGuide.visible=true;
       }else if(aimGuide)aimGuide.visible=false;
