@@ -19,7 +19,7 @@
   function segment(parent,a,b,radius,material){
     const start=new T.Vector3(a[0],a[1],a[2]),end=new T.Vector3(b[0],b[1],b[2]);
     const direction=new T.Vector3().subVectors(end,start);
-    const m=new T.Mesh(new T.CylinderGeometry(radius*.78,radius,direction.length(),9),material);
+    const m=new T.Mesh(new T.CylinderGeometry(radius*.78,radius,direction.length(),14),material);
     m.position.copy(start).add(end).multiplyScalar(.5);
     m.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),direction.normalize());
     m.castShadow=true;parent.add(m);return m;
@@ -48,18 +48,21 @@
     const shorts=mat(isKeeper?"#111e30":"#17243a"),trim=mat(accentColor||"#eafaff",{metalness:.12,roughness:.38});
     const skin=mat("#b9815f",{roughness:.82}),hair=mat("#211b18",{roughness:.95});
     const boots=mat("#f4f7fc",{roughness:.34,metalness:.12}),socks=mat(kitColor||"#39c9ff");
-    const torso=new T.Mesh(new T.CylinderGeometry(.43,.53,.94,16),kit);torso.position.y=1.48;torso.castShadow=true;root.add(torso);
-    const shoulders=new T.Mesh(new T.SphereGeometry(.47,16,12),kit);shoulders.scale.set(1.03,.43,.72);shoulders.position.y=1.84;shoulders.castShadow=true;root.add(shoulders);
-    const shortMesh=new T.Mesh(new T.CylinderGeometry(.45,.43,.43,14),shorts);shortMesh.position.y=.87;shortMesh.castShadow=true;root.add(shortMesh);
+    const torso=new T.Mesh(new T.SphereGeometry(.5,28,22),kit);torso.scale.set(.88,1.08,.63);torso.position.y=1.48;torso.castShadow=true;root.add(torso);
+    const shoulders=new T.Mesh(new T.SphereGeometry(.47,24,18),kit);shoulders.scale.set(1.03,.43,.72);shoulders.position.y=1.84;shoulders.castShadow=true;root.add(shoulders);
+    const shortMesh=new T.Mesh(new T.SphereGeometry(.43,24,16),shorts);shortMesh.scale.set(1,.58,.72);shortMesh.position.y=.87;shortMesh.castShadow=true;root.add(shortMesh);
     const waist=new T.Mesh(new T.TorusGeometry(.39,.035,6,18),trim);waist.rotation.x=Math.PI/2;waist.position.y=1.08;root.add(waist);
     const stripe=new T.Mesh(new T.BoxGeometry(.085,.78,.025),trim);stripe.position.set(.18,1.48,-.424);root.add(stripe);
     const stripe2=stripe.clone();stripe2.position.x=-.18;root.add(stripe2);
     const band=new T.Mesh(new T.BoxGeometry(.79,.055,.08),trim);band.position.set(0,1.88,-.02);root.add(band);
     cylinder(root,.105,.12,.22,[0,2.02,0],skin,10);
-    const head=new T.Mesh(new T.SphereGeometry(.235,20,16),skin);head.position.y=2.22;head.castShadow=true;root.add(head);
-    const cap=new T.Mesh(new T.SphereGeometry(.242,18,12,0,Math.PI*2,0,Math.PI*.52),hair);cap.position.set(0,2.28,0);root.add(cap);
-    const eyeMat=mat("#171a20",{roughness:.35});
-    [-.075,.075].forEach(x=>{const eye=new T.Mesh(new T.SphereGeometry(.018,8,6),eyeMat);eye.position.set(x,2.23,-.211);root.add(eye);});
+    const head=new T.Mesh(new T.SphereGeometry(.235,28,22),skin);head.scale.set(.94,1.08,.94);head.position.y=2.22;head.castShadow=true;root.add(head);
+    const cap=new T.Mesh(new T.SphereGeometry(.246,24,18,0,Math.PI*2,0,Math.PI*.56),hair);cap.position.set(0,2.29,0);cap.castShadow=true;root.add(cap);
+    const sideHair=new T.Mesh(new T.SphereGeometry(.12,16,12),hair);sideHair.scale.set(.62,1.1,.85);sideHair.position.set(-.19,2.18,0);root.add(sideHair);const sideHair2=sideHair.clone();sideHair2.position.x=.19;root.add(sideHair2);
+    const earMat=skin;[-1,1].forEach(side=>{const ear=new T.Mesh(new T.SphereGeometry(.055,12,10),earMat);ear.position.set(side*.225,2.19,-.005);root.add(ear);});
+    const eyeWhite=mat("#f1e9df",{roughness:.45}),eyeMat=mat("#171a20",{roughness:.35});
+    [-.075,.075].forEach(x=>{const white=new T.Mesh(new T.SphereGeometry(.027,12,10),eyeWhite);white.position.set(x,2.235,-.211);root.add(white);const eye=new T.Mesh(new T.SphereGeometry(.014,10,8),eyeMat);eye.position.set(x,2.235,-.235);root.add(eye);});
+    const nose=new T.Mesh(new T.SphereGeometry(.035,12,10),skin);nose.scale.set(.72,.8,.72);nose.position.set(0,2.17,-.235);root.add(nose);
     const number=new T.Mesh(new T.PlaneGeometry(.36,.42),new T.MeshBasicMaterial({map:textTexture(isKeeper?"1":String((name.length*7)%27+1),256,256,{color:"#fff",fontSize:150,shadow:"#08131e",shadowBlur:9}),transparent:true,side:T.DoubleSide,depthWrite:false}));
     number.position.set(0,1.49,.466);root.add(number);
     const arms=[],legs=[];
@@ -67,7 +70,8 @@
       const pivot=new T.Group();pivot.position.set(side*.43,1.78,0);root.add(pivot);
       segment(pivot,[0,0,0],[side*.11,-.42,-.025],.135,kit);
       segment(pivot,[side*.11,-.42,-.025],[side*.14,-.73,-.04],.105,skin);
-      if(isKeeper){const glove=new T.Mesh(new T.SphereGeometry(.13,10,8),trim);glove.position.set(side*.14,-.76,-.04);pivot.add(glove);}
+      const hand=new T.Mesh(new T.SphereGeometry(isKeeper ? .13 : .09,14,10),isKeeper?trim:skin);hand.position.set(side*.14,-.76,-.04);pivot.add(hand);
+      if(isKeeper){const gloveCuff=new T.Mesh(new T.CylinderGeometry(.115,.105,.09,14),trim);gloveCuff.position.set(side*.14,-.68,-.04);pivot.add(gloveCuff);}
       arms.push(pivot);
     });
     [-1,1].forEach(side=>{
@@ -254,11 +258,11 @@
     const fromX=Number.isFinite(a.fromX)?a.fromX:.5;
     const toX=Number.isFinite(a.toX)?a.toX:.5;
     const toY=Number.isFinite(a.toY)?a.toY:.27;
-    const startX=(fromX-.5)*12,endX=(toX-.5)*8.6;
+    const startX=(fromX-.5)*12,endX=(toX-.5)*22;
     const startZ=keeperMode?-36:30,endZ=-FIELD_LENGTH/2-.6;
     const endHeight=.24+clamp((.42-toY)/.36,0,1)*2.68;
     const startHeight=keeperMode?1.45:.36;
-    const curve=Math.sin(Math.PI*t)*(Number(a.curve)||0)*12;
+    const curve=Math.sin(Math.PI*t)*(Number(a.curve)||0)*18;
     const arc=(keeperMode?3.8:4.5)*Math.sin(Math.PI*t);
     return new T.Vector3(startX+(endX-startX)*eased+curve,
       startHeight+(endHeight-startHeight)*eased+arc,startZ+(endZ-startZ)*eased);
@@ -374,7 +378,7 @@
         keeperAway.userData.legs[0].rotation.x=Math.sin(time*8)*.12;keeperAway.userData.legs[1].rotation.x=-Math.sin(time*8)*.12;
       }
       aimMarker.visible=!keeperMode&&!s.finished;
-      if(aimMarker.visible)aimMarker.position.set(((s.aim.x===undefined?.5:s.aim.x)-.5)*FIELD_WIDTH,.05,((s.aim.y===undefined?.25:s.aim.y)-.5)*FIELD_LENGTH);
+      if(aimMarker.visible)aimMarker.position.set(((s.aim.x===undefined?.5:s.aim.x)-.5)*22,.05,-FIELD_LENGTH/2-.7);
       const a=s.ballAnim;
       if(a){
         const t=clamp((now-a.start)/(a.duration||650),0,1);
@@ -386,7 +390,7 @@
       }
     }
     const moving=Boolean(s.ballAnim);
-    ball.rotation.x+=moving?.055:.009;ball.rotation.z+=moving?.043:.012;
+    ball.rotation.x+=moving?.085:.009;ball.rotation.z+=moving ? .043+(Math.abs(Number(s.ballAnim?.curve)||0)*.65) : .012;
     updateBallShadow();
     const focusX=h2h?(m.player.x-.5)*FIELD_WIDTH:0;
     const focusZ=h2h?((m.ball?.y??m.player.y)-.5)*FIELD_LENGTH:0;
