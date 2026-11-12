@@ -3,7 +3,7 @@
   const T = window.THREE;
   let sourceCanvas=null,wrap=null,glCanvas=null,hud=null,renderer=null,scene=null,camera=null;
   let resizeObserver=null,lastWidth=0,lastHeight=0,active=false,raf=0,getState=null;
-  let playerModel,rivalModel,keeperHome,keeperAway,teammateModels=[],rivalSupportModels=[],ball,aimMarker,cameraTarget;
+  let playerModel,rivalModel,keeperHome,keeperAway,teammateModels=[],rivalSupportModels=[],ball,ballShadow,flightTrail,aimMarker,cameraTarget;
   let hudMode,hudScore,hudClock,hudStatus,lastPlayerLabel="";
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const mat=(color,extra)=>new T.MeshStandardMaterial(Object.assign({color:color||0xffffff,roughness:.62,metalness:.035},extra||{}));
@@ -81,14 +81,32 @@
     root.userData={arms,legs,halo,label:nameLabel,isKeeper,phase:Math.random()*6.28};return root;
   }
   function makeBall(){
-    const group=new T.Group(),white=mat("#f8fbff",{roughness:.26}),dark=mat("#172334",{roughness:.45,metalness:.08});
-    const sphere=new T.Mesh(new T.SphereGeometry(.29,32,24),white);sphere.castShadow=true;sphere.receiveShadow=true;group.add(sphere);
+    const group=new T.Group();
+    const white=mat("#fbfdff",{roughness:.23,metalness:.025});
+    const dark=mat("#152538",{roughness:.38,metalness:.09});
+    const sphere=new T.Mesh(new T.SphereGeometry(.30,40,32),white);
+    sphere.castShadow=true;sphere.receiveShadow=true;group.add(sphere);
     const shape=new T.Shape();
-    for(let i=0;i<5;i++){const a=i/5*Math.PI*2-Math.PI/2,x=Math.cos(a)*.075,y=Math.sin(a)*.075;if(i===0)shape.moveTo(x,y);else shape.lineTo(x,y);}shape.closePath();
-    const geo=new T.ShapeGeometry(shape),normals=[[0,0,1],[0,.92,.38],[.87,.28,.4],[-.87,.28,.4],[0,-.9,.42],[0,0,-1]];
-    normals.forEach(v=>{const n=new T.Vector3(v[0],v[1],v[2]).normalize(),p=new T.Mesh(geo,dark);p.position.copy(n.clone().multiplyScalar(.287));p.quaternion.setFromUnitVectors(new T.Vector3(0,0,1),n);group.add(p);});
-    const shadow=new T.Mesh(new T.CircleGeometry(.42,24),new T.MeshBasicMaterial({color:0x02080d,transparent:true,opacity:.32,depthWrite:false}));
-    shadow.rotation.x=-Math.PI/2;shadow.position.y=.015;group.add(shadow);return group;
+    for(let i=0;i<5;i++){
+      const angle=i/5*Math.PI*2-Math.PI/2,x=Math.cos(angle)*.105,y=Math.sin(angle)*.105;
+      if(i===0)shape.moveTo(x,y);else shape.lineTo(x,y);
+    }
+    shape.closePath();
+    const panelGeometry=new T.ShapeGeometry(shape);
+    const normals=[[0,0,1],[0,.94,.34],[.89,.30,.34],[-.89,.30,.34],[0,-.94,.34],[0,0,-1]];
+    normals.forEach(v=>{
+      const normal=new T.Vector3(v[0],v[1],v[2]).normalize();
+      const panel=new T.Mesh(panelGeometry,dark);
+      panel.position.copy(normal.clone().multiplyScalar(.294));
+      panel.quaternion.setFromUnitVectors(new T.Vector3(0,0,1),normal);
+      group.add(panel);
+    });
+    const seamMaterial=new T.MeshBasicMaterial({color:0x25364a,transparent:true,opacity:.72});
+    for(let i=0;i<3;i++){
+      const seam=new T.Mesh(new T.TorusGeometry(.245,.006,5,64),seamMaterial);
+      seam.rotation.set(i*.92,(i+1)*.64,i*.48);group.add(seam);
+    }
+    return group;
   }
   function goal(z,direction){
     const root=new T.Group();scene.add(root);const frame=mat("#eaf6ff",{metalness:.55,roughness:.22});
@@ -160,6 +178,12 @@
     rivalSupportModels=[[.24,.3],[.36,.38],[.64,.38],[.76,.3]].map(()=>footballer("RIVAL","#e34b69","#ffdce4",false,"toward"));
     teammateModels.forEach(p=>scene.add(p));rivalSupportModels.forEach(p=>scene.add(p));
     ball=makeBall();scene.add(ball);
+    ballShadow=new T.Mesh(new T.CircleGeometry(.46,32),new T.MeshBasicMaterial({color:0x02080d,transparent:true,opacity:.36,depthWrite:false}));
+    ballShadow.rotation.x=-Math.PI/2;ballShadow.position.y=.035;scene.add(ballShadow);
+    const trailGeometry=new T.BufferGeometry();
+    trailGeometry.setAttribute("position",new T.BufferAttribute(new Float32Array(6),3));
+    flightTrail=new T.Line(trailGeometry,new T.LineBasicMaterial({color:0x8deaff,transparent:true,opacity:.72,depthWrite:false}));
+    flightTrail.visible=false;scene.add(flightTrail);
     aimMarker=new T.Mesh(new T.RingGeometry(.34,.49,48),new T.MeshBasicMaterial({color:0x9cff58,transparent:true,opacity:.9,side:T.DoubleSide}));
     aimMarker.rotation.x=-Math.PI/2;aimMarker.position.y=.045;scene.add(aimMarker);
     cameraTarget=new T.Vector3(0,0,0);
@@ -180,6 +204,35 @@
     d.arms[0].rotation.x=-Math.sin(phase)*.28;d.arms[1].rotation.x=Math.sin(phase)*.28;
     model.position.y=.035+Math.abs(Math.sin(phase*2))*.025;
     d.halo.visible=Boolean(highlight);d.halo.material.opacity=highlight?.74:.16;d.label.visible=!d.isKeeper;
+  }
+  function shotPoint(a,t,keeperMode){
+    const eased=1-Math.pow(1-t,2);
+    const fromX=Number.isFinite(a.fromX)?a.fromX:.5;
+    const toX=Number.isFinite(a.toX)?a.toX:.5;
+    const toY=Number.isFinite(a.toY)?a.toY:.27;
+    const startX=(fromX-.5)*12,endX=(toX-.5)*8.6;
+    const startZ=keeperMode?7.5:10.5,endZ=keeperMode?-18.15:-21.25;
+    const endHeight=.24+clamp((.42-toY)/.36,0,1)*2.68;
+    const startHeight=keeperMode?1.45:.36;
+    const curve=Math.sin(Math.PI*t)*(Number(a.curve)||0)*18;
+    const arc=(keeperMode?3.8:4.5)*Math.sin(Math.PI*t);
+    return new T.Vector3(startX+(endX-startX)*eased+curve,
+      startHeight+(endHeight-startHeight)*eased+arc,startZ+(endZ-startZ)*eased);
+  }
+  function updateFlightTrail(a,t,keeperMode){
+    if(!flightTrail)return;
+    if(t>=.98){flightTrail.visible=false;return;}
+    const head=shotPoint(a,t,keeperMode),tail=shotPoint(a,Math.max(0,t-.18),keeperMode);
+    const attr=flightTrail.geometry.attributes.position;
+    attr.setXYZ(0,tail.x,tail.y,tail.z);attr.setXYZ(1,head.x,head.y,head.z);
+    attr.needsUpdate=true;flightTrail.geometry.computeBoundingSphere();flightTrail.visible=t>.015;
+  }
+  function updateBallShadow(){
+    if(!ballShadow||!ball)return;
+    const height=Math.max(0,ball.position.y-.28);
+    ballShadow.position.set(ball.position.x,.035,ball.position.z);
+    const scale=1+height*.12;ballShadow.scale.set(scale,scale,1);
+    ballShadow.material.opacity=Math.max(.09,.36-height*.055);
   }
   function updateHUD(s){
     if(!hudMode||!s)return;const h=s.mode==="headtohead";
@@ -209,24 +262,43 @@
       rivalSupportModels.forEach((p,i)=>place(p,opp[i][0],opp[i][1],"toward",time,false));
       keeperHome.position.set(0,0,19.2);keeperHome.rotation.y=0;keeperAway.position.set(0,0,-19.2);keeperAway.rotation.y=Math.PI;
       keeperHome.userData.label.visible=false;keeperAway.userData.label.visible=false;cameraTarget.set((m.player.x-.5)*2.8,0,(m.player.y-.5)*2.2);
-      aimMarker.visible=false;ball.position.set((m.ball.x-.5)*30,.33,(m.ball.y-.5)*40);
+      aimMarker.visible=false;flightTrail.visible=false;ball.position.set((m.ball.x-.5)*30,.33,(m.ball.y-.5)*40);
     }else{
       teammateModels.forEach(p=>p.visible=false);rivalSupportModels.forEach(p=>p.visible=false);rivalModel.visible=false;keeperHome.visible=false;keeperAway.visible=true;
       if(s.mode==="goalkeeping"||s.mode==="survival"){playerModel.visible=false;keeperAway.position.set(0,0,-19.2);keeperAway.userData.label.visible=true;}
       else{place(playerModel,.5,.76,"away",time,true);keeperAway.position.set(0,0,-19.2);keeperAway.userData.label.visible=true;}
       keeperAway.rotation.y=Math.PI;
-      const dive=s.keeperMotion;
-      if(dive){const t=clamp((now-dive.start)/(dive.duration||450),0,1),e=1-Math.pow(1-t,2);keeperAway.position.x=(dive.side||0)*5.4*e;keeperAway.rotation.z=-(dive.side||0)*.62*e;keeperAway.userData.arms[0].rotation.z=.9*e;keeperAway.userData.arms[1].rotation.z=-.9*e;}
-      else{keeperAway.position.x=0;keeperAway.rotation.z=0;keeperAway.userData.arms[0].rotation.z=0;keeperAway.userData.arms[1].rotation.z=0;}
-      keeperAway.userData.legs[0].rotation.x=Math.sin(time*8)*.12;keeperAway.userData.legs[1].rotation.x=-Math.sin(time*8)*.12;
       const keeperMode=s.mode==="goalkeeping"||s.mode==="survival";
+      const dive=s.keeperMotion;
+      if(dive){
+        const raw=clamp((now-dive.start)/(dive.duration||450),0,1);
+        const e=1-Math.pow(1-raw,2),side=Number(dive.side)||0,airborne=Math.sin(Math.PI*e);
+        keeperAway.position.x=side*4.9*e;keeperAway.position.y=.08+.56*airborne;
+        keeperAway.rotation.z=-side*1.18*e;keeperAway.rotation.x=-.34*e;
+        const arms=keeperAway.userData.arms,legs=keeperAway.userData.legs;
+        arms[0].rotation.set(-.62*e,0,side*.86*e);arms[1].rotation.set(-.62*e,0,side*1.08*e);
+        legs[0].rotation.set(-.48*e,0,-side*.38*e);legs[1].rotation.set(.62*e,0,side*.55*e);
+      }else{
+        keeperAway.position.x=0;keeperAway.position.y=0;keeperAway.rotation.z=0;keeperAway.rotation.x=0;
+        keeperAway.userData.arms.forEach(a=>a.rotation.set(0,0,0));
+        keeperAway.userData.legs.forEach(l=>l.rotation.set(0,0,0));
+        keeperAway.userData.legs[0].rotation.x=Math.sin(time*8)*.12;keeperAway.userData.legs[1].rotation.x=-Math.sin(time*8)*.12;
+      }
       aimMarker.visible=!keeperMode&&!s.finished;
       if(aimMarker.visible)aimMarker.position.set(((s.aim.x===undefined?.5:s.aim.x)-.5)*30,.05,((s.aim.y===undefined?.25:s.aim.y)-.5)*40);
       const a=s.ballAnim;
-      if(a){const t=clamp((now-a.start)/(a.duration||650),0,1),e=1-Math.pow(1-t,2),x=a.fromX+(a.toX-a.fromX)*e+Math.sin(t*Math.PI)*(a.curve||0),y=a.fromY+(a.toY-a.fromY)*e,lift=Math.sin(t*Math.PI)*(a.lift||.16)*12;ball.position.set((x-.5)*30,.31+lift,(y-.5)*40);}
-      else{const bx=keeperMode?.5:.522,by=keeperMode?.2:.735;ball.position.set((bx-.5)*30,.32,(by-.5)*40);}
+      if(a){
+        const t=clamp((now-a.start)/(a.duration||650),0,1);
+        ball.position.copy(shotPoint(a,t,keeperMode));updateFlightTrail(a,t,keeperMode);
+      }else{
+        flightTrail.visible=false;
+        const bx=keeperMode?.5:.522,by=keeperMode?.2:.735;
+        ball.position.set((bx-.5)*30,.32,(by-.5)*40);
+      }
     }
-    ball.rotation.x+=.012;ball.rotation.z+=.019;
+    const moving=Boolean(s.ballAnim);
+    ball.rotation.x+=moving?.055:.009;ball.rotation.z+=moving?.043:.012;
+    updateBallShadow();
     const follow=h2h?cameraTarget.x:0;camera.position.x+=(follow*.18-camera.position.x)*.035;
     camera.lookAt(cameraTarget.x*.12,0,0);renderer.render(scene,camera);
   }
