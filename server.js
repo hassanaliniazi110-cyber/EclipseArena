@@ -591,15 +591,32 @@ function publicProfile(p) {
     wins: p.profile.wins, best: p.profile.best, player: p.profile.player, goalkeeper: p.profile.goalkeeper,
     ovr: p.profile.ovr, online: Boolean(socketsByPlayer.get(p.id)?.size) };
 }
+const playerApiWindows = new Map();
+let playerApiChecks = 0;
 function auth(req, res, next) {
   const match = /^Bearer\s+([a-f0-9]{64})$/i.exec(req.get("authorization") || "");
   const id = match && tokenToPlayer.get(hashToken(match[1]));
   if (!id || !players.has(id)) return res.status(401).json({ error: "Authentication required. Reconnect to the server." });
   req.player = players.get(id);
-  // Authentication must never silently grant account approval.
   if (req.player.approvalStatus !== "approved") {
     auditEvent(id, "blocked_unapproved_account_access");
     return res.status(403).json({ error: "This account is not approved for access." });
+  }
+  const now = Date.now();
+  let bucket = playerApiWindows.get(id);
+  if (!bucket || now - bucket.startedAt >= 60000) {
+    bucket = { startedAt: now, count: 0 };
+    playerApiWindows.set(id, bucket);
+  }
+  if (bucket.count >= 240) {
+    res.setHeader("Retry-After", String(Math.max(1, Math.ceil((60000 - (now - bucket.startedAt)) / 1000))));
+    return res.status(429).json({ error: "Too many requests for this account. Please wait a moment." });
+  }
+  bucket.count += 1;
+  if (++playerApiChecks % 512 === 0) {
+    for (const [playerId, entry] of playerApiWindows) {
+      if (now - entry.startedAt >= 60000) playerApiWindows.delete(playerId);
+    }
   }
   next();
 }
@@ -1197,20 +1214,24 @@ const io = new Server(server, {
   maxHttpBufferSize: 16 * 1024,
   connectTimeout: 10000
 });
+const socketHandshakeWindows = new Map();
 io.use((socket, next) => {
-  // Socket.IO's CORS option alone does not protect WebSocket upgrades.
-  // Enforce the browser Origin here as well as authenticating the player token.
+  // Socket.IO CORS does not protect WebSocket upgrades by itself.
   const origin = socket.handshake.headers.origin;
-  if (typeof origin !== "string" || !allowedOrigins.includes(origin)) {
-    return next(new Error("Origin is not allowed"));
-  }
+  if (typeof origin !== "string" || !allowedOrigins.includes(origin)) return next(new Error("Origin is not allowed"));
   const id = cleanText(socket.handshake.auth?.playerId, 24).toUpperCase();
   const token = String(socket.handshake.auth?.token || "");
   const player = players.get(id);
   if (!player || player.approvalStatus !== "approved" ||
-      !/^[a-f0-9]{64}$/i.test(token) || !tokenHashMatches(player.tokenHash, token)) {
-    return next(new Error("Authentication required"));
+      !/^[a-f0-9]{64}$/i.test(token) || !tokenHashMatches(player.tokenHash, token)) return next(new Error("Authentication required"));
+  const now = Date.now();
+  let bucket = socketHandshakeWindows.get(id);
+  if (!bucket || now - bucket.startedAt >= 60000) {
+    bucket = { startedAt: now, count: 0 };
+    socketHandshakeWindows.set(id, bucket);
   }
+  if (bucket.count >= 30) return next(new Error("Too many connection attempts. Wait a moment."));
+  bucket.count += 1;
   socket.data.playerId = id;
   next();
 });
