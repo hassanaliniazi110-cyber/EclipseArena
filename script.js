@@ -692,6 +692,7 @@ const goalkeepers = [
     if(overall)overall.textContent=matchTeamOverall()+" OVR";
   }
   function openTeamLayout(){
+    window.ApexMatch3D?.pause?.();
     $("homeScreen").classList.add("hidden");$("gameScreen").classList.add("hidden");$("youtubeScreen").classList.add("hidden");
     $("teamLayoutScreen").classList.remove("hidden");renderTeamLayout();window.scrollTo({top:0,behavior:"smooth"});
   }
@@ -1065,7 +1066,8 @@ const goalkeepers = [
   }
   function drawPitch(){
     if(!ctx||!cw||!ch)return;
-    const w=cw,h=ch;ctx.clearRect(0,0,w,h);window.ApexMatch3D?.sync?.();
+    if(window.ApexMatch3D?.active){window.ApexMatch3D.sync?.();return;}
+    const w=cw,h=ch;ctx.clearRect(0,0,w,h);
     if(mode==="headtohead"){drawFullMatchPitch();return;}
     const grad=ctx.createLinearGradient(0,0,0,h);grad.addColorStop(0,"#1c673b");grad.addColorStop(1,"#0c3c25");ctx.fillStyle=grad;ctx.fillRect(0,0,w,h);
     const stripes=10;for(let i=0;i<stripes;i++){ctx.fillStyle=i%2?"rgba(0,0,0,.055)":"rgba(205,255,203,.045)";ctx.fillRect(i*w/stripes,0,w/stripes,h)}
@@ -1588,7 +1590,7 @@ const goalkeepers = [
     $("matchHud").classList.toggle("hidden",!match.active);$("matchControls").classList.toggle("hidden",!match.active);$("matchSquadPicker")?.classList.toggle("hidden",!match.active);$("matchCameraControls").classList.remove("hidden");$("matchResult").classList.add("hidden");$("matchResult").textContent="";
     $("powerSlider").classList.toggle("hidden",match.active);$("powerSlider").disabled=match.active;$("shootBtn").classList.toggle("hidden",match.active);$("matchRank").textContent="ROOKIE III · 0 PTS";
     score=0;attempt=1;if(mode==="headtohead"||mode==="vsattack"){opponentScore=0;matchMinute=0;matchAttacks=0;}
-    $("homeScreen").classList.add("hidden");$("gameScreen").classList.remove("hidden");
+    $("homeScreen").classList.add("hidden");$("gameScreen").classList.remove("hidden");window.ApexMatch3D?.resume?.();
     $("gameTitle").innerHTML=modeNames[mode]+" <em>MODE</em>";$("controlHeading").textContent=modeText[mode][0];$("controlText").textContent=modeText[mode][1];
     if(isRandomRush){$("gameTitle").innerHTML="RANDOM <em>RUSH</em>";$("controlHeading").textContent="Surprise challenge: "+modeNames[mode];$("controlText").textContent="Random Rush picked "+modeNames[mode]+". Finish the challenge, then try again for a different surprise.";}
     $("keeperPad").classList.toggle("hidden",mode!=="goalkeeping"&&mode!=="survival");
@@ -1883,7 +1885,7 @@ const goalkeepers = [
   document.querySelectorAll("[data-difficulty]").forEach(b=>b.addEventListener("click",()=>{difficulty=b.dataset.difficulty;document.querySelectorAll("[data-difficulty]").forEach(x=>x.classList.toggle("selected",x===b));}));
 
   $("playNowBtn").addEventListener("click",()=>{document.querySelector(".mode-section")?.scrollIntoView({behavior:"smooth",block:"start"});toast("Choose a challenge to begin")});
-  $("backBtn").addEventListener("click",()=>{if(mode!=="headtohead"&&mode!=="vsattack"&&!rewardClaimedThisGame)claimGameReward(score);match.active=false;cancelAnimationFrame(animationFrame);$("matchHud").classList.add("hidden");$("matchControls").classList.add("hidden");$("matchCameraControls").classList.add("hidden");resetJoystick();$("gameScreen").classList.add("hidden");$("homeScreen").classList.remove("hidden");ballAnim=null;cancelAnimationFrame(animationFrame);window.scrollTo({top:0,behavior:"auto"})});
+  $("backBtn").addEventListener("click",()=>{if(mode!=="headtohead"&&mode!=="vsattack"&&!rewardClaimedThisGame)claimGameReward(score);match.active=false;cancelAnimationFrame(animationFrame);$("matchHud").classList.add("hidden");$("matchControls").classList.add("hidden");$("matchCameraControls").classList.add("hidden");resetJoystick();window.ApexMatch3D?.pause?.();$("gameScreen").classList.add("hidden");$("homeScreen").classList.remove("hidden");ballAnim=null;cancelAnimationFrame(animationFrame);window.scrollTo({top:0,behavior:"auto"})});
   $("shootBtn").addEventListener("click",()=>{if(mode==="goalkeeping"||mode==="survival")dive();else shoot()});$("nextBtn").addEventListener("click",nextAttempt);
   $("powerSlider").addEventListener("input",e=>{power=Number(e.target.value);$("powerReadout").textContent=power+"%"});
   document.querySelectorAll("[data-dive]").forEach(b=>b.addEventListener("click",()=>{keeperDive=b.dataset.dive;document.querySelectorAll("[data-dive]").forEach(x=>x.style.borderColor=x===b?"#c7ff4a":"");$("feedback").textContent="Dive selected: "+keeperDive.toUpperCase()+". Press save when ready."}));
@@ -2052,7 +2054,7 @@ const goalkeepers = [
   const defaultPreferred = youtubeChannels.filter(c=>c.preferred).map(c=>c.name);
   let preferredChannels = (()=>{try{const saved=JSON.parse(localStorage.getItem("eclipseYoutubePreferred")||"null");return Array.isArray(saved)?[...new Set([...defaultPreferred,...saved])]:defaultPreferred.slice();}catch(_){return defaultPreferred.slice();}})();
   async function openYouTubeArea(){
-    match.active=false;
+    match.active=false;window.ApexMatch3D?.pause?.();
     cancelAnimationFrame(animationFrame);
     $("gameScreen").classList.add("hidden");
     $("homeScreen").classList.add("hidden");
