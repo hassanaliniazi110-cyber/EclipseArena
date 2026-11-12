@@ -582,7 +582,6 @@ const goalkeepers = [
     const used=new Set();
     for(let i=0;i<4;i++){
       let value=matchSquadNames[i]||("academy:"+i);
-      const candidate=matchPlayerInfo(value,i);
       if(value!=="academy:"+i&&(!eligible.some(p=>p.name===value)||used.has(value)))value="academy:"+i;
       matchSquadNames[i]=value;
       if(!String(value).startsWith("academy:"))used.add(value);
@@ -596,7 +595,7 @@ const goalkeepers = [
       const select=document.createElement("select");select.dataset.matchSquad=String(i);select.setAttribute("aria-label","Choose teammate "+(i+1));select.innerHTML=options.join("");
       slot.append(title,select);grid.appendChild(slot);
     }
-    const overall=$("matchTeamOvr");if(overall)overall.textContent="STARTING XI OVR · "+matchTeamOverall();
+    const overall=$("matchTeamOvr");if(overall)overall.textContent="TEAM OVR · "+matchTeamOverall();
     grid.querySelectorAll("[data-match-squad]").forEach(select=>select.addEventListener("change",()=>{
       const slot=Number(select.dataset.matchSquad),value=select.value;
       if(!String(value).startsWith("academy:")&&matchSquadNames.some((name,i)=>i!==slot&&name===value)){
@@ -606,7 +605,7 @@ const goalkeepers = [
       try{localStorage.setItem("apexMatchSquadV1",JSON.stringify(matchSquadNames));}catch(_){}
       const info=matchPlayerInfo(value,slot);
       if(match.active&&match.teammates[slot])Object.assign(match.teammates[slot],{name:info.name,ovr:info.ovr,role:info.role});
-      const label=$("matchTeamOvr");if(label)label.textContent="STARTING XI OVR · "+matchTeamOverall();
+      const label=$("matchTeamOvr");if(label)label.textContent="TEAM OVR · "+matchTeamOverall();
       drawPitch();
     }));
   }
