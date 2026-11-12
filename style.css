@@ -1487,3 +1487,25 @@ svg line,svg polyline,.chart-line,.stat-line,.player-chart-line,.player-stats sv
 #accountOwnerRequestList .youtube-owner-request small{display:block;margin-top:6px;color:#aab69b}
 #accountOwnerRequestList .youtube-owner-request-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
 #accountOwnerRequestList .youtube-owner-request-actions button{min-height:38px;padding:8px 14px;border-radius:8px}
+
+
+/* Apex Strikers visual polish pass. */
+.apex-launch-intro{background:radial-gradient(ellipse at 50% 48%,#163b55 0%,#091323 43%,#02050c 82%)!important}
+.apex-launch-intro:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(130,231,255,.09) 48%,transparent 64%);transform:translateX(-100%);animation:apexLaunchSweep 3.2s ease-in-out .4s infinite}
+.launch-crest-wrap{filter:drop-shadow(0 0 28px rgba(103,220,255,.35));animation:apexCrestFloat 4s ease-in-out infinite}
+.launch-crest-ring{border-color:rgba(130,226,255,.38)!important;box-shadow:0 0 30px rgba(92,210,255,.18),inset 0 0 24px rgba(120,177,255,.12)!important}
+.launch-feature-row span{border-color:rgba(134,219,255,.25)!important;background:rgba(5,18,34,.54)!important;box-shadow:0 5px 22px rgba(0,0,0,.2)}
+.apex-launch-intro .launch-progress span{background:linear-gradient(90deg,#75eaff,#a98bff,#d7ff77)!important;box-shadow:0 0 18px rgba(117,234,255,.7)!important}
+.apex-walkout-cinema.walkout-crowd-eruption:before{content:"";position:absolute;inset:0;pointer-events:none;z-index:4;background:radial-gradient(ellipse at 50% 58%,rgba(255,239,183,.48),transparent 38%);animation:apexCrowdFlash .9s ease-out both}
+.apex-walkout-cinema.walkout-final-flash:after{content:"";position:absolute;inset:0;z-index:5;pointer-events:none;background:#fff8df;animation:apexRevealFlash .65s ease-out both}
+.walkout-cinema-top{filter:drop-shadow(0 0 12px rgba(255,206,115,.2))}
+.walkout-final-card.walkout-card-visible{filter:drop-shadow(0 0 28px rgba(255,205,111,.34))}
+.pitch-wrap:has(.apex-3d-canvas){box-shadow:0 24px 70px rgba(0,0,0,.42),0 0 42px rgba(71,196,255,.09),inset 0 1px rgba(255,255,255,.1)}
+.game-screen:has(.apex-3d-canvas) .game-header{border-color:rgba(122,213,255,.28);box-shadow:0 12px 34px rgba(0,0,0,.28),0 0 24px rgba(89,206,255,.07)}
+@keyframes apexLaunchSweep{0%,18%{transform:translateX(-100%)}70%,100%{transform:translateX(100%)}}
+@keyframes apexCrestFloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-8px) rotate(1deg)}}
+@keyframes apexCrowdFlash{0%{opacity:0;transform:scale(.72)}30%{opacity:1}100%{opacity:0;transform:scale(1.25)}}
+@keyframes apexRevealFlash{0%{opacity:0}18%{opacity:.9}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.apex-launch-intro:before,.launch-crest-wrap{animation:none!important}.apex-walkout-cinema.walkout-crowd-eruption:before,.apex-walkout-cinema.walkout-final-flash:after{animation:none!important;display:none!important}}
+/* Account approval is retired. Owner-only controls still require 2FA. */
+.account-requests-heading,#accountOwnerRequestList,#accountRefreshRequests{display:none!important}
