@@ -49,6 +49,12 @@ const players = new Map();
 const tokenToPlayer = new Map();
 const DATA_FILE = process.env.ECLIPSE_DATA_FILE || path.join(__dirname, "eclipse-data.json");
 function hashToken(token) { return crypto.createHash("sha256").update(String(token)).digest("hex"); }
+function tokenHashMatches(storedHash, token) {
+  if (typeof storedHash !== "string" || !/^[a-f0-9]{64}$/i.test(storedHash)) return false;
+  const expected = Buffer.from(storedHash, "hex");
+  const supplied = Buffer.from(hashToken(token), "hex");
+  return expected.length === supplied.length && crypto.timingSafeEqual(expected, supplied);
+}
 function saveData() {
   const data = [...players.values()].map(p => ({ id: p.id, tokenHash: p.tokenHash, deviceKey: p.deviceKey || "", approvalStatus: p.approvalStatus || "pending", createdAt: p.createdAt || "", profile: p.profile, friends: [...p.friends], gems: p.gems, ownedCards: p.ownedCards, cardLevels: p.cardLevels, draftVouchers: p.draftVouchers, activeDraft: p.activeDraft, rewardDay: p.rewardDay, rewardGemsToday: p.rewardGemsToday, lastGameClaimAt: p.lastGameClaimAt, eventClaims: p.eventClaims, draftPity: p.draftPity }));
   const temp = DATA_FILE + ".tmp";
@@ -931,7 +937,7 @@ io.use((socket, next) => {
   const id = cleanText(socket.handshake.auth?.playerId, 24).toUpperCase();
   const token = String(socket.handshake.auth?.token || "");
   const player = players.get(id);
-  if (!player || !/^[a-f0-9]{64}$/i.test(token) || player.tokenHash !== hashToken(token)) return next(new Error("Authentication required"));
+  if (!player || !/^[a-f0-9]{64}$/i.test(token) || !tokenHashMatches(player.tokenHash, token)) return next(new Error("Authentication required"));
   socket.data.playerId = id;
   next();
 });
