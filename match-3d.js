@@ -3,7 +3,7 @@
   const T = window.THREE;
   let sourceCanvas=null,wrap=null,glCanvas=null,hud=null,renderer=null,scene=null,camera=null;
   let resizeObserver=null,lastWidth=0,lastHeight=0,active=false,raf=0,getState=null,lastRenderAt=0,lowPowerMode=false;
-  let playerModel,rivalModel,keeperHome,keeperAway,teammateModels=[],rivalSupportModels=[],ball,ballShadow,flightTrail,aimMarker,cameraTarget;
+  let playerModel,rivalModel,keeperHome,keeperAway,teammateModels=[],rivalSupportModels=[],ball,ballShadow,flightTrail,aimMarker,aimGuide,cameraTarget;
   let hudMode,hudScore,hudClock,hudStatus,lastPlayerLabel="",cameraZoom=1,cameraMode="player";
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const FIELD_WIDTH=84,FIELD_LENGTH=130;
@@ -58,15 +58,20 @@
     const collar=new T.Mesh(new T.TorusGeometry(.145,.022,8,24),trim);collar.rotation.x=Math.PI/2;collar.position.set(0,1.93,-.035);root.add(collar);
     const crest=new T.Mesh(new T.CircleGeometry(.075,20),trim);crest.position.set(.255,1.64,-.398);root.add(crest);
     cylinder(root,.105,.12,.22,[0,2.02,0],skin,10);
-    const head=new T.Mesh(new T.SphereGeometry(.235,28,22),skin);head.scale.set(.94,1.08,.94);head.position.y=2.22;head.castShadow=true;root.add(head);
-    const cap=new T.Mesh(new T.SphereGeometry(.246,24,18,0,Math.PI*2,0,Math.PI*.56),hair);cap.position.set(0,2.29,0);cap.castShadow=true;root.add(cap);
-    const sideHair=new T.Mesh(new T.SphereGeometry(.12,16,12),hair);sideHair.scale.set(.62,1.1,.85);sideHair.position.set(-.19,2.18,0);root.add(sideHair);const sideHair2=sideHair.clone();sideHair2.position.x=.19;root.add(sideHair2);
-    const earMat=skin;[-1,1].forEach(side=>{const ear=new T.Mesh(new T.SphereGeometry(.055,12,10),earMat);ear.position.set(side*.225,2.19,-.005);root.add(ear);});
-    const eyeWhite=mat("#f1e9df",{roughness:.45}),eyeMat=mat("#171a20",{roughness:.35});
-    [-.075,.075].forEach(x=>{const white=new T.Mesh(new T.SphereGeometry(.027,12,10),eyeWhite);white.position.set(x,2.235,-.211);root.add(white);const eye=new T.Mesh(new T.SphereGeometry(.014,10,8),eyeMat);eye.position.set(x,2.235,-.235);root.add(eye);});
-    const nose=new T.Mesh(new T.SphereGeometry(.035,12,10),skin);nose.scale.set(.72,.8,.72);nose.position.set(0,2.17,-.235);root.add(nose);
-    const number=new T.Mesh(new T.PlaneGeometry(.36,.42),new T.MeshBasicMaterial({map:textTexture(isKeeper?"1":String((name.length*7)%27+1),256,256,{color:"#fff",fontSize:150,shadow:"#08131e",shadowBlur:9}),transparent:true,side:T.DoubleSide,depthWrite:false}));
+    const head=new T.Mesh(new T.SphereGeometry(.235,32,24),skin);head.scale.set(.94,1.08,.94);head.position.y=2.22;head.castShadow=true;root.add(head);
+    const cap=new T.Mesh(new T.SphereGeometry(.246,28,20,0,Math.PI*2,0,Math.PI*.56),hair);cap.position.set(0,2.29,0);cap.castShadow=true;root.add(cap);
+    const fringe=new T.Mesh(new T.SphereGeometry(.125,18,12),hair);fringe.scale.set(1.2,.48,.58);fringe.position.set(0,2.285,-.185);root.add(fringe);
+    const sideHair=new T.Mesh(new T.SphereGeometry(.12,18,14),hair);sideHair.scale.set(.62,1.1,.85);sideHair.position.set(-.19,2.18,0);root.add(sideHair);const sideHair2=sideHair.clone();sideHair2.position.x=.19;root.add(sideHair2);
+    const earMat=skin,earInner=mat("#87583f",{roughness:.88});[-1,1].forEach(side=>{const ear=new T.Mesh(new T.SphereGeometry(.055,14,12),earMat);ear.position.set(side*.225,2.19,-.005);root.add(ear);const inner=new T.Mesh(new T.SphereGeometry(.022,10,8),earInner);inner.position.set(side*.24,2.19,-.045);root.add(inner);});
+    const eyeWhite=mat("#f1e9df",{roughness:.45}),eyeMat=mat("#171a20",{roughness:.35}),browMat=mat("#30251f",{roughness:.8});
+    [-.075,.075].forEach(x=>{const white=new T.Mesh(new T.SphereGeometry(.027,14,12),eyeWhite);white.position.set(x,2.235,-.211);root.add(white);const eye=new T.Mesh(new T.SphereGeometry(.014,12,10),eyeMat);eye.position.set(x,2.235,-.235);root.add(eye);const brow=new T.Mesh(new T.SphereGeometry(.045,12,8),browMat);brow.scale.set(1.2,.24,.28);brow.position.set(x,2.275,-.215);root.add(brow);});
+    const nose=new T.Mesh(new T.SphereGeometry(.035,14,12),skin);nose.scale.set(.72,.8,.72);nose.position.set(0,2.17,-.235);root.add(nose);
+    const mouth=new T.Mesh(new T.TorusGeometry(.035,.006,5,14,Math.PI),browMat);mouth.position.set(0,2.115,-.222);mouth.rotation.set(0,Math.PI,0);root.add(mouth);
+    const numberTexture=textTexture(isKeeper?"1":String((name.length*7)%27+1),256,256,{color:"#fff",fontSize:150,shadow:"#08131e",shadowBlur:9});
+    const number=new T.Mesh(new T.PlaneGeometry(.36,.42),new T.MeshBasicMaterial({map:numberTexture,transparent:true,side:T.DoubleSide,depthWrite:false}));
     number.position.set(0,1.49,.466);root.add(number);
+    const frontNumber=new T.Mesh(new T.PlaneGeometry(.28,.34),new T.MeshBasicMaterial({map:numberTexture,transparent:true,side:T.DoubleSide,depthWrite:false}));frontNumber.position.set(0,1.49,-.435);frontNumber.rotation.y=Math.PI;root.add(frontNumber);
+    const sleeveCuffMat=trim;[-1,1].forEach(side=>{const cuff=new T.Mesh(new T.TorusGeometry(.105,.018,6,16),sleeveCuffMat);cuff.rotation.y=Math.PI/2;cuff.position.set(side*.49,1.46,0);root.add(cuff);});
     const arms=[],legs=[];
     [-1,1].forEach(side=>{
       const pivot=new T.Group();pivot.position.set(side*.43,1.78,0);root.add(pivot);
@@ -79,8 +84,11 @@
     [-1,1].forEach(side=>{
       const pivot=new T.Group();pivot.position.set(side*.21,.75,0);root.add(pivot);
       segment(pivot,[0,0,0],[0,-.36,0],.145,shorts);segment(pivot,[0,-.34,0],[0,-.72,-.015],.095,socks);
-      const boot=new T.Mesh(new T.SphereGeometry(.15,18,14),boots);boot.scale.set(.78,.42,1.38);boot.position.set(0,-.78,-.14);pivot.add(boot);
-      const sole=new T.Mesh(new T.SphereGeometry(.145,16,12),trim);sole.scale.set(.79,.16,1.35);sole.position.set(0,-.835,-.14);pivot.add(sole);legs.push(pivot);
+      [-.52,-.60].forEach(y=>{const sockStripe=new T.Mesh(new T.TorusGeometry(.092,.012,5,16),trim);sockStripe.position.set(0,y,0);pivot.add(sockStripe);});
+      const boot=new T.Mesh(new T.SphereGeometry(.15,20,16),boots);boot.scale.set(.78,.42,1.38);boot.position.set(0,-.78,-.14);pivot.add(boot);
+      const sole=new T.Mesh(new T.SphereGeometry(.145,18,14),trim);sole.scale.set(.79,.16,1.35);sole.position.set(0,-.835,-.14);pivot.add(sole);
+      const laceMat=mat("#c8d2df",{roughness:.55});for(let lace=0;lace<3;lace++){const cord=new T.Mesh(new T.BoxGeometry(.105,.009,.014),laceMat);cord.position.set(0,-.735-lace*.025,-.255);pivot.add(cord);}
+      legs.push(pivot);
     });
     const nameLabel=label(root,name||"APEX PLAYER");
     const halo=new T.Mesh(new T.RingGeometry(.68,.79,48),new T.MeshBasicMaterial({color:accentColor||"#75eaff",transparent:true,opacity:.16,side:T.DoubleSide,depthWrite:false}));
@@ -119,14 +127,14 @@
   function goal(z,direction){
     const root=new T.Group();scene.add(root);const frame=mat("#eaf6ff",{metalness:.55,roughness:.22});
     const net=new T.LineBasicMaterial({color:0xb9d9ec,transparent:true,opacity:.38});
-    const x1=-7.1,x2=7.1,top=4.2,back=z+direction*4;
+    const x1=-8.8,x2=8.8,top=4.8,back=z+direction*4.6;
     segment(root,[x1,.1,z],[x1,top,z],.095,frame);segment(root,[x2,.1,z],[x2,top,z],.095,frame);
     segment(root,[x1,top,z],[x2,top,z],.095,frame);
     segment(root,[x1,.1,z],[x1,.1,back],.035,frame);segment(root,[x2,.1,z],[x2,.1,back],.035,frame);
     segment(root,[x1,top,z],[x1,top,back],.035,frame);segment(root,[x2,top,z],[x2,top,back],.035,frame);
     segment(root,[x1,.1,back],[x2,.1,back],.035,frame);segment(root,[x1,top,back],[x2,top,back],.035,frame);
-    for(let i=0;i<=16;i++){const x=x1+(x2-x1)*i/16;root.add(new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(x,.1,z),new T.Vector3(x,top,back)]),net));}
-    for(let j=0;j<=8;j++){const y=.1+(top-.1)*j/8;root.add(new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(x1,y,z),new T.Vector3(x2,y,z+direction*.1)]),net));root.add(new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(x1,y,back),new T.Vector3(x2,y,back)]),net));}
+    for(let i=0;i<=20;i++){const x=x1+(x2-x1)*i/20;root.add(new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(x,.1,z),new T.Vector3(x,top,back)]),net));}
+    for(let j=0;j<=10;j++){const y=.1+(top-.1)*j/10;root.add(new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(x1,y,z),new T.Vector3(x2,y,z+direction*.1)]),net));root.add(new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(x1,y,back),new T.Vector3(x2,y,back)]),net));}
   }
   function seats(){
     const geo=new T.BoxGeometry(.62,.38,.92),material=new T.MeshStandardMaterial({color:0x45617c,roughness:.82});
@@ -218,8 +226,10 @@
     trailGeometry.setAttribute("position",new T.BufferAttribute(new Float32Array(6),3));
     flightTrail=new T.Line(trailGeometry,new T.LineBasicMaterial({color:0x8deaff,transparent:true,opacity:.72,depthWrite:false}));
     flightTrail.visible=false;scene.add(flightTrail);
-    aimMarker=new T.Mesh(new T.RingGeometry(.52,.72,48),new T.MeshBasicMaterial({color:0x9cff58,transparent:true,opacity:.9,side:T.DoubleSide}));
+    aimMarker=new T.Mesh(new T.RingGeometry(.7,.96,56),new T.MeshBasicMaterial({color:0xc7ff4a,transparent:true,opacity:.95,side:T.DoubleSide}));
     aimMarker.rotation.x=-Math.PI/2;aimMarker.position.y=.045;scene.add(aimMarker);
+    const guideGeometry=new T.BufferGeometry().setFromPoints([new T.Vector3(0,.28,30),new T.Vector3(0,2,-FIELD_LENGTH/2-.7)]);
+    aimGuide=new T.Line(guideGeometry,new T.LineDashedMaterial({color:0xc7ff4a,dashSize:1.25,gapSize:.72,transparent:true,opacity:.8}));aimGuide.computeLineDistances();scene.add(aimGuide);
     cameraTarget=new T.Vector3(0,0,0);
   }
   
@@ -266,7 +276,7 @@
     const toY=Number.isFinite(a.toY)?a.toY:.27;
     const startX=(fromX-.5)*12,endX=(toX-.5)*22;
     const startZ=keeperMode?-36:30,endZ=-FIELD_LENGTH/2-.6;
-    const endHeight=.22+clamp((.09-toY)/.078,0,1)*3.65;
+    const endHeight=.22+clamp((.105-toY)/.097,0,1)*4.25;
     const startHeight=keeperMode?1.45:.36;
     const curve=Math.sin(Math.PI*t)*(Number(a.curve)||0)*18;
     const arc=(keeperMode?3.8:4.5)*Math.sin(Math.PI*t);
@@ -383,8 +393,14 @@
         keeperAway.userData.legs.forEach(l=>l.rotation.set(0,0,0));
         keeperAway.userData.legs[0].rotation.x=Math.sin(time*8)*.12;keeperAway.userData.legs[1].rotation.x=-Math.sin(time*8)*.12;
       }
-      aimMarker.visible=!keeperMode&&!s.finished;
-      if(aimMarker.visible)aimMarker.position.set(((s.aim.x===undefined?.5:s.aim.x)-.5)*22,.05,-FIELD_LENGTH/2-.7);
+      aimMarker.visible=!keeperMode&&!s.finished&&!a;
+      if(aimMarker.visible){
+        const targetX=((s.aim.x===undefined?.5:s.aim.x)-.5)*22;
+        const targetY=.22+clamp((.105-(s.aim.y===undefined?.055:s.aim.y))/.097,0,1)*4.25;
+        aimMarker.position.set(targetX,.05,-FIELD_LENGTH/2-.7);
+        const startX=(.522-.5)*FIELD_WIDTH,startZ=(.735-.5)*FIELD_LENGTH;
+        aimGuide.geometry.setFromPoints([new T.Vector3(startX,.28,startZ),new T.Vector3(targetX,targetY,-FIELD_LENGTH/2-.7)]);aimGuide.computeLineDistances();aimGuide.visible=true;
+      }else if(aimGuide)aimGuide.visible=false;
       const a=s.ballAnim;
       if(a){
         const t=clamp((now-a.start)/(a.duration||650),0,1);
