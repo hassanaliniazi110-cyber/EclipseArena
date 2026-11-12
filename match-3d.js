@@ -342,20 +342,21 @@
       keeperAway.position.set(0,0,-FIELD_LENGTH/2+1.2);keeperAway.rotation.y=Math.PI;
       const shot=m.lastShot,shotAge=shot?now-shot.start:9999;
       if(shot&&shotAge>=0&&shotAge<900){
-        const diveT=clamp(shotAge/900,0,1),diveSide=shot.x<.47?-1:shot.x>.53?1:0;
+        const diveT=clamp(shotAge/900,0,1);
+        // Keep the main-branch mirrored orientation while extending the full-body dive.
+        const diveSide=Math.abs(shot.x-.5)<.025?0:Math.sign(shot.x-.5);
         const eased=1-Math.pow(1-diveT,2);
-        const launch=clamp(diveT/.3,0,1),landing=clamp((diveT-.58)/.42,0,1);
-        const reach=eased*(1-landing*.92);
-        const targetX=clamp((Number(shot.x)-.5)*18,-8.4,8.4);
-        // Full-body lateral dive toward the actual shot lane, with a low push-off and grounded recovery.
-        keeperAway.position.x=targetX*reach;
-        keeperAway.position.y=.035+Math.sin(Math.PI*launch)*.16*(1-landing);
-        keeperAway.position.z=-FIELD_LENGTH/2+1.2-.42*reach;
-        keeperAway.rotation.z=-diveSide*1.42*reach;keeperAway.rotation.x=-.22*reach;
-        keeperAway.userData.arms[0].rotation.set(-1.02*reach,0,diveSide*(.55+.62*reach));
-        keeperAway.userData.arms[1].rotation.set(-1.12*reach,0,diveSide*(.72+.58*reach));
-        keeperAway.userData.legs[0].rotation.set(-.48*reach,0,-diveSide*.38*reach);
-        keeperAway.userData.legs[1].rotation.set(.72*reach,0,diveSide*.42*reach);
+        const launch=clamp(diveT/.3,0,1),recovery=clamp((diveT-.62)/.38,0,1);
+        const reach=eased*(1-recovery*.92);
+        const targetReach=clamp((Number(shot.x)-.5)*FIELD_WIDTH*.48,-7.2,7.2);
+        keeperAway.position.x=targetReach*reach;
+        keeperAway.position.y=.025+Math.sin(Math.PI*launch)*.16*(1-recovery);
+        keeperAway.position.z=-FIELD_LENGTH/2+1.2-.38*reach;
+        keeperAway.rotation.z=diveSide*1.28*reach;keeperAway.rotation.x=-.14*reach;
+        keeperAway.userData.arms[0].rotation.set(-1.02*reach,0,-diveSide*(.42+.62*reach));
+        keeperAway.userData.arms[1].rotation.set(-1.12*reach,0,-diveSide*(.58+.66*reach));
+        keeperAway.userData.legs[0].rotation.set(-.38*reach,0,diveSide*.3*reach);
+        keeperAway.userData.legs[1].rotation.set(.62*reach,0,-diveSide*.36*reach);
       }else{
         keeperAway.position.x=0;keeperAway.position.y=0;keeperAway.rotation.z=0;keeperAway.rotation.x=0;
         keeperAway.userData.arms.forEach(a=>a.rotation.set(0,0,0));keeperAway.userData.legs.forEach(l=>l.rotation.set(0,0,0));
@@ -396,17 +397,18 @@
       const dive=s.keeperMotion;
       if(dive){
         const raw=clamp((now-dive.start)/(dive.duration||700),0,1);
-        const side=Number(dive.side)||0,targetX=clamp((Number.isFinite(dive.targetX)?dive.targetX:.5)-.5,-.46,.46);
+        const targetX=clamp((Number.isFinite(dive.targetX)?dive.targetX:.5)-.5,-.46,.46);
+        const side=Math.abs(targetX)<.025?(Number(dive.side)||0):Math.sign(targetX);
         const launch=clamp(raw/.34,0,1),landing=clamp((raw-.62)/.38,0,1);
         const eased=1-Math.pow(1-raw,2),reach=eased*(1-landing*.94);
-        // Track the selected/actual shot lane across the full goal, then land instead of hovering.
+        // Follow the selected shot lane with the same mirrored body orientation as H2H.
         keeperAway.position.x=targetX*18*reach;
         keeperAway.position.y=.035+Math.sin(Math.PI*launch)*.16*(1-landing);
         keeperAway.position.z=-FIELD_LENGTH/2+1.2-.38*reach;
-        keeperAway.rotation.z=-side*1.42*reach;keeperAway.rotation.x=-.2*reach;
+        keeperAway.rotation.z=side*1.28*reach;keeperAway.rotation.x=-.14*reach;
         const arms=keeperAway.userData.arms,legs=keeperAway.userData.legs;
-        arms[0].rotation.set(-1.02*reach,0,side*(.55+.62*reach));arms[1].rotation.set(-1.12*reach,0,side*(.72+.58*reach));
-        legs[0].rotation.set(-.48*reach,0,-side*.38*reach);legs[1].rotation.set(.72*reach,0,side*.42*reach);
+        arms[0].rotation.set(-1.02*reach,0,-side*(.42+.62*reach));arms[1].rotation.set(-1.12*reach,0,-side*(.58+.66*reach));
+        legs[0].rotation.set(-.38*reach,0,side*.3*reach);legs[1].rotation.set(.62*reach,0,-side*.36*reach);
       }else{
         keeperAway.position.x=0;keeperAway.position.y=0;keeperAway.rotation.z=0;keeperAway.rotation.x=0;
         keeperAway.userData.arms.forEach(a=>a.rotation.set(0,0,0));

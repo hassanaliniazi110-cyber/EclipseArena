@@ -1963,12 +1963,14 @@ const goalkeepers = [
       const distanceFactor=Math.max(0,Math.min(1,(.53-match.player.y)/.40));
       const wide=Math.abs(match.player.x-.5);
       const ovr=Math.max(70,Number(match.controlledRating)||90);
-      // Aim to the far inside corner, keeping the target inside the enlarged goal frame.
+      // Aim at the far inside post. The AI keeper has a real chance to save,
+      // with close-range attacks and high-rated finishers earning better odds.
       const targetX=match.player.x<.5?.59:.41;
       const keeperRating=108;
-      const shotQuality=.48+distanceFactor*.19+Math.min(.16,(ovr-90)*.0015)-wide*.24;
-      const saveDifficulty=Math.max(.18,Math.min(.88,shotQuality-(keeperRating-100)*.002));
-      const scored=Math.random()<Math.max(.32,Math.min(.88,saveDifficulty+.12));
+      const keeperSkill=Math.max(.08,Math.min(.22,(keeperRating-85)*.008));
+      const finisherBonus=Math.max(0,Math.min(.12,(ovr-90)*.003));
+      const goalChance=Math.max(.12,Math.min(.62,.26+distanceFactor*.20+finisherBonus+wide*.08-keeperSkill));
+      const scored=Math.random()<goalChance;
       const start=performance.now();
       match.lastShot={start,scored,x:targetX};
       match.shotAnim={start,duration:720,fromX:match.ball.x,fromY:match.ball.y,toX:targetX,toY:.025,scored};
