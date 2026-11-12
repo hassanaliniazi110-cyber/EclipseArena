@@ -1,7 +1,7 @@
 # Eclipse Arena backend — Wispbyte
 
 ## Deploy on Wispbyte
-1. Open your Wispbyte client panel and create/open a **Node.js** server.
+1. Open your Wispbyte client panel and create/open a **Node.js 26** server (recommended). Node.js 22 or newer is required; do not use Node.js 19 or older.
 2. Open **Files** and upload `server.js` and `package.json` from this repository. You can also use Wispbyte's GitHub integration if it is available for your server.
 3. Open **Startup** and set the startup command to `npm start` (or `node server.js` if the panel does not install dependencies from package.json automatically).
 4. Install the dependencies from `package.json`. Required packages: `express`, `cors`, `express-rate-limit`, `helmet`, and `socket.io`.
@@ -15,6 +15,12 @@ Once the Wispbyte backend is running and you know its public HTTPS URL:
 3. Commit the change. Players will not have a backend URL field to edit; the website loads this configuration automatically.
 
 The backend URL itself is public configuration, not a password. Never put tokens or secrets in `config.js`. Only people with write access to this GitHub repository can change the website configuration, so review repository collaborators and enable two-factor authentication on your GitHub account.
+
+## Automated checks
+
+- Run `npm test` to syntax-check the backend and browser JavaScript files.
+- GitHub Actions runs syntax checks and a production dependency audit on pushes, pull requests, and weekly.
+- Dependabot checks npm packages and GitHub Actions weekly.
 
 ## Security included
 - CORS origin allowlist (`ALLOWED_ORIGINS`)
