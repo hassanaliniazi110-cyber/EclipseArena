@@ -171,7 +171,7 @@
     goal(-FIELD_LENGTH/2,-1);goal(FIELD_LENGTH/2,1);
     scene.add(new T.HemisphereLight(0xadcfff,0x15251b,1.02));
     const sun=new T.DirectionalLight(0xffffff,2.05);sun.position.set(-25,48,38);sun.castShadow=true;
-    sun.shadow.mapSize.set(1536,1536);sun.shadow.camera.left=-78;sun.shadow.camera.right=78;sun.shadow.camera.top=88;sun.shadow.camera.bottom=-88;sun.shadow.camera.far=220;
+    sun.shadow.mapSize.set(lowPowerMode?768:2048,lowPowerMode?768:2048);sun.shadow.camera.left=-78;sun.shadow.camera.right=78;sun.shadow.camera.top=88;sun.shadow.camera.bottom=-88;sun.shadow.camera.far=220;
     sun.shadow.camera.near=1;sun.shadow.camera.far=180;sun.shadow.bias=-.00025;scene.add(sun);
     [[-60,18,-80],[60,18,-80],[-60,18,80],[60,18,80]].forEach((p,i)=>{
       cylinder(scene,.12,.16,17,[p[0],8.5,p[2]],mat("#25394c",{metalness:.55,roughness:.4}),8);
@@ -227,10 +227,13 @@
   }
   function place(model,x,y,facing,time,highlight){
     model.position.set((x-.5)*FIELD_WIDTH,0,(y-.5)*FIELD_LENGTH);model.rotation.y=facing==="toward"?Math.PI:0;model.visible=true;
-    const d=model.userData,phase=time*8.5+d.phase;
-    d.legs[0].rotation.x=Math.sin(phase)*.46;d.legs[1].rotation.x=-Math.sin(phase)*.46;
-    d.arms[0].rotation.x=-Math.sin(phase)*.28;d.arms[1].rotation.x=Math.sin(phase)*.28;
-    model.position.y=.035+Math.abs(Math.sin(phase*2))*.025;
+    const d=model.userData,previous=d.lastPosition;
+    const moved=previous?Math.hypot((x-previous.x)*FIELD_WIDTH,(y-previous.y)*FIELD_LENGTH):0;
+    d.lastPosition={x,y};
+    const stride=moved>.018?.62:.075,phase=time*(moved>.018?12.5:2.1)+d.phase;
+    d.legs[0].rotation.x=Math.sin(phase)*stride;d.legs[1].rotation.x=-Math.sin(phase)*stride;
+    d.arms[0].rotation.x=-Math.sin(phase)*stride*.58;d.arms[1].rotation.x=Math.sin(phase)*stride*.58;
+    model.position.y=.035+(moved>.018?Math.abs(Math.sin(phase*2))*.045:Math.abs(Math.sin(phase*2))*.008);
     d.halo.visible=Boolean(highlight);d.halo.material.opacity=highlight?.74:.16;d.label.visible=!d.isKeeper;
   }
   function setActorLabel(model,value){
@@ -328,7 +331,23 @@
         keeperAway.userData.arms.forEach(a=>a.rotation.set(0,0,0));keeperAway.userData.legs.forEach(l=>l.rotation.set(0,0,0));
       }
       keeperHome.userData.label.visible=false;keeperAway.userData.label.visible=false;cameraTarget.set((m.player.x-.5)*2.8,0,(m.player.y-.5)*2.2);
-      aimMarker.visible=false;flightTrail.visible=false;ball.position.set((m.ball.x-.5)*FIELD_WIDTH,.24,(m.ball.y-.5)*FIELD_LENGTH);
+      aimMarker.visible=false;
+      const matchShot=m.shotAnim;
+      if(matchShot){
+        const t=clamp((now-matchShot.start)/(matchShot.duration||720),0,1),ease=1-Math.pow(1-t,2);
+        const sx=(matchShot.fromX-.5)*FIELD_WIDTH,sz=(matchShot.fromY-.5)*FIELD_LENGTH;
+        const ex=(matchShot.toX-.5)*FIELD_WIDTH,ez=-FIELD_LENGTH/2-.55;
+        const height=.24+Math.sin(Math.PI*t)*3.35;
+        ball.position.set(sx+(ex-sx)*ease,height,sz+(ez-sz)*ease);
+        const tailT=Math.max(0,t-.16),tailEase=1-Math.pow(1-tailT,2);
+        const attr=flightTrail.geometry.attributes.position;
+        attr.setXYZ(0,sx+(ex-sx)*tailEase,.24+Math.sin(Math.PI*tailT)*3.35,sz+(ez-sz)*tailEase);
+        attr.setXYZ(1,ball.position.x,ball.position.y,ball.position.z);
+        attr.needsUpdate=true;flightTrail.geometry.computeBoundingSphere();flightTrail.visible=t>.02&&t<.98;
+      }else{
+        flightTrail.visible=false;
+        ball.position.set((m.ball.x-.5)*FIELD_WIDTH,.24,(m.ball.y-.5)*FIELD_LENGTH);
+      }
     }else{
       teammateModels.forEach(p=>p.visible=false);rivalSupportModels.forEach(p=>p.visible=false);rivalModel.visible=false;keeperHome.visible=false;keeperAway.visible=true;
       applyModelKit(keeperAway,s.goalkeeperKitColor||"#c7ff4a","#eafaff");
@@ -408,8 +427,8 @@
       wrap.appendChild(hud);hudMode=hud.querySelector(".apex-3d-hud-mode");hudScore=hud.querySelector(".apex-3d-hud-score");hudClock=hud.querySelector(".apex-3d-hud-clock");hudStatus=hud.querySelector(".apex-3d-hud-status");
       lowPowerMode=window.matchMedia?.("(max-width: 800px)").matches||Number(navigator.hardwareConcurrency||8)<=4||Number(navigator.deviceMemory||8)<=4||Boolean(navigator.connection?.saveData);
       renderer=new T.WebGLRenderer({canvas:glCanvas,antialias:!lowPowerMode,alpha:false,powerPreference:"high-performance"});
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,lowPowerMode?1:1.25));renderer.shadowMap.enabled=!lowPowerMode;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=!lowPowerMode;renderer.shadowMap.needsUpdate=true;
-      renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.16;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,lowPowerMode?1:1.5));renderer.shadowMap.enabled=!lowPowerMode;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=!lowPowerMode;renderer.shadowMap.needsUpdate=true;
+      renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.22;
       if("outputColorSpace" in renderer)renderer.outputColorSpace=T.SRGBColorSpace;
       scene=new T.Scene();camera=new T.PerspectiveCamera(47,1,.1,400);camera.position.set(0,23,29);camera.zoom=cameraZoom;camera.updateProjectionMatrix();
       buildScene();buildActors();resize();sourceCanvas.classList.add("apex-2d-hidden");
