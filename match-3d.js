@@ -192,7 +192,7 @@
   function setKits(homeColor,accentColor,keeperColor,awayColor){
     const home=homeColor||"#20c9ec",accent=accentColor||"#dffaff",keeper=keeperColor||"#c7ff4a",away=awayColor||"#e34b69";
     applyModelKit(playerModel,home,accent);teammateModels.forEach(p=>applyModelKit(p,home,accent));
-    applyModelKit(keeperHome,keeper,accent);applyModelKit(keeperAway,keeper,accent);
+    applyModelKit(keeperHome,keeper,accent);applyModelKit(keeperAway,away,"#ffdce4");
     applyModelKit(rivalModel,away,"#ffdce4");rivalSupportModels.forEach(p=>applyModelKit(p,away,"#ffdce4"));
   }
   function buildActors(){
@@ -329,6 +329,7 @@
       aimMarker.visible=false;flightTrail.visible=false;ball.position.set((m.ball.x-.5)*FIELD_WIDTH,.24,(m.ball.y-.5)*FIELD_LENGTH);
     }else{
       teammateModels.forEach(p=>p.visible=false);rivalSupportModels.forEach(p=>p.visible=false);rivalModel.visible=false;keeperHome.visible=false;keeperAway.visible=true;
+      applyModelKit(keeperAway,s.goalkeeperKitColor||"#c7ff4a","#eafaff");
       if(s.mode==="goalkeeping"||s.mode==="survival"){playerModel.visible=false;setActorLabel(keeperAway,(s.selectedGoalkeeper||"GOALKEEPER")+" · "+(s.goalkeeperRating||"")+" OVR");keeperAway.position.set(0,0,-FIELD_LENGTH/2+1.2);keeperAway.userData.label.visible=true;}
       else{place(playerModel,.5,.76,"away",time,true);setActorLabel(keeperAway,(s.selectedGoalkeeper||"GOALKEEPER")+" · "+(s.goalkeeperRating||"")+" OVR");keeperAway.position.set(0,0,-FIELD_LENGTH/2+1.2);keeperAway.userData.label.visible=true;}
       keeperAway.rotation.y=Math.PI;
