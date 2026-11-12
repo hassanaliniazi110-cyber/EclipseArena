@@ -2018,3 +2018,29 @@ html[data-device="ipad"] #shootBtn{display:none!important}
 @keyframes apexIntroCrestImpact{0%{opacity:0;transform:scale(.42) rotate(-18deg)}70%{opacity:1;transform:scale(1.12) rotate(3deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
 @media(prefers-reduced-motion:reduce){.apex-cinema-stage:before,.apex-cinema-stage:after,.walkout-final-card.walkout-card-visible,.apex-launch-intro .launch-crest{animation:none!important}.apex-player-card.draft-player-card{transition:none}}
 @media(max-width:650px){.apex-cinema-stage{padding:16px 10px}.walkout-headline{font-size:clamp(1.1rem,6vw,1.8rem)}.apex-player-card.draft-player-card:hover{transform:none}}
+
+
+/* Compact match entry: remove the oversized empty green area above the playable pitch. */
+.game-screen:not(:fullscreen){padding-top:10px;padding-bottom:20px;}
+.game-screen:not(:fullscreen) .game-header{margin-bottom:12px;}
+.game-screen:not(:fullscreen) .game-layout{gap:12px;align-items:start;}
+.game-screen:not(:fullscreen) .pitch-wrap{padding:8px;background:#071321;}
+.game-screen:not(:fullscreen) #pitch{background:#071321!important;}
+.game-screen:has(#matchControls:not(.hidden)) #pitch{
+  width:100%!important;height:auto!important;aspect-ratio:1.62!important;
+  min-height:0!important;max-height:calc(100dvh - 210px)!important;
+}
+@media(max-width:700px){
+  .game-screen:not(:fullscreen){padding-top:8px;padding-bottom:14px;}
+  .game-screen:not(:fullscreen) .game-header{margin-bottom:8px;}
+  .game-screen:has(#matchControls:not(.hidden)) #pitch{
+    aspect-ratio:1.12!important;min-height:0!important;
+    max-height:calc(100dvh - 245px)!important;
+  }
+}
+@media(orientation:landscape) and (max-height:600px){
+  .game-screen:has(#matchControls:not(.hidden)) #pitch{
+    aspect-ratio:1.68!important;min-height:0!important;
+    max-height:calc(100dvh - 155px)!important;height:auto!important;
+  }
+}
