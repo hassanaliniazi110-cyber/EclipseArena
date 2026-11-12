@@ -442,12 +442,23 @@ const goalkeepers = [
     const kit=realKits[name];
     if(kit){p.shorts=kit.shorts;p.trim=kit.trim;jersey=kit.shirt;}
     ctx.save();ctx.translate(cx,cy);ctx.rotate(rotation);ctx.scale(size,size);ctx.lineCap="round";ctx.lineJoin="round";
-    // Soft ground shadow and detailed football boots.
-    ctx.fillStyle="rgba(0,0,0,.28)";ctx.beginPath();ctx.ellipse(0,.43,.36,.075,0,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#20252c";ctx.lineWidth=.11;
-    ctx.beginPath();ctx.moveTo(-.12,.12);ctx.lineTo(-.19,.39);ctx.moveTo(.12,.12);ctx.lineTo(.22,.37);ctx.stroke();
-    ctx.fillStyle=p.shorts;ctx.fillRect(-.22,-.025,.44,.19);
-    ctx.fillStyle=jersey;ctx.beginPath();ctx.moveTo(-.19,-.43);ctx.lineTo(.19,-.43);ctx.lineTo(.25,-.05);ctx.lineTo(-.25,-.05);ctx.closePath();ctx.fill();
+    const gaitPhase=performance.now()/125+(name.length%9)*.7;
+    const stride=Math.sin(gaitPhase)*.105;
+    const lift=Math.max(0,Math.cos(gaitPhase))*.045;
+    // Animated contact shadow and running stride give each footballer life.
+    ctx.fillStyle="rgba(0,0,0,.32)";ctx.beginPath();ctx.ellipse(0,.43,.39,.085,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#18222b";ctx.lineWidth=.115;
+    ctx.beginPath();
+    ctx.moveTo(-.12,.105);ctx.quadraticCurveTo(-.16+stride,.24,-.19+stride*1.45,.385-lift);
+    ctx.moveTo(.12,.105);ctx.quadraticCurveTo(.16-stride,.24,.22-stride*1.45,.385-Math.max(0,-Math.cos(gaitPhase))*.045);
+    ctx.stroke();
+    const shortsGradient=ctx.createLinearGradient(-.23,-.02,.23,.18);
+    shortsGradient.addColorStop(0,"rgba(0,0,0,.28)");shortsGradient.addColorStop(.48,p.shorts);shortsGradient.addColorStop(1,"rgba(255,255,255,.18)");
+    ctx.fillStyle=shortsGradient;ctx.beginPath();ctx.moveTo(-.22,-.03);ctx.lineTo(.22,-.03);ctx.lineTo(.24,.17);ctx.lineTo(.04,.17);ctx.lineTo(0,.10);ctx.lineTo(-.04,.17);ctx.lineTo(-.24,.17);ctx.closePath();ctx.fill();
+    const shirtGradient=ctx.createLinearGradient(-.23,-.43,.24,-.04);
+    shirtGradient.addColorStop(0,"rgba(255,255,255,.34)");shirtGradient.addColorStop(.42,jersey);shirtGradient.addColorStop(1,"rgba(0,0,0,.28)");
+    ctx.fillStyle=shirtGradient;ctx.beginPath();ctx.moveTo(-.19,-.43);ctx.lineTo(.19,-.43);ctx.lineTo(.25,-.05);ctx.lineTo(-.25,-.05);ctx.closePath();ctx.fill();
+    ctx.strokeStyle="rgba(255,255,255,.3)";ctx.lineWidth=.018;ctx.beginPath();ctx.moveTo(-.14,-.37);ctx.lineTo(-.08,-.09);ctx.moveTo(.14,-.37);ctx.lineTo(.08,-.09);ctx.stroke();
     // Shirt seams, shoulder panels and collar.
     ctx.strokeStyle=p.trim;ctx.lineWidth=.025;ctx.beginPath();ctx.moveTo(-.17,-.40);ctx.lineTo(-.11,-.07);ctx.moveTo(.17,-.40);ctx.lineTo(.11,-.07);ctx.stroke();
     ctx.fillStyle=p.trim;ctx.fillRect(-.22,-.41,.06,.13);ctx.fillRect(.16,-.41,.06,.13);
@@ -462,17 +473,30 @@ const goalkeepers = [
       ctx.fillStyle=p.trim;ctx.beginPath();ctx.arc(-.60,-.39,.105,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(.60,-.39,.105,0,Math.PI*2);ctx.fill();
       ctx.fillStyle="#f5f5ef";ctx.fillRect(-.53,-.44,.10,.055);ctx.fillRect(.43,-.44,.10,.055);
     }else{
-      ctx.beginPath();ctx.moveTo(-.17,-.37);ctx.lineTo(-.31,-.20);ctx.lineTo(-.21,-.08);ctx.moveTo(.17,-.37);ctx.lineTo(.30,-.24);ctx.lineTo(.23,-.10);ctx.stroke();
-      ctx.strokeStyle=p.skin;ctx.lineWidth=.07;ctx.beginPath();ctx.moveTo(-.21,-.08);ctx.lineTo(-.18,-.04);ctx.moveTo(.23,-.10);ctx.lineTo(.24,-.06);ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-.17,-.37);ctx.quadraticCurveTo(-.30,-.28+stride*.45,-.31+stride*.35,-.17);
+      ctx.lineTo(-.22+stride*.35,-.08);
+      ctx.moveTo(.17,-.37);ctx.quadraticCurveTo(.30,-.28-stride*.45,.30-stride*.35,-.17);
+      ctx.lineTo(.23-stride*.35,-.10);ctx.stroke();
+      ctx.strokeStyle=p.skin;ctx.lineWidth=.07;ctx.beginPath();
+      ctx.moveTo(-.22+stride*.35,-.08);ctx.lineTo(-.19+stride*.35,-.04);
+      ctx.moveTo(.23-stride*.35,-.10);ctx.lineTo(.24-stride*.35,-.06);ctx.stroke();
     }
     // Socks and cleats.
-    ctx.strokeStyle=p.trim;ctx.lineWidth=.075;ctx.beginPath();ctx.moveTo(-.16,.15);ctx.lineTo(-.19,.30);ctx.moveTo(.15,.15);ctx.lineTo(.20,.29);ctx.stroke();
-    ctx.fillStyle="#f4f5f3";ctx.beginPath();ctx.ellipse(-.25,.405,.12,.055,-.15,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(.25,.39,.12,.055,.1,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#c7ff4a";ctx.fillRect(-.32,.43,.12,.025);ctx.fillRect(.19,.415,.12,.025);
+    ctx.strokeStyle=p.trim;ctx.lineWidth=.075;ctx.beginPath();
+    ctx.moveTo(-.16,.15);ctx.lineTo(-.19+stride,.30);ctx.lineTo(-.19+stride*1.45,.38-lift);
+    ctx.moveTo(.15,.15);ctx.lineTo(.20-stride,.29);ctx.lineTo(.22-stride*1.45,.38-Math.max(0,-Math.cos(gaitPhase))*.045);ctx.stroke();
+    ctx.fillStyle="#f4f5f3";ctx.beginPath();ctx.ellipse(-.25+stride*1.45,.405-lift,.13,.058,-.15,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(.25-stride*1.45,.39-Math.max(0,-Math.cos(gaitPhase))*.045,.13,.058,.1,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#c7ff4a";ctx.fillRect(-.32+stride*1.45,.43-lift,.12,.025);ctx.fillRect(.19-stride*1.45,.415-Math.max(0,-Math.cos(gaitPhase))*.045,.12,.025);
     // Short neck only: ears are intentionally omitted.
-    ctx.fillStyle=p.skin;ctx.fillRect(-.055,-.53,.11,.13);
-    // Face, hair silhouette and tiny facial details for a more lifelike match model.
+    const skinGradient=ctx.createRadialGradient(-.055,-.68,.015,.015,-.62,.19);
+    skinGradient.addColorStop(0,"#f0c6a5");skinGradient.addColorStop(.55,p.skin);skinGradient.addColorStop(1,"#694332");
+    ctx.fillStyle=skinGradient;ctx.fillRect(-.055,-.53,.11,.13);
+    // Face, ears, cheek lighting and tiny facial details.
     ctx.beginPath();ctx.arc(0,-.625,.15,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=p.skin;ctx.beginPath();ctx.ellipse(-.145,-.615,.035,.055,0,0,Math.PI*2);ctx.ellipse(.145,-.615,.035,.055,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="rgba(255,224,197,.2)";ctx.beginPath();ctx.ellipse(-.055,-.67,.045,.075,-.3,0,Math.PI*2);ctx.fill();
     ctx.fillStyle=p.hair||"#211b18";
     ctx.beginPath();
     if(p.style==="curly"){
@@ -522,9 +546,11 @@ const goalkeepers = [
       ctx.beginPath();ctx.arc(w*.025,yy,Math.max(1.5,w*.003),0,Math.PI*2);ctx.fill();
       ctx.beginPath();ctx.arc(w*.975,yy,Math.max(1.5,w*.003),0,Math.PI*2);ctx.fill();
     }
-    const playerSize=Math.max(17,w*.043);
     const drawMatchPlayer=(x,y,name,kit,number,rotation,highlight)=>{
       const px=x*w,py=y*h;
+      // Perspective scale: players farther upfield are smaller, nearer players feel closer.
+      const depth=Math.max(.72,Math.min(1.18,.72+(1-y)*.52));
+      const playerSize=Math.max(15,w*.043*depth);
       // Ground shadow and a subtle team-coloured selection halo.
       ctx.save();
       if(highlight){
@@ -543,6 +569,12 @@ const goalkeepers = [
         ctx.textAlign="center";ctx.textBaseline="bottom";
         ctx.shadowColor="rgba(199,255,74,.9)";ctx.shadowBlur=8;
         ctx.fillText("YOU",px,py-playerSize*.73);ctx.restore();
+      }else if(name==="Cristiano Ronaldo"){
+        ctx.save();ctx.fillStyle="rgba(16,22,31,.78)";ctx.strokeStyle="rgba(255,255,255,.32)";
+        const tagW=Math.max(34,playerSize*1.8),tagH=Math.max(12,playerSize*.48);
+        ctx.beginPath();ctx.roundRect(px-tagW/2,py-playerSize*.95,tagW,tagH,4);ctx.fill();ctx.stroke();
+        ctx.fillStyle="#fff";ctx.font="900 "+Math.max(7,playerSize*.25)+"px sans-serif";
+        ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("RIVAL",px,py-playerSize*.71);ctx.restore();
       }
     };
     // Four supporting players on each side, plus the two active players.
