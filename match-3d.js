@@ -260,7 +260,7 @@
     const toY=Number.isFinite(a.toY)?a.toY:.27;
     const startX=(fromX-.5)*12,endX=(toX-.5)*22;
     const startZ=keeperMode?-36:30,endZ=-FIELD_LENGTH/2-.6;
-    const endHeight=.24+clamp((.42-toY)/.36,0,1)*2.68;
+    const endHeight=.22+clamp((.09-toY)/.078,0,1)*3.65;
     const startHeight=keeperMode?1.45:.36;
     const curve=Math.sin(Math.PI*t)*(Number(a.curve)||0)*18;
     const arc=(keeperMode?3.8:4.5)*Math.sin(Math.PI*t);
