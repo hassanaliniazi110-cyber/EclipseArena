@@ -173,7 +173,7 @@ const goalkeepers = [
     {x:.22,y:.29,role:"RW"},{x:.39,y:.39,role:"ST"},
     {x:.61,y:.39,role:"CAM"},{x:.78,y:.29,role:"LW"}
   ];
-  const match = {active:false,finished:false,clock:0,lastTick:0,player:{x:.5,y:.76},rival:{x:.5,y:.24},ball:{x:.5,y:.76},move:"",moveX:0,moveY:0,sprint:false,hasBall:true,playerGoals:0,rivalGoals:0,rankPoints:0,rank:"ROOKIE III",lastRivalShot:0,rivalHasBall:false,passUntil:0,passFromX:.5,passFromY:.76,passToX:.5,passToY:.5,passReceiverSlot:-1,passStartedAt:0,passDuration:460,shotAnim:null,controlledName:"Muhammad Arham",controlledRating:122,controlledRole:"ST",teammates:[],rivalTeammates:[],lastShot:null};
+  const match = {active:false,finished:false,clock:0,lastTick:0,lastTackleAt:0,player:{x:.5,y:.76},rival:{x:.5,y:.24},ball:{x:.5,y:.76},move:"",moveX:0,moveY:0,sprint:false,hasBall:true,playerGoals:0,rivalGoals:0,rankPoints:0,rank:"ROOKIE III",lastRivalShot:0,rivalHasBall:false,passUntil:0,passFromX:.5,passFromY:.76,passToX:.5,passToY:.5,passReceiverSlot:-1,passStartedAt:0,passDuration:460,shotAnim:null,controlledName:"Muhammad Arham",controlledRating:122,controlledRole:"ST",teammates:[],rivalTeammates:[],lastShot:null};
   function getApex3DState(){
     return {
       mode,selectedPlayer:match.active?match.controlledName:selectedPlayer,selectedGoalkeeper,
@@ -1640,7 +1640,7 @@ const goalkeepers = [
     if(onlineCfg.base&&onlineCfg.token)activeRewardSessionPromise=api("/api/games/start",{method:"POST",body:JSON.stringify({mode,eventId:activeRewardEventId})}).then(data=>{activeRewardSessionId=data.sessionId;return data.sessionId;}).catch(error=>{activeRewardSessionId=null;activeRewardSessionPromise=null;toast("Online game session could not start: "+error.message);return null;});
     if(!isRandomRush){recentModes=[nextMode,...recentModes.filter(x=>x!==nextMode)].slice(0,5);try{localStorage.setItem("eclipseRecentModes",JSON.stringify(recentModes));}catch(_){}renderModeTools();}
     if(mode==="headtohead")onlineCfg.onlineMatch=false;
-    match.active=mode==="headtohead";match.finished=false;match.clock=0;match.playerGoals=0;match.rivalGoals=h2hChallenge==="comeback"?2:0;match.rankPoints=0;match.rank="ROOKIE III";match.player={x:.5,y:.76};match.rival={x:.5,y:.24};match.ball={x:.5,y:.76};match.move="";match.moveX=0;match.moveY=0;match.sprint=false;match.hasBall=true;match.rivalHasBall=false;match.lastRivalShot=0;match.passUntil=0;match.passReceiverSlot=-1;match.shotAnim=null;match.lastShot=null;match.teammates=[];match.rivalTeammates=[];match.controlledName=selectedPlayer;
+    match.active=mode==="headtohead";match.finished=false;match.clock=0;match.playerGoals=0;match.rivalGoals=h2hChallenge==="comeback"?2:0;match.rankPoints=0;match.rank="ROOKIE III";match.player={x:.5,y:.76};match.rival={x:.5,y:.24};match.ball={x:.5,y:.76};match.move="";match.moveX=0;match.moveY=0;match.sprint=false;match.hasBall=true;match.rivalHasBall=false;match.lastRivalShot=0;match.lastTackleAt=0;match.passUntil=0;match.passReceiverSlot=-1;match.shotAnim=null;match.lastShot=null;match.teammates=[];match.rivalTeammates=[];match.controlledName=selectedPlayer;
     if(match.active){renderMatchSquadPicker();buildMatchTeams();}
     applyCurrentTeamKits();
     $("matchHud").classList.toggle("hidden",!match.active);$("matchControls").classList.toggle("hidden",!match.active);$("matchSquadPicker")?.classList.toggle("hidden",!match.active);$("matchCameraControls").classList.remove("hidden");$("matchResult").classList.add("hidden");$("matchResult").textContent="";
@@ -1713,7 +1713,7 @@ const goalkeepers = [
         moveMatchActor(match.rival,targetX,targetY,aiLevel,dt);
         const toRival=matchDistance(match.player,match.rival);
         const rivalToBall=matchDistance(match.rival,match.ball);
-        if(match.hasBall&&toRival<1.9){
+        if(match.hasBall&&toRival<1.35){
           match.hasBall=false;match.rivalHasBall=true;
           match.ball={x:match.rival.x,y:match.rival.y-.018};
           $("feedback").textContent="AI TACKLE! Win possession back.";
@@ -1788,6 +1788,7 @@ const goalkeepers = [
     if(action==="sprint"){
       match.sprint=!match.sprint;$("feedback").textContent=match.sprint?"SPRINT ON":"SPRINT OFF";
     }else if(action==="pass"){
+      if(match.passUntil>performance.now()){ $("feedback").textContent="PASS IN PROGRESS.";return; }
       if(!match.hasBall){$("feedback").textContent="Win possession before passing.";return;}
       let bestIndex=-1,bestScore=-Infinity,bestDistance=Infinity;
       match.teammates.forEach((teammate,i)=>{
@@ -1809,12 +1810,18 @@ const goalkeepers = [
       match.hasBall=false;match.rivalHasBall=false;
       $("feedback").textContent="PASS TO "+target.name.toUpperCase()+" · "+target.ovr+" OVR";
     }else if(action==="tackle"){
-      if(!match.hasBall&&dist<5.2){
-        match.hasBall=true;match.rivalHasBall=false;match.passUntil=0;match.rankPoints+=20;
-        match.ball={x:match.player.x,y:match.player.y-.02};
-        $("feedback").textContent="CLEAN TACKLE! +20 RANK POINTS";
-      }else if(!match.hasBall)$("feedback").textContent="Get closer to the opponent with the ball.";
-      else $("feedback").textContent="You have possession. Keep moving!";
+      const now=performance.now();
+      if(now-match.lastTackleAt<650){$("feedback").textContent="TACKLE RECHARGING…";return;}
+      match.lastTackleAt=now;
+      const targets=[match.rival,...match.rivalTeammates].filter(Boolean);
+      const nearest=targets.reduce((best,actor)=>matchDistance(match.player,actor)<matchDistance(match.player,best)?actor:best,targets[0]||match.rival);
+      const tackleDistance=nearest?matchDistance(match.player,nearest):Infinity;
+      if(!match.hasBall&&tackleDistance<7.5){
+        match.hasBall=true;match.rivalHasBall=false;match.passUntil=0;match.passReceiverSlot=-1;match.rankPoints+=20;
+        match.ball={x:match.player.x,y:match.player.y-.025};
+        $("feedback").textContent="SUCCESSFUL TACKLE! +20 RANK POINTS";
+      }else if(!match.hasBall)$("feedback").textContent="Move closer to an opponent with the ball, then tackle.";
+      else $("feedback").textContent="You already have possession. Pass or shoot!";
     }else if(action==="shoot"){
       if(!match.hasBall){$("feedback").textContent="Win the ball first!";return;}
       if(match.player.y>.53){$("feedback").textContent="Drive forward into the attacking half before shooting.";return;}
