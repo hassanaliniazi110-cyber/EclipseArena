@@ -342,19 +342,22 @@
       keeperAway.position.set(0,0,-FIELD_LENGTH/2+1.2);keeperAway.rotation.y=Math.PI;
       const shot=m.lastShot,shotAge=shot?now-shot.start:9999;
       if(shot&&shotAge>=0&&shotAge<760){
-        const diveT=clamp(shotAge/760,0,1),diveSide=shot.x<.43?-1:shot.x>.57?1:0;
-        // Goalkeeper push-off, hand extension and low landing. Avoid the exaggerated vertical leap.
-        const push=Math.sin(Math.min(1,diveT*2.15)*Math.PI/2);
-        const recovery=clamp((diveT-.58)/.42,0,1);
-        const reach=push*(1-recovery*.72),landing=Math.sin(Math.PI*diveT);
-        keeperAway.position.x=diveSide*5.25*reach;
-        keeperAway.position.y=.04+.42*landing;
-        keeperAway.position.z=-FIELD_LENGTH/2+1.2-diveT*.55;
-        keeperAway.rotation.z=-diveSide*1.18*reach;keeperAway.rotation.x=-.16*reach;
-        keeperAway.userData.arms[0].rotation.set(-1.05*reach,0,diveSide*(.42+.52*reach));
-        keeperAway.userData.arms[1].rotation.set(-1.12*reach,0,diveSide*(.62+.48*reach));
-        keeperAway.userData.legs[0].rotation.set(-.28*reach,0,-diveSide*.28*reach);
-        keeperAway.userData.legs[1].rotation.set(.38*reach,0,diveSide*.32*reach);
+        const diveT=clamp(shotAge/760,0,1);
+        // shot.x is the ball's normalized target across the goal. The keeper
+        // faces the camera, so local roll/limb rotations must be mirrored.
+        const diveSide=Math.abs(shot.x-.5)<.025?0:Math.sign(shot.x-.5);
+        const push=Math.sin(Math.min(1,diveT*2.0)*Math.PI/2);
+        const recovery=clamp((diveT-.62)/.38,0,1);
+        const reach=push*(1-recovery*.78),landing=Math.sin(Math.PI*diveT);
+        const targetReach=clamp((shot.x-.5)*FIELD_WIDTH*.48,-5.8,5.8);
+        keeperAway.position.x=targetReach*reach;
+        keeperAway.position.y=.025+.24*landing;
+        keeperAway.position.z=-FIELD_LENGTH/2+1.2-diveT*.22;
+        keeperAway.rotation.z=diveSide*1.02*reach;keeperAway.rotation.x=-.08*reach;
+        keeperAway.userData.arms[0].rotation.set(-.92*reach,0,-diveSide*(.36+.58*reach));
+        keeperAway.userData.arms[1].rotation.set(-1.02*reach,0,-diveSide*(.52+.56*reach));
+        keeperAway.userData.legs[0].rotation.set(-.22*reach,0,diveSide*.22*reach);
+        keeperAway.userData.legs[1].rotation.set(.30*reach,0,-diveSide*.26*reach);
       }else{
         keeperAway.position.x=0;keeperAway.position.y=0;keeperAway.rotation.z=0;keeperAway.rotation.x=0;
         keeperAway.userData.arms.forEach(a=>a.rotation.set(0,0,0));keeperAway.userData.legs.forEach(l=>l.rotation.set(0,0,0));
