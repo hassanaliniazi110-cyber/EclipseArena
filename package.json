@@ -6,7 +6,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "build": "mkdir -p dist && cp index.html script.js match-3d.js style.css fought-knight.css config.js dist/"
+    "build": "mkdir -p dist && cp index.html script.js match-3d.js style.css fought-knight.css config.js dist/",
+    "check": "node --check server.js && node --check script.js && node --check match-3d.js && node --check config.js",
+    "test": "npm run check"
   },
   "engines": {
     "node": ">=22"
