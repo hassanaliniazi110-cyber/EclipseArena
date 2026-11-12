@@ -84,7 +84,7 @@ function tokenHashMatches(storedHash, token) {
 }
 function saveData() {
   const data = [...players.values()].map(p => ({
-    id: p.id, tokenHash: p.tokenHash, deviceKey: p.deviceKey || "",
+    id: p.id, tokenHash: p.tokenHash, deviceKeyHash: p.deviceKeyHash || "",
     approvalStatus: p.approvalStatus || "pending", createdAt: p.createdAt || "",
     profile: p.profile, friends: [...p.friends], gems: p.gems,
     ownedCards: p.ownedCards, cardLevels: p.cardLevels, draftVouchers: p.draftVouchers,
@@ -98,7 +98,17 @@ function saveData() {
       const previous = fs.readFileSync(DATA_FILE);
       const parsed = JSON.parse(previous.toString("utf8"));
       if (parsed && parsed.version === 1 && Array.isArray(parsed.players)) {
-        fs.writeFileSync(DATA_FILE + ".bak", previous, { mode: 0o600 });
+        const safeBackupPlayers = parsed.players.map(record => {
+          const safeRecord = { ...record };
+          if (!/^[a-f0-9]{64}$/i.test(safeRecord.deviceKeyHash || "") &&
+              /^[a-f0-9]{64}$/i.test(safeRecord.deviceKey || "")) {
+            safeRecord.deviceKeyHash = hashToken(String(safeRecord.deviceKey).toLowerCase());
+          }
+          delete safeRecord.deviceKey;
+          return safeRecord;
+        });
+        fs.writeFileSync(DATA_FILE + ".bak", JSON.stringify({ ...parsed, players: safeBackupPlayers }), { mode: 0o600 });
+        fs.chmodSync(DATA_FILE + ".bak", 0o600);
       }
     }
   } catch (error) {
@@ -108,6 +118,39 @@ function saveData() {
   fs.writeFileSync(temp, JSON.stringify({ version: 1, players: data }), { mode: 0o600 });
   fs.renameSync(temp, DATA_FILE);
 }
+function sanitizeLegacyDeviceKeySnapshots() {
+  for (const candidate of DATA_FILE_CANDIDATES) {
+    const file = path.resolve(candidate);
+    if (!fs.existsSync(file)) continue;
+    try {
+      const saved = JSON.parse(fs.readFileSync(file, "utf8"));
+      if (!saved || saved.version !== 1 || !Array.isArray(saved.players)) continue;
+      let changed = false;
+      const safePlayers = saved.players.map(record => {
+        const safeRecord = { ...record };
+        if (Object.prototype.hasOwnProperty.call(safeRecord, "deviceKey")) {
+          if (!/^[a-f0-9]{64}$/i.test(safeRecord.deviceKeyHash || "") &&
+              /^[a-f0-9]{64}$/i.test(safeRecord.deviceKey || "")) {
+            safeRecord.deviceKeyHash = hashToken(String(safeRecord.deviceKey).toLowerCase());
+          }
+          delete safeRecord.deviceKey;
+          changed = true;
+        }
+        return safeRecord;
+      });
+      if (changed) {
+        const temp = file + ".security-tmp";
+        fs.writeFileSync(temp, JSON.stringify({ ...saved, players: safePlayers }), { mode: 0o600 });
+        fs.chmodSync(temp, 0o600);
+        fs.renameSync(temp, file);
+      }
+      fs.chmodSync(file, 0o600);
+    } catch (error) {
+      console.error("[security] Could not sanitize a legacy player snapshot:", path.basename(file), error.message);
+    }
+  }
+}
+
 function loadData() {
   const snapshots = [];
   const inspected = new Set();
@@ -147,11 +190,17 @@ function loadData() {
     }
   }
 
+  const hasLegacyDeviceKeys = snapshots.some(snapshot =>
+    snapshot.players.some(p => /^[a-f0-9]{64}$/i.test(p.deviceKey || "") && !/^[a-f0-9]{64}$/i.test(p.deviceKeyHash || ""))
+  );
+
   for (const p of recovered.values()) {
     const player = {
       id: p.id,
       tokenHash: p.tokenHash,
-      deviceKey: /^[a-f0-9]{64}$/i.test(p.deviceKey || "") ? p.deviceKey.toLowerCase() : "",
+      deviceKeyHash: /^[a-f0-9]{64}$/i.test(p.deviceKeyHash || "")
+        ? p.deviceKeyHash.toLowerCase()
+        : (/^[a-f0-9]{64}$/i.test(p.deviceKey || "") ? hashToken(p.deviceKey.toLowerCase()) : ""),
       approvalStatus: "approved",
       createdAt: String(p.createdAt || ""),
       profile: normalizeProfile(p.profile),
@@ -173,12 +222,13 @@ function loadData() {
   }
 
   const primary = snapshots[0];
-  const migrationNeeded = primary.file !== DATA_FILE || recovered.size > primary.players.length;
+  const migrationNeeded = primary.file !== DATA_FILE || recovered.size > primary.players.length || hasLegacyDeviceKeys;
   console.log("[storage] Loaded " + players.size + " registered accounts from " +
     snapshots.length + " valid snapshot(s); primary file: " + path.basename(primary.file) + ".");
   if (migrationNeeded) {
     console.log("[storage] Migrating recovered player records to the configured data file.");
     saveData();
+    sanitizeLegacyDeviceKeySnapshots();
   }
 }
 const invites = new Map();
@@ -355,12 +405,9 @@ app.use(cors({
 app.use(express.json({ limit: "12kb", strict: true }));
 app.use((req, res, next) => { if (req.path.startsWith("/api/")) res.setHeader("Cache-Control", "no-store, max-age=0"); next(); });
 app.use(rateLimit({ windowMs: 60 * 1000, limit: 90, standardHeaders: "draft-7", legacyHeaders: false }));
-app.get("/health", totpAttemptLimiter, (req, res) => {
-  // Health diagnostics are owner-only. Never expose player counts or configuration publicly.
-  if (!isAdminTotpConfigured() || !verifyAdminTotp(req.get("X-Admin-2FA"))) {
-    auditEvent("health", "health_2fa_failed");
-    return res.status(404).json({ error: "Not found." });
-  }
+app.get("/health", auth, adminLimiter, totpAttemptLimiter, requireOwner, (req, res) => {
+  // Health diagnostics require the owner's player token plus a current authenticator code.
+
   return res.set("Cache-Control", "no-store").json({
     ok: true,
     service: "Apex Strikers API",
@@ -490,7 +537,8 @@ function cleanText(value, max = 24) {
 }
 function validPlayerId(id) { return /^EA-[A-Z0-9]{3,8}-[A-Z0-9]{3,8}$/.test(String(id || "")); }
 function publicProfile(p) {
-  return { id: p.id, name: p.profile.name, gems: p.gems || 0, ownedCards: p.ownedCards || [], cardLevels: p.cardLevels || {}, xp: p.profile.xp, goals: p.profile.goals, saves: p.profile.saves,
+  // Wallet and collection data stay private to the player's authenticated store endpoint.
+  return { id: p.id, name: p.profile.name, xp: p.profile.xp, goals: p.profile.goals, saves: p.profile.saves,
     wins: p.profile.wins, best: p.profile.best, player: p.profile.player, goalkeeper: p.profile.goalkeeper,
     ovr: p.profile.ovr, online: Boolean(socketsByPlayer.get(p.id)?.size) };
 }
@@ -517,14 +565,15 @@ function normalizeProfile(input = {}) {
 app.post("/api/register", registerLimiter, (req, res) => {
   const profile = normalizeProfile(req.body?.profile);
   const bearer = /^Bearer\s+([a-f0-9]{64})$/i.exec(req.get("authorization") || "");
-  const deviceKey = /^[a-f0-9]{64}$/i.test(String(req.body?.deviceKey || "")) ? String(req.body.deviceKey).toLowerCase() : "";
-  const deviceMatch = deviceKey && [...players.values()].find(p => p.deviceKey === deviceKey);
+  const rawDeviceKey = String(req.body?.deviceKey || "");
+  const deviceKeyHash = /^[a-f0-9]{64}$/i.test(rawDeviceKey) ? hashToken(rawDeviceKey.toLowerCase()) : "";
+  const deviceMatch = deviceKeyHash && [...players.values()].find(p => p.deviceKeyHash === deviceKeyHash);
   const bearerPlayerId = bearer && tokenToPlayer.get(hashToken(bearer[1]));
   const existingId = bearerPlayerId || deviceMatch?.id;
   if (existingId && players.has(existingId)) {
     const existing = players.get(existingId);
     existing.profile = { ...existing.profile, name: profile.name, player: profile.player, goalkeeper: profile.goalkeeper, ovr: profile.ovr };
-    if (deviceKey && (!existing.deviceKey || existing.deviceKey === deviceKey)) existing.deviceKey = deviceKey;
+    if (deviceKeyHash && (!existing.deviceKeyHash || existing.deviceKeyHash === deviceKeyHash)) existing.deviceKeyHash = deviceKeyHash;
     // A still-valid bearer token is already the active session. Keep it stable so
     // overlapping startup/store requests cannot invalidate one another.
     if (bearerPlayerId && existing.tokenHash === hashToken(bearer[1])) {
@@ -545,7 +594,7 @@ app.post("/api/register", registerLimiter, (req, res) => {
   do { id = "EA-" + crypto.randomBytes(3).toString("hex").toUpperCase() + "-" + crypto.randomBytes(3).toString("hex").toUpperCase(); } while (players.has(id));
   const token = crypto.randomBytes(32).toString("hex");
   const safeNewProfile = normalizeProfile({ name: profile.name, player: profile.player, goalkeeper: profile.goalkeeper, ovr: profile.ovr });
-  const player = { id, tokenHash: hashToken(token), deviceKey, approvalStatus: "approved", createdAt: new Date().toISOString(), profile: safeNewProfile, friends: new Set(), gems: 250, draftVouchers: 0, activeDraft: null, ownedCards: ['arham'], cardLevels: { arham: 0 }, rewardDay: '', rewardGemsToday: 0, lastGameClaimAt: 0, eventClaims: {}, gameSession: null };
+  const player = { id, tokenHash: hashToken(token), deviceKeyHash, approvalStatus: "approved", createdAt: new Date().toISOString(), profile: safeNewProfile, friends: new Set(), gems: 250, draftVouchers: 0, activeDraft: null, ownedCards: ['arham'], cardLevels: { arham: 0 }, rewardDay: '', rewardGemsToday: 0, lastGameClaimAt: 0, eventClaims: {}, gameSession: null };
   players.set(id, player);
   tokenToPlayer.set(player.tokenHash, id);
   saveData();
