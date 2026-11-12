@@ -1564,3 +1564,11 @@ html[data-device="macos"] .match-keyboard-hint,html[data-device="laptop"] .match
 .apex-signing-stage{background:radial-gradient(ellipse at 50% 55%,#c7ff4a20,transparent 56%),linear-gradient(180deg,#10180e,#030604)!important}
 .apex-player-card.draft-player-card.signing-hero-card{filter:drop-shadow(0 0 28px #c7ff4a66)}
 @media(prefers-reduced-motion:reduce){.mode-card.h2h-mode:before,.intro-splash:before{animation:none!important}}
+
+/* Device confirmation appears as soon as the launch intro exits. */
+.apex-device-notice{position:fixed;z-index:100001;top:max(14px,env(safe-area-inset-top));left:50%;display:flex;align-items:center;gap:11px;min-width:min(310px,calc(100vw - 28px));padding:12px 17px;border:1px solid rgba(132,226,255,.58);border-radius:14px;background:linear-gradient(135deg,rgba(8,24,43,.97),rgba(21,31,58,.97));color:#f4fbff;box-shadow:0 12px 38px #0009,0 0 25px #76dfff2b;opacity:0;transform:translate(-50%,-18px) scale(.96);pointer-events:none;transition:opacity .28s ease,transform .28s ease}
+.apex-device-notice.is-visible{opacity:1;transform:translate(-50%,0) scale(1)}
+.apex-device-notice.is-hiding{opacity:0;transform:translate(-50%,-10px) scale(.98)}
+.apex-device-notice-icon{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#c7ff4a;color:#10190a;font-weight:1000}
+.apex-device-notice strong,.apex-device-notice small{display:block}.apex-device-notice strong{font:900 11px/1.35 'Orbitron',Arial,sans-serif;letter-spacing:.07em}.apex-device-notice small{margin-top:3px;color:#a9d7e8;font:800 9px/1.3 Arial,sans-serif;letter-spacing:.1em}
+@media(prefers-reduced-motion:reduce){.apex-device-notice{transition:none}}
