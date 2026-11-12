@@ -513,7 +513,7 @@ const goalkeepers = [
     const safeImage=isValidPlayerPhoto(p.image)&&!String(p.image).startsWith("data:image/svg+xml")?p.image:"";
     const portrait='<img class="player-card-photo" '+(safeImage?'src="'+safeImage+'" ':'')+'data-player-name="'+safeName+'" data-player-role="'+(isKeeper?"GOALKEEPER":String(p.role||"PLAYER"))+'" alt="'+safeName+' portrait" loading="lazy">';
     const mergedLevel=p.cardId?Math.max(0,Number(ownedDraftCardLevels[p.cardId])||0):0;
-    const signedTag=p.cardId&&ownedDraftCardIds.has(p.cardId)?'<span class="player-signed-tag">'+(mergedLevel>0?("MERGED · LVL "+(mergedLevel+1)):"SIGNED CARD")+'</span>':"";
+    const signedTag=p.cardId&&ownedDraftCardIds.has(p.cardId)?'<span class="player-signed-tag">'+(mergedLevel>0?("MERGED · LVL "+mergedLevel):"SIGNED CARD")+'</span>':"";
     return '<button class="player-card '+(p.name===selected?'selected ':'')+(p.name==="Lllllllll FC"?'keyboard-master-card ':'')+(signedTag?'player-card-signed ':'')+(!unlocked?'player-locked':'')+'" '+(unlocked?'':'disabled aria-label="Locked player '+safeName+'" ')+attr+'="'+safeName.replace(/"/g,"&quot;")+'" style="--player-glow:'+p.glow+'">'+portrait+'<div class="player-card-copy">'+signedTag+'<div class="player-rating">'+displayRating+'</div><div class="player-role">'+p.role+' · OVR</div><div class="player-name">'+safeName+'</div><div class="player-special">'+(unlocked?p.special:lockLabel)+'</div><div class="fc-attributes">'+attributes+'</div><div class="ovr-meter"><i><span style="width:'+Math.min(100,rating)+'%"></span></i></div></div></button>';
   }
   function renderPlayers(){
