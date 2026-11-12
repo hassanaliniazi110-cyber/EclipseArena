@@ -83,7 +83,7 @@ const goalkeepers = [
   let score = 0, opponentScore = 0, matchMinute = 0, matchAttacks = 0, attempt = 1, aim = {x:.5,y:.27}, power = 78, shotTaken = false, keeperDive = "center", keeperMotion = null, ballAnim = null, animationFrame = 0;
   const canvas = $("pitch"), ctx = canvas.getContext("2d");
   let cw = 900, ch = 620, lastResult = "", shotTimer = null, soundOn = false, masterVolume = 0.65, passcodeFailures=0, passcodeLockUntil=0, lastShotReplay=null, celebrationUntil=0;
-  const match = {active:false,finished:false,clock:0,lastTick:0,player:{x:.5,y:.72},rival:{x:.5,y:.28},ball:{x:.5,y:.72},move:"",moveX:0,moveY:0,sprint:false,hasBall:true,playerGoals:0,rivalGoals:0,rankPoints:0,rank:"ROOKIE III",lastRivalShot:0};
+  const match = {active:false,finished:false,clock:0,lastTick:0,player:{x:.5,y:.72},rival:{x:.5,y:.28},ball:{x:.5,y:.72},move:"",moveX:0,moveY:0,sprint:false,hasBall:true,playerGoals:0,rivalGoals:0,rankPoints:0,rank:"ROOKIE III",lastRivalShot:0,passUntil:0,passFromX:.5,passFromY:.72,passToX:.5,passToY:.5,lastShot:null};
   function getApex3DState(){
     return {
       mode,selectedPlayer,selectedGoalkeeper,score,attemptLabel:"ATTEMPT "+attempt,
@@ -106,6 +106,7 @@ const goalkeepers = [
   if(window.ApexMatch3D&&canvas)window.ApexMatch3D.init(canvas,getApex3DState);
   // Fullscreen match view.
   const pitchWrap=canvas?.closest(".pitch-wrap");
+  if(pitchWrap&&!pitchWrap.querySelector(".match-keyboard-hint")){const hint=document.createElement("div");hint.className="match-keyboard-hint";hint.textContent="MOVE  WASD / ARROWS   ·   PASS  E   ·   SHOOT  SPACE   ·   TACKLE  Q   ·   SPRINT  SHIFT";pitchWrap.appendChild(hint);}
   if(pitchWrap&&!pitchWrap.querySelector(".apex-fullscreen-btn")){
     const fullscreenBtn=document.createElement("button");
     fullscreenBtn.type="button";fullscreenBtn.className="apex-fullscreen-btn";
@@ -1216,7 +1217,7 @@ const goalkeepers = [
     activeRewardSessionId=null;activeRewardSessionPromise=null;rewardClaimedThisGame=false;activeRewardEventId=pendingApexEventId;pendingApexEventId="";
     if(onlineCfg.base&&onlineCfg.token)activeRewardSessionPromise=api("/api/games/start",{method:"POST",body:JSON.stringify({mode,eventId:activeRewardEventId})}).then(data=>{activeRewardSessionId=data.sessionId;return data.sessionId;}).catch(error=>{activeRewardSessionId=null;activeRewardSessionPromise=null;toast("Online game session could not start: "+error.message);return null;});
     if(!isRandomRush){recentModes=[nextMode,...recentModes.filter(x=>x!==nextMode)].slice(0,5);try{localStorage.setItem("eclipseRecentModes",JSON.stringify(recentModes));}catch(_){}renderModeTools();}
-    match.active=mode==="headtohead";match.finished=false;match.clock=0;match.playerGoals=0;match.rivalGoals=0;match.rankPoints=0;match.rank="ROOKIE III";match.player={x:.5,y:.72};match.rival={x:.5,y:.28};match.ball={x:.5,y:.72};match.move="";match.moveX=0;match.moveY=0;match.sprint=false;match.hasBall=true;match.lastRivalShot=0;
+    match.active=mode==="headtohead";match.finished=false;match.clock=0;match.playerGoals=0;match.rivalGoals=0;match.rankPoints=0;match.rank="ROOKIE III";match.player={x:.5,y:.72};match.rival={x:.5,y:.28};match.ball={x:.5,y:.72};match.move="";match.moveX=0;match.moveY=0;match.sprint=false;match.hasBall=true;match.lastRivalShot=0;match.passUntil=0;match.lastShot=null;
     $("matchHud").classList.toggle("hidden",!match.active);$("matchControls").classList.toggle("hidden",!match.active);$("matchCameraControls").classList.toggle("hidden",!match.active);$("matchResult").classList.add("hidden");$("matchResult").textContent="";
     $("powerSlider").classList.toggle("hidden",match.active);$("powerSlider").disabled=match.active;$("shootBtn").classList.toggle("hidden",match.active);$("matchRank").textContent="ROOKIE III · 0 PTS";
     score=0;attempt=1;if(mode==="headtohead"||mode==="vsattack"){opponentScore=0;matchMinute=0;matchAttacks=0;}
