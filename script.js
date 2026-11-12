@@ -294,6 +294,17 @@ const goalkeepers = [
   }
   function getStableWikiPortrait(name){
     const key=normalizePlayerName(name);
+    // Pin Marcelo to a file explicitly identified as Marcelo Vieira.
+    // This takes priority over any previously cached, incorrect portrait.
+    if(key==="marcelo"||key==="marcelovieira")return{
+      image:"https://commons.wikimedia.org/wiki/Special:FilePath/Marcelo_Vieira_609.jpg",
+      title:"Marcelo Vieira 609.jpg",
+      author:"Vladimir Mayorov",
+      fileUrl:"https://commons.wikimedia.org/wiki/File:Marcelo_Vieira_609.jpg",
+      license:"CC BY-SA 3.0",
+      licenseUrl:"https://creativecommons.org/licenses/by-sa/3.0/",
+      needsCredit:true
+    };
     // Ederson's old catalogue slug resolved to the wrong footballer.
     // Pin his portrait to the exact Wikimedia Commons file for Ederson Moraes.
     if(key==="ederson")return{
@@ -358,7 +369,7 @@ const goalkeepers = [
           const image=info.thumburl||info.url||"";
           const title=page.title||"";
           const titleKey=normalizePlayerName(title.replace(/^File:/i,""));
-          const exactNameMatch=titleKey.includes(key);
+          const exactNameMatch=titleKey===key||(key.length>=7&&titleKey.includes(key));
           const author=cleanWikiText(meta.Attribution?.value||meta.Artist?.value||meta.Credit?.value||"");
           const fileUrl=info.descriptionurl||("https://commons.wikimedia.org/wiki/"+encodeURIComponent(title.replace(/ /g,"_")));
           const needsCredit=/^CC BY(?:[- ]SA)?/i.test(license);
@@ -431,6 +442,11 @@ const goalkeepers = [
     photo.onerror=()=>{
       photo.onerror=null;
       const failedSource=photo.src||"";
+      const playerKey=normalizePlayerName(name);
+      if(playerKey==="marcelo"||playerKey==="marcelovieira"){
+        showMissingWikiPhoto(photo,name);
+        return;
+      }
       if(photo.dataset.wikiRetry!=="true"){
         photo.dataset.wikiRetry="true";
         findWikiPortrait(name,true).then(record=>setVerifiedPhoto(record)).catch(()=>showMissingWikiPhoto(photo,name));
