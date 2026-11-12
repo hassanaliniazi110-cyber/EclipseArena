@@ -136,16 +136,12 @@ const goalkeepers = [
     const savedPhoto=readSavedProfile().photo||"";
     [...players,...goalkeepers].forEach(player=>{
       const key=normalizePlayerName(player.name);
-      if(key==="ehanali"){
-        player.image=makePlayerAvatarData(player.name,player.role);
-        return;
-      }
       const stable=getStableWikiPortrait(player.name);
       if(stable&&isValidPlayerPhoto(stable.image)){player.image=stable.image;return;}
       if(isValidPlayerPhoto(player.image)&&!String(player.image).startsWith("data:image/svg+xml"))return;
       const sourced=rosterPhotoUrls[key]||"";
-      const personal=["muhammadarham","hassanali"].includes(key)&&isValidPlayerPhoto(savedPhoto)?savedPhoto:"";
-      player.image=isValidPlayerPhoto(sourced)?sourced:(personal||makePlayerAvatarData(player.name,player.role));
+      const personal=["muhammadarham","hassanali","ehanali"].includes(key)&&isValidPlayerPhoto(savedPhoto)?savedPhoto:"";
+      player.image=isValidPlayerPhoto(sourced)?sourced:personal||"";
     });
   }
   const wikiPortraitCache=new Map();
@@ -260,71 +256,52 @@ const goalkeepers = [
     renderWikiPhotoCredits();
   }
   function showMissingWikiPhoto(photo,name){
-    if(!photo||!photo.isConnected||photo.dataset.wikiMissing==="true")return;
+    if(!photo||!photo.isConnected)return;
     photo.dataset.wikiFailed="true";
     photo.dataset.wikiMissing="true";
-    photo.alt=name+" · no verified licensed photo found";
-    photo.title="No verified licensed photograph was found for this player.";
-
+    photo.removeAttribute("src");
+    photo.alt=name+" · verified photo not found";
+    photo.title="No verified real-player photo was found yet.";
+    photo.classList.add("photo-unavailable");
+    photo.closest(".apex-card-portrait,.player-card")?.classList.add("photo-pending");
   }
   function hydrateWikiPortrait(photo,name,role){
     if(!photo||photo.dataset.wikiAttempted==="true")return;
     photo.dataset.wikiAttempted="true";
-    const fallback=makePlayerAvatarData(name,role);
     if(CUSTOM_PLAYER_KEYS.has(normalizePlayerName(name))){
-      if(!photo.getAttribute("src"))photo.src=fallback;
+      if(!photo.getAttribute("src"))showMissingWikiPhoto(photo,name);
       return;
     }
-    // Always keep a visible portrait if a remote photo host is slow or unavailable.
-    photo.onerror=()=>{
-      photo.onerror=null;
-      const failedSource=photo.src||"";
-      if(photo.dataset.wikiRetry!=="true"&&/geofootballguessr\.com\/footballers\//i.test(failedSource)){
-        photo.dataset.wikiRetry="true";
-        findWikiPortrait(name,true).then(record=>{
-          if(!photo.isConnected)return;
-          if(record&&record.image!==failedSource){
-            photo.onerror=()=>{photo.onerror=null;photo.dataset.wikiResolved="false";photo.dataset.photoFallback="true";photo.src=fallback;};
-            photo.src=record.image;
-            photo.dataset.wikiResolved="true";
-            photo.dataset.wikiSource=record.fileUrl;
-            saveStableWikiPortrait(name,record);
-            const rosterPlayer=[...players,...goalkeepers].find(p=>normalizePlayerName(p.name)===normalizePlayerName(name));
-            if(rosterPlayer)rosterPlayer.image=record.image;
-            showWikiPhotoCredit(photo,record);
-            return;
-          }
-          photo.dataset.wikiResolved="false";photo.dataset.photoFallback="true";photo.src=fallback;
-        }).catch(()=>{if(photo.isConnected){photo.dataset.photoFallback="true";photo.src=fallback;}});
-        return;
-      }
-      photo.dataset.wikiResolved="false";
-      photo.dataset.photoFallback="true";
-      photo.src=fallback;
-    };
-    findWikiPortrait(name).then(record=>{
+    const setVerifiedPhoto=(record)=>{
       if(!photo.isConnected)return;
-      if(record){
+      if(record&&isValidPlayerPhoto(record.image)&&!String(record.image).startsWith("data:image/svg+xml")){
         photo.src=record.image;
         photo.dataset.wikiResolved="true";
-        photo.dataset.wikiSource=record.fileUrl;
+        photo.dataset.wikiSource=record.fileUrl||"";
+        photo.classList.remove("photo-unavailable");
+        photo.closest(".apex-card-portrait,.player-card")?.classList.remove("photo-pending");
         const rosterPlayer=[...players,...goalkeepers].find(p=>normalizePlayerName(p.name)===normalizePlayerName(name));
         if(rosterPlayer)rosterPlayer.image=record.image;
         showWikiPhotoCredit(photo,record);
-      }else{
-        photo.src=fallback;
-        photo.dataset.photoFallback="true";
-      }
-    }).catch(()=>{
-      if(photo.isConnected){photo.src=fallback;photo.dataset.photoFallback="true";}
-    });
+      }else showMissingWikiPhoto(photo,name);
+    };
+    photo.onerror=()=>{
+      photo.onerror=null;
+      const failedSource=photo.src||"";
+      if(photo.dataset.wikiRetry!=="true"){
+        photo.dataset.wikiRetry="true";
+        findWikiPortrait(name,true).then(record=>setVerifiedPhoto(record)).catch(()=>showMissingWikiPhoto(photo,name));
+      }else showMissingWikiPhoto(photo,name);
+    };
+    findWikiPortrait(name).then(record=>setVerifiedPhoto(record)).catch(()=>showMissingWikiPhoto(photo,name));
   }
+
   function attachPlayerPortraitFallbacks(root){
     if(!root)return;
     root.querySelectorAll(".player-card-photo").forEach(photo=>{
       const name=photo.dataset.playerName||photo.alt||"Apex Player",role=photo.dataset.playerRole||"PLAYER";
       if(CUSTOM_PLAYER_KEYS.has(normalizePlayerName(name))){
-        if(!photo.getAttribute("src"))photo.src=makePlayerAvatarData(name,role);
+        if(!photo.getAttribute("src"))showMissingWikiPhoto(photo,name);
         return;
       }
       hydrateWikiPortrait(photo,name,role);
@@ -372,8 +349,8 @@ const goalkeepers = [
     const offsets=isKeeper?[1,0,-3,2,-2,1]:p.role==="ST"?[0,3,-2,-1,-4,2]:p.role==="RW"||p.role==="LW"?[3,0,-1,3,-5,-2]:p.role==="CAM"||p.role==="CM"?[-1,-1,3,1,0,0]:[0,0,0,0,0,0];
     const attributes=labels.map((label,i)=>'<span><b>'+label+'</b><strong>'+(p.stats&&p.stats[label]!=null?p.stats[label]:Math.min(199,Math.max(45,rating+offsets[i])))+'</strong></span>').join("");
     const safeName=String(p.name).replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
-    const safeImage=normalizePlayerName(p.name)==="ehanali"?makePlayerAvatarData(p.name,isKeeper?"GOALKEEPER":p.role):(isValidPlayerPhoto(p.image)?p.image:makePlayerAvatarData(p.name,isKeeper?"GOALKEEPER":p.role));
-    const portrait='<img class="player-card-photo" src="'+safeImage+'" data-player-name="'+safeName+'" data-player-role="'+(isKeeper?"GOALKEEPER":String(p.role||"PLAYER"))+'" alt="'+safeName+' portrait" loading="lazy">';
+    const safeImage=isValidPlayerPhoto(p.image)&&!String(p.image).startsWith("data:image/svg+xml")?p.image:"";
+    const portrait='<img class="player-card-photo" '+(safeImage?'src="'+safeImage+'" ':'')+'data-player-name="'+safeName+'" data-player-role="'+(isKeeper?"GOALKEEPER":String(p.role||"PLAYER"))+'" alt="'+safeName+' portrait" loading="lazy">';
     const signedTag=p.cardId&&ownedDraftCardIds.has(p.cardId)?'<span class="player-signed-tag">SIGNED CARD</span>':"";
     return '<button class="player-card '+(p.name===selected?'selected ':'')+(p.name==="Lllllllll FC"?'keyboard-master-card ':'')+(signedTag?'player-card-signed ':'')+(!unlocked?'player-locked':'')+'" '+(unlocked?'':'disabled aria-label="Locked player '+safeName+'" ')+attr+'="'+safeName.replace(/"/g,"&quot;")+'" style="--player-glow:'+p.glow+'">'+portrait+'<div class="player-card-copy">'+signedTag+'<div class="player-rating">'+displayRating+'</div><div class="player-role">'+p.role+' · OVR</div><div class="player-name">'+safeName+'</div><div class="player-special">'+(unlocked?p.special:lockLabel)+'</div><div class="fc-attributes">'+attributes+'</div><div class="ovr-meter"><i><span style="width:'+Math.min(100,rating)+'%"></span></i></div></div></button>';
   }
@@ -917,7 +894,7 @@ const goalkeepers = [
         card.dataset.player=p.id||"";
         card.dataset.rarity=String(p.rarity||"ELITE").toLowerCase().replace(/[^a-z0-9-]/g,"-");
         const portrait=document.createElement("div");portrait.className="apex-card-portrait";
-        const photo=document.createElement("img");photo.src=isValidPlayerPhoto(info[5])?info[5]:makePlayerAvatarData(info[0],info[2]);photo.alt=info[0]+" player portrait";photo.loading="lazy";photo.referrerPolicy="no-referrer";
+        const photo=document.createElement("img");if(isValidPlayerPhoto(info[5])&&!String(info[5]).startsWith("data:image/svg+xml"))photo.src=info[5];photo.alt=info[0]+" player portrait";photo.loading="lazy";photo.referrerPolicy="no-referrer";
         photo.onerror=()=>{if(photo.dataset.wikiResolved==="true"){showMissingWikiPhoto(photo,info[0]);return;}if(photo.dataset.sourceRetry!=="true"){const alternate=rosterPhotoUrls[normalizePlayerName(info[0])];if(alternate&&photo.src!==alternate){photo.dataset.sourceRetry="true";photo.src=alternate;return;}}hydrateWikiPortrait(photo,info[0],info[2]);};
         if(!isValidPlayerPhoto(info[5])){photo.dataset.needsWiki="true";}
         portrait.appendChild(photo);
