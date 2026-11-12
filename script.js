@@ -1127,12 +1127,12 @@ const goalkeepers = [
     ctx.strokeRect(w*.07,h*.07,w*.86,h*.86);ctx.beginPath();ctx.moveTo(w*.07,h*.5);ctx.lineTo(w*.93,h*.5);ctx.stroke();ctx.beginPath();ctx.ellipse(w*.5,h*.5,w*.12,h*.14,0,0,Math.PI*2);ctx.stroke();
     ctx.strokeRect(w*.24,h*.07,w*.52,h*.2);ctx.strokeRect(w*.34,h*.07,w*.32,h*.10);
     // Larger goal frame with visible netting
-    ctx.fillStyle="rgba(220,245,229,.10)";ctx.fillRect(w*.18,h*.008,w*.64,h*.086);
-    ctx.strokeStyle="#eef7ed";ctx.lineWidth=Math.max(2,w*.004);
-    ctx.strokeRect(w*.18,h*.008,w*.64,h*.086);
-    ctx.strokeStyle="rgba(235,255,239,.62)";ctx.lineWidth=1;
-    for(let i=1;i<13;i++){ctx.beginPath();ctx.moveTo(w*(.18+i*.05333),h*.01);ctx.lineTo(w*(.18+i*.05333),h*.092);ctx.stroke()}
-    for(let j=1;j<5;j++){ctx.beginPath();ctx.moveTo(w*.182,h*(.008+j*.016));ctx.lineTo(w*.818,h*(.008+j*.016));ctx.stroke()}
+    ctx.fillStyle="rgba(220,245,229,.14)";ctx.fillRect(w*.12,h*.004,w*.76,h*.101);
+    ctx.strokeStyle="#f5fff5";ctx.lineWidth=Math.max(2.5,w*.005);
+    ctx.strokeRect(w*.12,h*.004,w*.76,h*.101);
+    ctx.strokeStyle="rgba(235,255,239,.68)";ctx.lineWidth=1;
+    for(let i=1;i<17;i++){ctx.beginPath();ctx.moveTo(w*(.12+i*.0475),h*.006);ctx.lineTo(w*(.12+i*.0475),h*.104);ctx.stroke()}
+    for(let j=1;j<7;j++){ctx.beginPath();ctx.moveTo(w*.122,h*(.004+j*.0144));ctx.lineTo(w*.878,h*(.004+j*.0144));ctx.stroke()}
     ctx.strokeStyle="rgba(224,255,226,.55)";ctx.lineWidth=2;
     if(mode==="freekick"){for(let i=0;i<5;i++){ctx.fillStyle="#e9e8d8";ctx.fillRect(w*(.39+i*.045),h*.34,w*.03,h*.025)}}
     if(mode==="longshot"){ctx.setLineDash([6,6]);ctx.strokeStyle="rgba(199,255,74,.7)";ctx.beginPath();ctx.arc(w*.5,h*.27,w*.16,0,Math.PI*2);ctx.stroke();ctx.setLineDash([])}
@@ -1167,8 +1167,17 @@ const goalkeepers = [
       }
       ctx.fillStyle="#f5f6ed";ctx.beginPath();ctx.arc(w*.5+w*.022,h*.735,Math.max(4,w*.009),0,Math.PI*2);ctx.fill();
       ctx.strokeStyle="#17251c";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(w*.5+w*.018,h*.733);ctx.lineTo(w*.5+w*.026,h*.737);ctx.stroke();
-      ctx.strokeStyle="#c7ff4a";ctx.lineWidth=3;ctx.beginPath();ctx.arc(aim.x*w,aim.y*h,Math.max(8,w*.015),0,Math.PI*2);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(aim.x*w-7,aim.y*h);ctx.lineTo(aim.x*w+7,aim.y*h);ctx.moveTo(aim.x*w,aim.y*h-7);ctx.lineTo(aim.x*w,aim.y*h+7);ctx.stroke();
+      // Live shot preview: a curved dotted guide shows the exact target before the shot.
+      if(!shotTaken&&!ballAnim){
+        const sx=w*.5+w*.022,sy=h*.735,tx=aim.x*w,ty=aim.y*h;
+        ctx.save();ctx.setLineDash([Math.max(5,w*.009),Math.max(4,w*.006)]);
+        ctx.lineWidth=Math.max(3,w*.005);ctx.strokeStyle="rgba(199,255,74,.22)";ctx.beginPath();ctx.moveTo(sx,sy);ctx.quadraticCurveTo(sx+(tx-sx)*.58,Math.min(sy,ty)-h*.12,tx,ty);ctx.stroke();
+        ctx.lineWidth=Math.max(1.8,w*.0025);ctx.strokeStyle="rgba(232,255,190,.92)";ctx.beginPath();ctx.moveTo(sx,sy);ctx.quadraticCurveTo(sx+(tx-sx)*.58,Math.min(sy,ty)-h*.12,tx,ty);ctx.stroke();ctx.restore();
+        ctx.fillStyle="rgba(199,255,74,.16)";ctx.beginPath();ctx.arc(tx,ty,Math.max(15,w*.026),0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle="#c7ff4a";ctx.lineWidth=Math.max(3,w*.004);ctx.beginPath();ctx.arc(tx,ty,Math.max(10,w*.018),0,Math.PI*2);ctx.stroke();
+        ctx.strokeStyle="#f7ffe9";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(tx-9,ty);ctx.lineTo(tx+9,ty);ctx.moveTo(tx,ty-9);ctx.lineTo(tx,ty+9);ctx.stroke();
+        ctx.fillStyle="#f7ffe9";ctx.font="900 "+Math.max(8,w*.012)+"px sans-serif";ctx.textAlign="center";ctx.fillText("SHOT TARGET",tx,Math.max(h*.12,ty-h*.035));
+      }
     }
     if(ballAnim){
       const t=Math.min(1,(performance.now()-ballAnim.start)/ballAnim.duration);
@@ -1890,16 +1899,17 @@ const goalkeepers = [
     const keeperRating=(goalkeepers.find(g=>g.name===selectedGoalkeeper)||goalkeepers[0]).rating;
     const isKeeperMode=mode==="goalkeeping"||mode==="survival";
     // Aim at the visible goal area. Wider corners are harder for the keeper to reach.
-    const inGoal=aim.y>=.012&&aim.y<=.09&&aim.x>=.18&&aim.x<=.82;
-    const crossbarHit=mode==="crossbar"&&aim.y>=.012&&aim.y<=.105&&aim.x>=.34&&aim.x<=.66;
+    const inGoal=aim.y>=.008&&aim.y<=.105&&aim.x>=.12&&aim.x<=.88;
+    const crossbarHit=mode==="crossbar"&&aim.y>=.008&&aim.y<=.115&&aim.x>=.28&&aim.x<=.72;
     const keeperCenterX=shotSide===-1?.34:shotSide===1?.66:.5;
     const horizontalDistance=Math.abs(aim.x-keeperCenterX);
-    const reachable=horizontalDistance<=(difficulty==="Rookie"?.115:.085);
-    const placementBonus=shotStyle==="curl"?.32:centerBias>.28?.18:centerBias>.17?.10:0;
-    const powerBonus=shotPower>85?.06:0;
-    const difficultyAdjustment=difficulty==="Rookie"?-.12:difficulty==="Legend"?.08:0;
-    const shotQuality=Math.max(0,Math.min(1,centerBias*1.45+(shotPower/100)*.20+(aim.y<.045?.16:0)+placementBonus*.34+powerBonus*.25));
-    const keeperThreshold=Math.max(.18,Math.min(.82,.26+(keeperRating-70)*.004+difficultyAdjustment));
+    const reachable=horizontalDistance<=(difficulty==="Rookie"?.075:difficulty==="Legend"?.055:.065);
+    const placementBonus=shotStyle==="curl"?.38:centerBias>.28?.22:centerBias>.17?.14:0;
+    const powerBonus=shotPower>85?.05:0;
+    const cornerBonus=(aim.x<.28||aim.x>.72)?.10:0;
+    const difficultyAdjustment=difficulty==="Rookie"?-.12:difficulty==="Legend"?.07:0;
+    const shotQuality=Math.max(0,Math.min(1,centerBias*1.35+(shotPower/100)*.17+(aim.y<.04?.20:.12)+placementBonus*.32+powerBonus*.18+cornerBonus));
+    const keeperThreshold=Math.max(.16,Math.min(.68,.20+(keeperRating-70)*.003+difficultyAdjustment*.65));
     const keeperSaved=reachable&&shotQuality<keeperThreshold;
     const hassanWall=selectedGoalkeeper==="Hassan Ali";
     // Shot outcomes are skill-based and repeatable: aim, power, keeper rating and difficulty decide the result.
@@ -1954,7 +1964,7 @@ const goalkeepers = [
   function setAimFromEvent(e){
     if(mode==="headtohead"||shotTaken||mode==="goalkeeping"||mode==="survival")return;
     const rect=canvas.getBoundingClientRect();const x=(e.clientX-rect.left)/rect.width;const y=(e.clientY-rect.top)/rect.height;
-    aim={x:Math.max(.18,Math.min(.82,x)),y:Math.max(.012,Math.min(.09,y))};drawPitch();
+    aim={x:Math.max(.12,Math.min(.88,x)),y:Math.max(.008,Math.min(.105,y))};drawPitch();
   }
   canvas.addEventListener("pointerdown",e=>{canvas.setPointerCapture?.(e.pointerId);setAimFromEvent(e)});
   canvas.addEventListener("pointermove",e=>{if(e.buttons&&mode!=="headtohead")setAimFromEvent(e)});
