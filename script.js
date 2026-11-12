@@ -131,11 +131,13 @@ const goalkeepers = [
       .filter(([,slug])=>Boolean(slug))
       .map(([key,slug])=>[key,"https://geofootballguessr.com/footballers/"+slug+".webp"])
   );
+  rosterPhotoUrls.muhammadarham="/assets/players/muhammad-arham.jpg";
   const CUSTOM_PLAYER_KEYS=new Set(["arham","muhammadarham","hassanali","zaydquadri","umarshoaib","ehanali","llllllllfc"]);
   function isValidPlayerPhoto(source){
     const value=String(source||"");
     return /^https:\/\/upload\.wikimedia\.org\/wikipedia\/commons\//i.test(value)||
       /^https:\/\/geofootballguessr\.com\/footballers\/[a-z0-9-]+\.webp$/i.test(value)||
+      /^\/assets\/players\/[a-z0-9-]+\.jpe?g$/i.test(value)||
       /^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(value)||
       /^data:image\/svg\+xml;charset=utf-8,/i.test(value);
   }
