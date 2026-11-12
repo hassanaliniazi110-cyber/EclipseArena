@@ -1006,6 +1006,10 @@ const goalkeepers = [
       onlineCfg.token=data.token;
       if(data.deviceKey)onlineCfg.deviceKey=data.deviceKey;
       try{if(data.deviceKey)localStorage.setItem("apexDeviceKey",data.deviceKey);localStorage.setItem("eclipseDeviceToken",data.token);localStorage.setItem("eclipsePlayerId",data.playerId);}catch(_){}
+      if(onlineCfg.socket){
+        onlineCfg.socket.auth={playerId:data.playerId,token:data.token};
+        onlineCfg.socket.connect();
+      }
       playerId=data.playerId;
       if($("myPlayerId"))$("myPlayerId").textContent=data.playerId;
       return data;
