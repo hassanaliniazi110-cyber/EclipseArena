@@ -2,25 +2,44 @@
   "use strict";
   const deviceProfile=(()=>{
     const ua=navigator.userAgent||"";
+    const platform=navigator.platform||"";
     const touch=(navigator.maxTouchPoints||0)>1||("ontouchstart" in window);
-    const ipad=/iPad/.test(ua)||(navigator.platform==="MacIntel"&&touch);
-    const iphone=/iPhone|iPod/.test(ua),android=/Android/.test(ua);
-    const tablet=ipad||(/Android/.test(ua)&&!/Mobile/.test(ua));
-    const mac=/Macintosh|MacIntel|MacPPC/.test(ua)&&!touch;
-    const type=ipad?"ipad":iphone?"iphone":tablet?"tablet":android?"android":mac?"macos":touch?"touch-device":"laptop";
+    const ipad=/iPad/i.test(ua)||(platform==="MacIntel"&&touch);
+    const iphone=/iPhone|iPod/i.test(ua);
+    const android=/Android/i.test(ua);
+    const mac=/Macintosh|MacIntel|MacPPC/i.test(ua)&&!touch&&!ipad;
+    const androidModelMatch=ua.match(/Android[^;)]*;\\s*([^;)]+?)(?:\\s+Build\\/|[;)])/i);
+    let browserModel="";
+    try{browserModel=(navigator.userAgentData&&navigator.userAgentData.model)||"";}catch(_){}
+    const rawModel=(browserModel||((androidModelMatch&&androidModelMatch[1])||"")).trim();
+    const compactModel=rawModel.replace(/^\\[|\\]$/g,"").trim();
+    const modelUpper=compactModel.toUpperCase();
+    const lenovo=/\\bLENOVO\\b/i.test(compactModel)||/^TB[0-9A-Z-]+$/i.test(compactModel)||/^YT-[0-9A-Z-]+$/i.test(compactModel);
+    const samsungTab=/^SM-[XT][0-9A-Z]+$/i.test(modelUpper);
+    const pixelTablet=/PIXEL TABLET/i.test(compactModel);
+    const xiaomiPad=/\\b(XIAOMI|REDMI|POCO)\\b.*\\b(PAD|PAD SE|PAD PRO)\\b/i.test(compactModel);
+    const oneplusPad=/ONEPLUS.*PAD/i.test(compactModel);
+    const huaweiPad=/HUAWEI.*(MATEPAD|MEDIAPAD)/i.test(compactModel);
+    const knownTablet=lenovo||samsungTab||pixelTablet||xiaomiPad||oneplusPad||huaweiPad||/\\b(TABLET|TAB|PAD)\\b/i.test(compactModel);
+    const tablet=ipad||(android&&(!/\\bMobile\\b/i.test(ua)||knownTablet));
+    const type=ipad?"ipad":iphone?"iphone":(android&&tablet)?"android-tablet":android?"android-phone":mac?"macos":touch?"touch-device":"laptop";
+    let manufacturer="";
+    if(lenovo)manufacturer="Lenovo";
+    else if(samsungTab||/\\bSAMSUNG\\b/i.test(compactModel))manufacturer="Samsung";
+    else if(pixelTablet||/\\bPIXEL\\b/i.test(compactModel))manufacturer="Google";
+    else if(xiaomiPad)manufacturer=/REDMI/i.test(compactModel)?"Redmi":/POCO/i.test(compactModel)?"POCO":"Xiaomi";
+    else if(oneplusPad)manufacturer="OnePlus";
+    else if(huaweiPad)manufacturer="Huawei";
+    const modelName=compactModel?(lenovo?("Lenovo Tab "+compactModel.replace(/^LENOVO\\s*/i,"")):samsungTab?("Samsung Galaxy Tab "+compactModel):manufacturer?(manufacturer+" "+compactModel):compactModel):"";
     document.documentElement.dataset.device=type;
     document.documentElement.dataset.input=touch?"touch":"keyboard";
-    return {type,touch,tablet,mac};
+    document.documentElement.dataset.manufacturer=manufacturer.toLowerCase();
+    return {type,touch,tablet,mac,android,manufacturer,modelName,rawModel};
   })();
 
   const deviceNotice=(()=>{
-    const labels={ipad:"iPad detected",iphone:"iPhone detected",tablet:"Android tablet detected",android:"Android phone detected",macos:"Mac detected",laptop:"Computer detected","touch-device":"Touchscreen device detected"};
-    let exactModel="";
-    try{exactModel=navigator.userAgentData&&navigator.userAgentData.model?navigator.userAgentData.model:"";}catch(_){}
-    if(!exactModel&&/Android/i.test(navigator.userAgent||"")){
-      const m=(navigator.userAgent||"").match(/;\s*([^;)]+)\s+Build\//i);
-      if(m)exactModel=m[1].trim();
-    }
+    const labels={ipad:"iPad detected",iphone:"iPhone detected","android-tablet":"Android tablet detected","android-phone":"Android phone detected",macos:"Mac detected",laptop:"Computer detected","touch-device":"Touchscreen device detected"};
+    const exactModel=deviceProfile.modelName||"";
     const deviceName=exactModel||(deviceProfile.type==="ipad"?"iPad (A16)":(labels[deviceProfile.type]||"Device detected"));
     const input=deviceProfile.touch?"TOUCH CONTROLS ENABLED":"KEYBOARD CONTROLS ENABLED";
     const el=document.createElement("div");
@@ -31,7 +50,7 @@
     el.setAttribute("aria-labelledby","apexDeviceName");
     el.innerHTML='<div class="apex-device-notice-content"><span class="apex-device-notice-kicker">APEX STRIKERS · SYSTEM CHECK</span><div class="apex-device-notice-icon" aria-hidden="true">✓</div><p class="apex-device-notice-label">DEVICE DETECTED</p><h1 class="apex-device-name" id="apexDeviceName"></h1><p class="apex-device-detail"></p><span class="apex-device-input"></span><button class="apex-device-continue" type="button">CONTINUE TO APEX STRIKERS <b>↗</b></button><small class="apex-device-limitation"></small></div>';
     el.querySelector(".apex-device-name").textContent=deviceName;
-    el.querySelector(".apex-device-detail").textContent=exactModel?"Exact model supplied by this browser.":(deviceProfile.type==="ipad"?"iPad (A16) is shown from the device model you previously provided. iPadOS does not let the website independently verify the exact model.":"The browser does not share this device's exact model.");
+    el.querySelector(".apex-device-detail").textContent=exactModel?"Model identifier reported by this browser.":(deviceProfile.type==="ipad"?"iPad (A16) is shown from the device model you previously provided. iPadOS does not let the website independently verify the exact model.":"Your browser may hide the exact model, so Apex Strikers shows the detected device family instead.");
     el.querySelector(".apex-device-input").textContent=input;
     el.querySelector(".apex-device-limitation").textContent="Your game and account data stay in place. Continue when ready.";
     document.body.appendChild(el);
