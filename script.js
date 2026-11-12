@@ -92,7 +92,7 @@ const goalkeepers = [
         active:match.active,finished:match.finished,clock:match.clock,
         player:{x:match.player.x,y:match.player.y},rival:{x:match.rival.x,y:match.rival.y},
         ball:{x:match.ball.x,y:match.ball.y},hasBall:match.hasBall,
-        playerGoals:match.playerGoals,rivalGoals:match.rivalGoals
+        playerGoals:match.playerGoals,rivalGoals:match.rivalGoals,lastShot:match.lastShot
       },
       // Convert the original pixel-based animation to normalized 0–1 coordinates for WebGL.
       ballAnim:ballAnim?{
