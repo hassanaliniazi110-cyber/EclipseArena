@@ -1167,6 +1167,45 @@ svg line,svg polyline,.chart-line,.stat-line,.player-chart-line,.player-stats sv
   background:#142332;
   box-shadow:0 5px 14px rgba(0,0,0,.28);
 }
+/* Cinematic player-card upgrade: deeper glass, sharper portrait framing and premium foil. */
+.player-card{
+  min-height:245px!important;
+  padding:10px!important;
+  border:1px solid rgba(190,226,255,.22)!important;
+  border-radius:15px!important;
+  background:
+    radial-gradient(ellipse at 50% 0%,rgba(112,183,255,.20),transparent 52%),
+    linear-gradient(145deg,#1a2c3e 0%,#101923 58%,#080d14 100%)!important;
+  box-shadow:0 12px 26px rgba(0,0,0,.32),inset 0 1px rgba(255,255,255,.08);
+  transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease;
+  isolation:isolate;
+}
+.player-card:hover{transform:translateY(-5px) scale(1.015);border-color:rgba(199,255,74,.72)!important;box-shadow:0 18px 34px rgba(0,0,0,.46),0 0 22px rgba(199,255,74,.12)}
+.player-card:before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(115deg,transparent 15%,rgba(255,255,255,.075) 48%,transparent 70%);transform:translateX(-110%);transition:transform .7s ease}
+.player-card:hover:before{transform:translateX(110%)}
+.player-card-photo{
+  height:128px!important;
+  object-fit:cover!important;
+  object-position:center 18%!important;
+  border-radius:10px!important;
+  border:1px solid rgba(255,255,255,.28)!important;
+  background:linear-gradient(145deg,#243b52,#0b111a)!important;
+  box-shadow:0 8px 20px rgba(0,0,0,.42),inset 0 0 0 1px rgba(255,255,255,.06)!important;
+}
+.player-card-photo.photo-unavailable{opacity:0}
+.player-card.photo-pending:has(.player-card-photo.photo-unavailable) .player-card-photo{opacity:0}
+.player-card-copy{z-index:3}
+.player-rating{text-shadow:0 0 16px rgba(199,255,74,.28)}
+.player-card.keyboard-master-card{border-color:#ffd66a!important;background:radial-gradient(ellipse at 50% 0%,rgba(255,214,92,.28),transparent 48%),linear-gradient(145deg,#3a2b13,#15130e 65%,#090b0c)!important;box-shadow:0 0 24px rgba(255,214,92,.18),inset 0 0 0 1px rgba(255,214,92,.24)}
+.apex-card-portrait img{width:100%;height:100%;object-fit:cover;object-position:center 16%;border-radius:inherit}
+.apex-card-portrait.photo-pending{background:linear-gradient(135deg,#182c42,#0b111a);box-shadow:inset 0 0 25px rgba(0,0,0,.38)}
+.apex-card-portrait img.photo-unavailable{display:none}
+.apex-player-card{filter:drop-shadow(0 12px 16px rgba(0,0,0,.28));transition:transform .28s cubic-bezier(.2,.8,.2,1),filter .28s ease}
+.apex-player-card:hover{transform:translateY(-9px) scale(1.025) rotate(-.6deg);filter:drop-shadow(0 20px 24px rgba(0,0,0,.42))}
+.apex-player-card:after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:linear-gradient(118deg,transparent 18%,rgba(255,255,255,.18) 48%,transparent 68%);transform:translateX(-120%);transition:transform .75s ease}
+.apex-player-card:hover:after{transform:translateX(120%)}
+@media(max-width:650px){.player-card{min-height:230px!important}.player-card-photo{height:112px!important}}
+
 .player-card-copy{position:relative;z-index:2;min-width:0}
 .player-card-signed{
   border-color:#ffb45f!important;
