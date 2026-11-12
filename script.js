@@ -946,7 +946,7 @@ const goalkeepers = [
     ctx.strokeStyle="rgba(199,255,74,.42)";ctx.lineWidth=1;ctx.strokeRect(w*.32,h*.012,w*.36,h*.045);
     ctx.fillStyle="#fff";ctx.font="800 "+Math.max(10,w*.016)+"px sans-serif";
     ctx.textAlign="center";ctx.textBaseline="middle";
-    ctx.fillText("APEX STRIKERS · 5v5",w*.5,h*.034);
+    ctx.fillText("APEX STRIKERS · 6v6",w*.5,h*.034);
     if(match.finished){
       ctx.fillStyle="rgba(0,0,0,.78)";ctx.fillRect(w*.15,h*.36,w*.7,h*.28);
       ctx.strokeStyle="rgba(199,255,74,.8)";ctx.lineWidth=2;ctx.strokeRect(w*.15,h*.36,w*.7,h*.28);
