@@ -55,6 +55,8 @@
     const stripe=new T.Mesh(new T.BoxGeometry(.085,.78,.025),trim);stripe.position.set(.18,1.48,-.424);root.add(stripe);
     const stripe2=stripe.clone();stripe2.position.x=-.18;root.add(stripe2);
     const band=new T.Mesh(new T.BoxGeometry(.79,.055,.08),trim);band.position.set(0,1.88,-.02);root.add(band);
+    const collar=new T.Mesh(new T.TorusGeometry(.145,.022,8,24),trim);collar.rotation.x=Math.PI/2;collar.position.set(0,1.93,-.035);root.add(collar);
+    const crest=new T.Mesh(new T.CircleGeometry(.075,20),trim);crest.position.set(.255,1.64,-.398);root.add(crest);
     cylinder(root,.105,.12,.22,[0,2.02,0],skin,10);
     const head=new T.Mesh(new T.SphereGeometry(.235,28,22),skin);head.scale.set(.94,1.08,.94);head.position.y=2.22;head.castShadow=true;root.add(head);
     const cap=new T.Mesh(new T.SphereGeometry(.246,24,18,0,Math.PI*2,0,Math.PI*.56),hair);cap.position.set(0,2.29,0);cap.castShadow=true;root.add(cap);
@@ -77,13 +79,14 @@
     [-1,1].forEach(side=>{
       const pivot=new T.Group();pivot.position.set(side*.21,.75,0);root.add(pivot);
       segment(pivot,[0,0,0],[0,-.36,0],.145,shorts);segment(pivot,[0,-.34,0],[0,-.72,-.015],.095,socks);
-      box(pivot,[.22,.12,.37],[0,-.77,-.14],boots,true,false);box(pivot,[.19,.025,.31],[0,-.835,-.15],trim,false,false);legs.push(pivot);
+      const boot=new T.Mesh(new T.SphereGeometry(.15,18,14),boots);boot.scale.set(.78,.42,1.38);boot.position.set(0,-.78,-.14);pivot.add(boot);
+      const sole=new T.Mesh(new T.SphereGeometry(.145,16,12),trim);sole.scale.set(.79,.16,1.35);sole.position.set(0,-.835,-.14);pivot.add(sole);legs.push(pivot);
     });
     const nameLabel=label(root,name||"APEX PLAYER");
     const halo=new T.Mesh(new T.RingGeometry(.68,.79,48),new T.MeshBasicMaterial({color:accentColor||"#75eaff",transparent:true,opacity:.16,side:T.DoubleSide,depthWrite:false}));
     halo.rotation.x=-Math.PI/2;halo.position.y=.035;root.add(halo);
     root.rotation.y=facing==="toward"?Math.PI:0;
-    root.scale.setScalar(isKeeper?1.48:1.42);root.userData={arms,legs,halo,label:nameLabel,isKeeper,phase:Math.random()*6.28,kitMaterial:kit,sockMaterial:socks,trimMaterial:trim};return root;
+    root.scale.setScalar(isKeeper?1.48:1.42);root.userData={arms,legs,halo,label:nameLabel,isKeeper,phase:Math.random()*6.28,torso,head,kitMaterial:kit,sockMaterial:socks,trimMaterial:trim};return root;
   }
   function makeBall(){
     const group=new T.Group();
@@ -240,6 +243,9 @@
     const stride=moved>.018?.62:.075,phase=time*(moved>.018?12.5:2.1)+d.phase;
     d.legs[0].rotation.x=Math.sin(phase)*stride;d.legs[1].rotation.x=-Math.sin(phase)*stride;
     d.arms[0].rotation.x=-Math.sin(phase)*stride*.58;d.arms[1].rotation.x=Math.sin(phase)*stride*.58;
+    model.position.y=moved>.018?Math.abs(Math.sin(phase*2))*.035:Math.sin(phase)*.008;
+    if(d.torso){d.torso.rotation.z=Math.sin(phase)*.025;d.torso.rotation.x=moved>.018?-.055:Math.sin(phase)*.008;}
+    if(d.head){d.head.rotation.x=Math.sin(phase*.5)*.012;d.head.rotation.z=-Math.sin(phase)*.012;}
     model.position.y=.035+(moved>.018?Math.abs(Math.sin(phase*2))*.045:Math.abs(Math.sin(phase*2))*.008);
     d.halo.visible=Boolean(highlight);d.halo.material.opacity=highlight?.74:.16;d.label.visible=!d.isKeeper;
   }
