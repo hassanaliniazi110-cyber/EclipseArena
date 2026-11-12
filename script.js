@@ -247,7 +247,6 @@ const goalkeepers = [
   const rosterPhotoUrls=Object.fromEntries(
     Object.entries(rosterPhotoSlugs)
       .filter(([,slug])=>Boolean(slug))
-      /^https:\/\/raw\.githubusercontent\.com\/hassanaliniazi110-cyber\/EclipseArena\/main\/assets\/[a-z0-9-]+\.jpe?g(?:\?.*)?$/i.test(value)||
       .map(([key,slug])=>[key,"https://geofootballguessr.com/footballers/"+slug+".webp"])
   );
   // Pin these three portraits to verified Wikimedia Commons files so the
@@ -261,6 +260,7 @@ const goalkeepers = [
   function isValidPlayerPhoto(source){
     const value=String(source||"");
     return /^https:\/\/upload\.wikimedia\.org\/wikipedia\/commons\//i.test(value)||
+      /^https:\/\/raw\.githubusercontent\.com\/hassanaliniazi110-cyber\/EclipseArena\/main\/assets\/[a-z0-9-]+\.jpe?g(?:\?.*)?$/i.test(value)||
       /^https:\/\/geofootballguessr\.com\/footballers\/[a-z0-9-]+\.webp$/i.test(value)||
       /^\/assets\/players\/[a-z0-9-]+\.jpe?g$/i.test(value)||
       /^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(value)||
