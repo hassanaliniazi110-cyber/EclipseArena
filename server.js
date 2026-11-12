@@ -37,6 +37,10 @@ const { Server } = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
+// Bound slow-header and stalled-request exposure on the public API listener.
+server.headersTimeout = 20_000;
+server.requestTimeout = 30_000;
+server.keepAliveTimeout = 5_000;
 const PORT = Number(process.env.PORT) || 11914;
 const defaultOrigins = [
   "https://hassanaliniazi110-cyber.github.io",
@@ -361,7 +365,7 @@ function youtubeIsApproved(id) { return youtubeAccessData.approved.includes(id);
 const MAX_PENDING_INVITES = 10000;
 
 const registerLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, limit: 10, standardHeaders: "draft-7", legacyHeaders: false,
+  windowMs: 15 * 60 * 1000, limit: 6, standardHeaders: "draft-7", legacyHeaders: false,
   message: { error: "Too many registration attempts. Try again later." }
 });
 const inviteLimiter = rateLimit({
@@ -377,7 +381,7 @@ const youtubeRequestLimiter = rateLimit({
   message: { error: "Too many YouTube access requests. Please wait before trying again." }
 });
 const youtubeCommentsLimiter = rateLimit({
-  windowMs: 60 * 1000, limit: 12, standardHeaders: "draft-7", legacyHeaders: false,
+  windowMs: 60 * 1000, limit: 8, standardHeaders: "draft-7", legacyHeaders: false,
   message: { error: "Too many comments requests. Please wait a moment." }
 });
 const profileLimiter = rateLimit({
