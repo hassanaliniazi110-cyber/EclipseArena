@@ -47,7 +47,13 @@ const configuredOrigins = (process.env.ALLOWED_ORIGINS || "")
 const allowedOrigins = [...new Set([...defaultOrigins, ...configuredOrigins])];
 const players = new Map();
 const tokenToPlayer = new Map();
-const DATA_FILE = process.env.ECLIPSE_DATA_FILE || path.join(__dirname, "eclipse-data.json");
+const DEFAULT_DATA_FILE = path.join(__dirname, "eclipse-data.json");
+const DATA_FILE = path.resolve(process.cwd(), process.env.ECLIPSE_DATA_FILE || DEFAULT_DATA_FILE);
+const DATA_FILE_CANDIDATES = [...new Set([
+  DATA_FILE,
+  DEFAULT_DATA_FILE,
+  path.resolve(process.cwd(), "eclipse-data.json")
+].flatMap(file => [file, file + ".bak", file + ".backup", file + ".old", file + ".tmp"]))];
 function hashToken(token) { return crypto.createHash("sha256").update(String(token)).digest("hex"); }
 function tokenHashMatches(storedHash, token) {
   if (typeof storedHash !== "string" || !/^[a-f0-9]{64}$/i.test(storedHash)) return false;
@@ -56,21 +62,103 @@ function tokenHashMatches(storedHash, token) {
   return expected.length === supplied.length && crypto.timingSafeEqual(expected, supplied);
 }
 function saveData() {
-  const data = [...players.values()].map(p => ({ id: p.id, tokenHash: p.tokenHash, deviceKey: p.deviceKey || "", approvalStatus: p.approvalStatus || "pending", createdAt: p.createdAt || "", profile: p.profile, friends: [...p.friends], gems: p.gems, ownedCards: p.ownedCards, cardLevels: p.cardLevels, draftVouchers: p.draftVouchers, activeDraft: p.activeDraft, rewardDay: p.rewardDay, rewardGemsToday: p.rewardGemsToday, lastGameClaimAt: p.lastGameClaimAt, eventClaims: p.eventClaims, draftPity: p.draftPity }));
+  const data = [...players.values()].map(p => ({
+    id: p.id, tokenHash: p.tokenHash, deviceKey: p.deviceKey || "",
+    approvalStatus: p.approvalStatus || "pending", createdAt: p.createdAt || "",
+    profile: p.profile, friends: [...p.friends], gems: p.gems,
+    ownedCards: p.ownedCards, cardLevels: p.cardLevels, draftVouchers: p.draftVouchers,
+    activeDraft: p.activeDraft, rewardDay: p.rewardDay, rewardGemsToday: p.rewardGemsToday,
+    lastGameClaimAt: p.lastGameClaimAt, eventClaims: p.eventClaims, draftPity: p.draftPity
+  }));
   const temp = DATA_FILE + ".tmp";
+  // Keep the last valid snapshot before replacing the active file.
+  try {
+    if (fs.existsSync(DATA_FILE)) {
+      const previous = fs.readFileSync(DATA_FILE);
+      const parsed = JSON.parse(previous.toString("utf8"));
+      if (parsed && parsed.version === 1 && Array.isArray(parsed.players)) {
+        fs.writeFileSync(DATA_FILE + ".bak", previous, { mode: 0o600 });
+      }
+    }
+  } catch (error) {
+    console.error("[storage] Could not refresh previous-data backup:", error.message);
+  }
+  fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
   fs.writeFileSync(temp, JSON.stringify({ version: 1, players: data }), { mode: 0o600 });
   fs.renameSync(temp, DATA_FILE);
 }
 function loadData() {
-  try {
-    const data = JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
-    if (data.version !== 1 || !Array.isArray(data.players)) return;
-    for (const p of data.players.slice(0, MAX_PLAYERS)) {
-      if (!validPlayerId(p.id) || !/^[a-f0-9]{64}$/i.test(p.tokenHash || "")) continue;
-      const player = { id: p.id, tokenHash: p.tokenHash, deviceKey: /^[a-f0-9]{64}$/i.test(p.deviceKey || "") ? p.deviceKey.toLowerCase() : "", approvalStatus: "approved", createdAt: String(p.createdAt || ""), profile: normalizeProfile(p.profile), friends: new Set(Array.isArray(p.friends) ? p.friends.filter(validPlayerId).slice(0, 100) : []), gems: p.gems === undefined ? 250 : Math.max(0, Math.floor(Number(p.gems) || 0)), ownedCards: Array.isArray(p.ownedCards) ? [...new Set(p.ownedCards.filter(x => typeof x === 'string').slice(0, 100))] : ['arham'], cardLevels: p.cardLevels && typeof p.cardLevels === 'object' ? p.cardLevels : {}, draftVouchers: Math.max(0,Math.min(99,Number(p.draftVouchers)||0)), activeDraft: p.activeDraft && typeof p.activeDraft==="object" ? p.activeDraft : null, rewardDay: String(p.rewardDay || ''), rewardGemsToday: Math.max(0, Number(p.rewardGemsToday) || 0), lastGameClaimAt: Math.max(0, Number(p.lastGameClaimAt) || 0), eventClaims: p.eventClaims && typeof p.eventClaims === "object" ? p.eventClaims : {}, draftPity: p.draftPity && typeof p.draftPity === "object" ? p.draftPity : {}, gameSession: null };
-      players.set(player.id, player); tokenToPlayer.set(player.tokenHash, player.id);
+  const snapshots = [];
+  const inspected = new Set();
+  for (const candidate of DATA_FILE_CANDIDATES) {
+    const file = path.resolve(candidate);
+    if (inspected.has(file) || !fs.existsSync(file)) continue;
+    inspected.add(file);
+    try {
+      const saved = JSON.parse(fs.readFileSync(file, "utf8"));
+      if (saved.version !== 1 || !Array.isArray(saved.players)) continue;
+      const validPlayers = saved.players.filter(p =>
+        p && validPlayerId(p.id) && /^[a-f0-9]{64}$/i.test(p.tokenHash || "")
+      );
+      if (validPlayers.length) {
+        snapshots.push({
+          file,
+          players: validPlayers,
+          modifiedAt: fs.statSync(file).mtimeMs || 0
+        });
+      }
+    } catch (error) {
+      console.error("[storage] Skipping unreadable player snapshot:", path.basename(file), error.message);
     }
-  } catch (e) { if (e.code !== "ENOENT") console.error("Could not load player data:", e.message); }
+  }
+  if (!snapshots.length) {
+    console.log("[storage] No existing player snapshot found at the configured or legacy paths.");
+    return;
+  }
+
+  // Prefer the most complete snapshot first, then add accounts found only
+  // in older backups or the previous working-directory location.
+  snapshots.sort((a, b) => b.players.length - a.players.length || b.modifiedAt - a.modifiedAt);
+  const recovered = new Map();
+  for (const snapshot of snapshots) {
+    for (const p of snapshot.players) {
+      if (!recovered.has(p.id)) recovered.set(p.id, p);
+    }
+  }
+
+  for (const p of recovered.values()) {
+    const player = {
+      id: p.id,
+      tokenHash: p.tokenHash,
+      deviceKey: /^[a-f0-9]{64}$/i.test(p.deviceKey || "") ? p.deviceKey.toLowerCase() : "",
+      approvalStatus: "approved",
+      createdAt: String(p.createdAt || ""),
+      profile: normalizeProfile(p.profile),
+      friends: new Set(Array.isArray(p.friends) ? p.friends.filter(validPlayerId).slice(0, 100) : []),
+      gems: p.gems === undefined ? 250 : Math.max(0, Math.floor(Number(p.gems) || 0)),
+      ownedCards: Array.isArray(p.ownedCards) ? [...new Set(p.ownedCards.filter(x => typeof x === "string").slice(0, 100))] : ["arham"],
+      cardLevels: p.cardLevels && typeof p.cardLevels === "object" ? p.cardLevels : {},
+      draftVouchers: Math.max(0, Math.min(99, Number(p.draftVouchers) || 0)),
+      activeDraft: p.activeDraft && typeof p.activeDraft === "object" ? p.activeDraft : null,
+      rewardDay: String(p.rewardDay || ""),
+      rewardGemsToday: Math.max(0, Number(p.rewardGemsToday) || 0),
+      lastGameClaimAt: Math.max(0, Number(p.lastGameClaimAt) || 0),
+      eventClaims: p.eventClaims && typeof p.eventClaims === "object" ? p.eventClaims : {},
+      draftPity: p.draftPity && typeof p.draftPity === "object" ? p.draftPity : {},
+      gameSession: null
+    };
+    players.set(player.id, player);
+    tokenToPlayer.set(player.tokenHash, player.id);
+  }
+
+  const primary = snapshots[0];
+  const migrationNeeded = primary.file !== DATA_FILE || recovered.size > primary.players.length;
+  console.log("[storage] Loaded " + players.size + " registered accounts from " +
+    snapshots.length + " valid snapshot(s); primary file: " + path.basename(primary.file) + ".");
+  if (migrationNeeded) {
+    console.log("[storage] Migrating recovered player records to the configured data file.");
+    saveData();
+  }
 }
 const invites = new Map();
 const socketsByPlayer = new Map();
