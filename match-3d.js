@@ -175,7 +175,7 @@
     sun.shadow.camera.near=1;sun.shadow.camera.far=180;sun.shadow.bias=-.00025;scene.add(sun);
     [[-60,18,-80],[60,18,-80],[-60,18,80],[60,18,80]].forEach((p,i)=>{
       cylinder(scene,.12,.16,17,[p[0],8.5,p[2]],mat("#25394c",{metalness:.55,roughness:.4}),8);
-      const light=new T.PointLight(i%2?0xb7e7ff:0xe7f4ff,125,68,2);light.position.set(p[0],17,p[2]);scene.add(light);
+      const light=new T.PointLight(i%2?0xb7e7ff:0xe7f4ff,145,78,2);light.position.set(p[0],17,p[2]);scene.add(light);
       const panel=new T.Mesh(new T.BoxGeometry(2.8,.28,1),new T.MeshBasicMaterial({color:0xe8f9ff}));panel.position.set(p[0],16.8,p[2]);scene.add(panel);
     });
     const coords=[];for(let i=0;i<260;i++)coords.push((Math.random()-.5)*120,7+Math.random()*25,(Math.random()-.5)*150);
@@ -392,7 +392,7 @@
     let camX=0,camY=38,camZ=72,lookX=0,lookY=0,lookAtZ=0;
     if(cameraMode==="sideline"){
       // FC Mobile-inspired sideline broadcast camera, following the ball.
-      camX=FIELD_LENGTH*1.04;camY=FIELD_WIDTH*.92;camZ=focusZ+5;
+      camX=FIELD_WIDTH*1.12;camY=FIELD_WIDTH*.78;camZ=focusZ+4;
       lookX=0;lookY=0;lookAtZ=focusZ-2;
     }else if(cameraMode==="broadcast"){
       camX=FIELD_WIDTH*1.48;camY=FIELD_LENGTH*.95;camZ=FIELD_LENGTH*.98;
