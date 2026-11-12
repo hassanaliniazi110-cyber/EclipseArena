@@ -1039,7 +1039,7 @@ const DRAFT_WEIGHTS={ronaldo:1,messi:2,figo:3,mbappe:80,yamal:100,haaland:90,bel
 const draftWeight=card=>{const ovr=Number(card.ovr)||0;const tier=ovr>=128?0.06:ovr>=126?0.12:ovr>=124?0.28:ovr>=122?0.75:ovr>=120?2.2:ovr>=118?5:10;const listed=Number(DRAFT_WEIGHTS[card.id]);const weight=Math.max(0.04,Math.min(tier,Number.isFinite(listed)&&listed>0?listed:tier));return Math.max(1,Math.round(weight*1000));};
 function weightedDraftPick(items){const total=items.reduce((sum,card)=>sum+draftWeight(card),0);let roll=crypto.randomInt(total);for(const card of items){roll-=draftWeight(card);if(roll<0)return card;}return items[items.length-1];}
 function draftChanceInTen(targetId,pool){const target=pool.find(card=>card.id===targetId);if(!target)return 0;const total=pool.reduce((sum,card)=>sum+draftWeight(card),0);return Math.max(0,Math.min(100,(1-Math.pow(1-draftWeight(target)/total,Math.min(10,pool.length)))*100));}
-const DRAFT_PITY_LIMITS={poolA:20,poolB:5};
+const DRAFT_PITY_LIMITS={poolA:24,poolB:5};
 function getDraftPityStatus(player){
   const saved=player.draftPity&&typeof player.draftPity==="object"?player.draftPity:{};
   const result={};
