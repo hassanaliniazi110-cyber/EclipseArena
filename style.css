@@ -1600,3 +1600,130 @@ body.apex-device-notice-open{overflow:hidden!important}
 @media(prefers-reduced-motion:reduce){.apex-device-notice{transition:none!important}}
 /* Keep Umar Shoaib centred in his player-card portrait. */
 .player-card-photo[data-player-name="Umar Shoaib"]{object-position:50% 50%!important;}
+
+
+/* Major H2H gameplay upgrade: five FC-style camera presets and squad builder. */
+.game-screen:has(#matchControls:not(.hidden)) #pitch{
+  aspect-ratio:1.62!important;
+  min-height:560px!important;
+  max-height:none!important;
+}
+.match-camera-controls{
+  top:48px!important;
+  right:12px!important;
+  left:auto!important;
+  width:min(360px,calc(100% - 24px));
+  max-width:calc(100% - 24px);
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:6px;
+  padding:7px!important;
+  background:rgba(3,12,22,.88)!important;
+  border:1px solid rgba(130,207,245,.38)!important;
+  border-radius:12px!important;
+  backdrop-filter:blur(12px);
+}
+.match-camera-presets{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:4px;
+}
+.match-camera-presets button{
+  min-width:0!important;
+  min-height:32px!important;
+  padding:5px 3px!important;
+  border-radius:6px!important;
+  font:900 7px/1.05 'DM Sans',sans-serif!important;
+  letter-spacing:.25px!important;
+  white-space:normal;
+  background:#14283a!important;
+}
+.match-camera-presets button.selected{
+  color:#10180c!important;
+  background:var(--lime)!important;
+  border-color:var(--lime)!important;
+  box-shadow:0 0 13px rgba(0,229,255,.35);
+}
+.match-camera-zoom{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:5px;
+}
+.match-camera-zoom button{min-width:30px!important;min-height:26px!important}
+.match-squad-picker{
+  margin:0 0 14px;
+  padding:12px;
+  border:1px solid rgba(91,204,255,.28);
+  border-radius:12px;
+  background:linear-gradient(145deg,rgba(13,34,48,.96),rgba(6,17,28,.96));
+}
+.match-squad-picker summary{
+  color:#e9f8ff;
+  cursor:pointer;
+  font:900 10px/1.4 'Orbitron',sans-serif;
+  letter-spacing:.07em;
+  list-style:none;
+}
+.match-squad-picker summary::-webkit-details-marker{display:none}
+.match-squad-picker summary:after{content:"＋";float:right;color:var(--lime);font-size:16px}
+.match-squad-picker[open] summary:after{content:"−"}
+.match-squad-slots{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  margin-top:12px;
+}
+.match-squad-slot{display:grid;gap:5px;min-width:0}
+.match-squad-slot span{
+  color:#94bfd2;
+  font:800 8px 'DM Sans',sans-serif;
+  letter-spacing:.1em;
+}
+.match-squad-slot select{
+  width:100%;
+  min-width:0;
+  min-height:40px;
+  padding:7px;
+  border:1px solid rgba(149,207,230,.3);
+  border-radius:7px;
+  background:#091a27;
+  color:#f2f8fc;
+  font-size:10px;
+}
+.match-team-ovr{
+  margin:10px 0 4px!important;
+  color:var(--lime)!important;
+  font:900 11px 'Orbitron',sans-serif!important;
+  letter-spacing:.1em;
+}
+.match-squad-picker small{
+  display:block;
+  color:#9ab1bf;
+  font-size:9px;
+  line-height:1.5;
+}
+@media(max-width:700px){
+  .game-screen:has(#matchControls:not(.hidden)) #pitch{
+    aspect-ratio:1.38!important;
+    min-height:440px!important;
+  }
+  .match-camera-controls{
+    top:42px!important;
+    right:7px!important;
+    width:min(330px,calc(100% - 14px));
+    padding:5px!important;
+  }
+  .match-camera-presets{gap:3px}
+  .match-camera-presets button{font-size:6px!important;min-height:29px!important;padding:4px 1px!important}
+  .match-squad-slots{grid-template-columns:1fr}
+}
+@media(orientation:landscape) and (max-height:600px){
+  .game-screen:has(#matchControls:not(.hidden)) #pitch{
+    aspect-ratio:1.68!important;
+    min-height:0!important;
+    height:calc(100dvh - 135px)!important;
+  }
+  .match-camera-controls{top:38px!important}
+}
