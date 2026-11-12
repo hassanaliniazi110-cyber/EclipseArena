@@ -61,7 +61,7 @@ function loadData() {
     if (data.version !== 1 || !Array.isArray(data.players)) return;
     for (const p of data.players.slice(0, MAX_PLAYERS)) {
       if (!validPlayerId(p.id) || !/^[a-f0-9]{64}$/i.test(p.tokenHash || "")) continue;
-      const player = { id: p.id, tokenHash: p.tokenHash, deviceKey: /^[a-f0-9]{64}$/i.test(p.deviceKey || "") ? p.deviceKey.toLowerCase() : "", approvalStatus: youtubeAdminPlayers.has(p.id) ? "approved" : (["approved","pending","denied"].includes(p.approvalStatus) ? p.approvalStatus : "pending"), createdAt: String(p.createdAt || ""), profile: normalizeProfile(p.profile), friends: new Set(Array.isArray(p.friends) ? p.friends.filter(validPlayerId).slice(0, 100) : []), gems: p.gems === undefined ? 250 : Math.max(0, Math.floor(Number(p.gems) || 0)), ownedCards: Array.isArray(p.ownedCards) ? [...new Set(p.ownedCards.filter(x => typeof x === 'string').slice(0, 100))] : ['arham'], cardLevels: p.cardLevels && typeof p.cardLevels === 'object' ? p.cardLevels : {}, draftVouchers: Math.max(0,Math.min(99,Number(p.draftVouchers)||0)), activeDraft: p.activeDraft && typeof p.activeDraft==="object" ? p.activeDraft : null, rewardDay: String(p.rewardDay || ''), rewardGemsToday: Math.max(0, Number(p.rewardGemsToday) || 0), lastGameClaimAt: Math.max(0, Number(p.lastGameClaimAt) || 0), eventClaims: p.eventClaims && typeof p.eventClaims === "object" ? p.eventClaims : {}, draftPity: p.draftPity && typeof p.draftPity === "object" ? p.draftPity : {}, gameSession: null };
+      const player = { id: p.id, tokenHash: p.tokenHash, deviceKey: /^[a-f0-9]{64}$/i.test(p.deviceKey || "") ? p.deviceKey.toLowerCase() : "", approvalStatus: "approved", createdAt: String(p.createdAt || ""), profile: normalizeProfile(p.profile), friends: new Set(Array.isArray(p.friends) ? p.friends.filter(validPlayerId).slice(0, 100) : []), gems: p.gems === undefined ? 250 : Math.max(0, Math.floor(Number(p.gems) || 0)), ownedCards: Array.isArray(p.ownedCards) ? [...new Set(p.ownedCards.filter(x => typeof x === 'string').slice(0, 100))] : ['arham'], cardLevels: p.cardLevels && typeof p.cardLevels === 'object' ? p.cardLevels : {}, draftVouchers: Math.max(0,Math.min(99,Number(p.draftVouchers)||0)), activeDraft: p.activeDraft && typeof p.activeDraft==="object" ? p.activeDraft : null, rewardDay: String(p.rewardDay || ''), rewardGemsToday: Math.max(0, Number(p.rewardGemsToday) || 0), lastGameClaimAt: Math.max(0, Number(p.lastGameClaimAt) || 0), eventClaims: p.eventClaims && typeof p.eventClaims === "object" ? p.eventClaims : {}, draftPity: p.draftPity && typeof p.draftPity === "object" ? p.draftPity : {}, gameSession: null };
       players.set(player.id, player); tokenToPlayer.set(player.tokenHash, player.id);
     }
   } catch (e) { if (e.code !== "ENOENT") console.error("Could not load player data:", e.message); }
@@ -339,32 +339,6 @@ app.post("/api/youtube/requests", auth, youtubeRequestLimiter, (req, res) => {
   res.status(201).json({ status: "pending", message: "Your request was sent to the owner." });
 });
 
-app.get("/api/admin/account-requests", auth, adminLimiter, requireOwner, (req, res) => {
-  const requests = [...players.values()]
-    .filter(player => player.approvalStatus === "pending" && !youtubeAdminPlayers.has(player.id))
-    .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)))
-    .slice(0, 500)
-    .map(player => ({ playerId: player.id, name: player.profile.name, createdAt: player.createdAt || "" }));
-  res.set("Cache-Control", "no-store");
-  res.json({ requests, total: requests.length });
-});
-app.post("/api/admin/account-requests/:playerId/decision", auth, adminLimiter, requireOwner, (req, res) => {
-  const playerId = cleanText(req.params.playerId, 24).toUpperCase();
-  const player = players.get(playerId);
-  if (!player || player.approvalStatus !== "pending" || youtubeAdminPlayers.has(playerId)) {
-    return res.status(404).json({ error: "Pending account request not found." });
-  }
-  const decision = req.body?.decision;
-  if (decision !== "allow" && decision !== "deny") {
-    return res.status(400).json({ error: "Decision must be allow or deny." });
-  }
-  player.approvalStatus = decision === "allow" ? "approved" : "denied";
-  saveData();
-  auditEvent(req.player.id, "account_" + player.approvalStatus, playerId);
-  res.set("Cache-Control", "no-store");
-  res.json({ ok: true, playerId, status: player.approvalStatus });
-});
-
 app.get("/api/admin/audit", auth, adminLimiter, requireOwner, (req, res) => {
   try {
     const lines = fs.readFileSync(AUDIT_FILE, "utf8").trim().split(/\r?\n/).filter(Boolean).slice(-100);
@@ -404,10 +378,6 @@ function auth(req, res, next) {
   const id = match && tokenToPlayer.get(hashToken(match[1]));
   if (!id || !players.has(id)) return res.status(401).json({ error: "Authentication required. Reconnect to the server." });
   req.player = players.get(id);
-  if (req.player.approvalStatus !== "approved" && !youtubeAdminPlayers.has(req.player.id)) {
-    const denied = req.player.approvalStatus === "denied";
-    return res.status(403).json({ error: denied ? "Your Apex Strikers account was declined by the owner." : "Your Apex Strikers account is waiting for owner approval.", accountStatus: denied ? "denied" : "pending" });
-  }
   next();
 }
 function normalizeProfile(input = {}) {
@@ -450,11 +420,11 @@ app.post("/api/register", registerLimiter, (req, res) => {
   do { id = "EA-" + crypto.randomBytes(3).toString("hex").toUpperCase() + "-" + crypto.randomBytes(3).toString("hex").toUpperCase(); } while (players.has(id));
   const token = crypto.randomBytes(32).toString("hex");
   const safeNewProfile = normalizeProfile({ name: profile.name, player: profile.player, goalkeeper: profile.goalkeeper, ovr: profile.ovr });
-  const player = { id, tokenHash: hashToken(token), deviceKey, approvalStatus: "pending", createdAt: new Date().toISOString(), profile: safeNewProfile, friends: new Set(), gems: 250, draftVouchers: 0, activeDraft: null, ownedCards: ['arham'], cardLevels: { arham: 0 }, rewardDay: '', rewardGemsToday: 0, lastGameClaimAt: 0, eventClaims: {}, gameSession: null };
+  const player = { id, tokenHash: hashToken(token), deviceKey, approvalStatus: "approved", createdAt: new Date().toISOString(), profile: safeNewProfile, friends: new Set(), gems: 250, draftVouchers: 0, activeDraft: null, ownedCards: ['arham'], cardLevels: { arham: 0 }, rewardDay: '', rewardGemsToday: 0, lastGameClaimAt: 0, eventClaims: {}, gameSession: null };
   players.set(id, player);
   tokenToPlayer.set(player.tokenHash, id);
   saveData();
-  res.status(201).json({ playerId: id, token, status: "pending" });
+  res.status(201).json({ playerId: id, token, status: "approved" });
 });
 app.put("/api/profile", auth, profileLimiter, (req, res) => {
   const rawProfile = req.body?.profile && typeof req.body.profile === "object" ? req.body.profile : {};
@@ -957,7 +927,7 @@ io.use((socket, next) => {
   const id = cleanText(socket.handshake.auth?.playerId, 24).toUpperCase();
   const token = String(socket.handshake.auth?.token || "");
   const player = players.get(id);
-  if (!player || player.approvalStatus !== "approved" || !/^[a-f0-9]{64}$/i.test(token) || player.tokenHash !== hashToken(token)) return next(new Error("Account approval required"));
+  if (!player || !/^[a-f0-9]{64}$/i.test(token) || player.tokenHash !== hashToken(token)) return next(new Error("Authentication required"));
   socket.data.playerId = id;
   next();
 });
