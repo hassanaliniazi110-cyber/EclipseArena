@@ -580,14 +580,25 @@ app.post("/api/register", registerLimiter, (req, res) => {
       saveData();
       return res.json({ playerId: existing.id, token: bearer[1], status: "approved" });
     }
-    // If the token expired or was lost, recover the account through its device key
-    // and issue one replacement token.
+    // A device key is a one-time recovery credential. Replace it after use so a
+    // copied old key cannot be replayed for future account recovery.
+    const recoveredByDeviceKey = !bearerPlayerId && Boolean(deviceMatch && deviceMatch.id === existing.id);
     tokenToPlayer.delete(existing.tokenHash);
     const rotatedToken = crypto.randomBytes(32).toString("hex");
     existing.tokenHash = hashToken(rotatedToken);
     tokenToPlayer.set(existing.tokenHash, existing.id);
+    let replacementDeviceKey = "";
+    if (recoveredByDeviceKey) {
+      replacementDeviceKey = crypto.randomBytes(32).toString("hex");
+      existing.deviceKeyHash = hashToken(replacementDeviceKey);
+    }
     saveData();
-    return res.json({ playerId: existing.id, token: rotatedToken, status: "approved" });
+    return res.json({
+      playerId: existing.id,
+      token: rotatedToken,
+      ...(replacementDeviceKey ? { deviceKey: replacementDeviceKey } : {}),
+      status: "approved"
+    });
   }
   if (players.size >= MAX_PLAYERS) return res.status(503).json({ error: "The server is full. Please try again later." });
   let id;
