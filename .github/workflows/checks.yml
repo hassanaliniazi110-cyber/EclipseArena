@@ -1,0 +1,29 @@
+name: Code and dependency checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "17 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js 26
+        uses: actions/setup-node@v4
+        with:
+          node-version: 26
+      - name: Check JavaScript syntax
+        run: npm run check
+      - name: Resolve dependency lockfile
+        run: npm install --package-lock-only --ignore-scripts
+      - name: Audit production dependencies
+        run: npm audit --omit=dev
