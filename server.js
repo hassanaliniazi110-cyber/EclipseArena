@@ -1269,7 +1269,7 @@ io.on("connection", socket => {
     const match = { players: new Set([invite.from, invite.to]), createdAt: Date.now(), startAt: Date.now(), states: new Map(), lastGoalAt: new Map(), timer: null };
     activeMatches.set(roomId, match);
     invites.delete(roomId);
-    io.to(roomId).emit("match:ready", { roomId, startAt: match.startAt, durationSeconds: 90 });
+    io.to(roomId).emit("match:ready", { roomId, startAt: match.startAt, durationSeconds: 90, players: [...match.players] });
     match.timer = setTimeout(() => {
       if (activeMatches.get(roomId) !== match) return;
       const ids = [...match.players];
@@ -1314,6 +1314,7 @@ io.on("connection", socket => {
       y: Math.max(0.05, Math.min(0.95, Number(state.y))),
       goals: requestedGoals,
       hasBall: Boolean(state.hasBall),
+      rivalHasBall: Boolean(state.rivalHasBall),
       ballX: Number.isFinite(Number(state.ballX)) ? Math.max(0.02, Math.min(0.98, Number(state.ballX))) : 0.5,
       ballY: Number.isFinite(Number(state.ballY)) ? Math.max(0.02, Math.min(0.98, Number(state.ballY))) : 0.5,
       clock: serverClock
