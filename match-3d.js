@@ -59,7 +59,11 @@
     const crest=new T.Mesh(new T.CircleGeometry(.075,20),trim);crest.position.set(.255,1.64,-.398);root.add(crest);
     cylinder(root,.105,.12,.22,[0,2.02,0],skin,10);
     const head=new T.Mesh(new T.SphereGeometry(.235,32,24),skin);head.scale.set(.94,1.08,.94);head.position.y=2.22;head.castShadow=true;root.add(head);
-    const cap=new T.Mesh(new T.SphereGeometry(.246,28,20,0,Math.PI*2,0,Math.PI*.56),hair);cap.position.set(0,2.29,0);cap.castShadow=true;root.add(cap);
+    const cap=new T.Mesh(new T.SphereGeometry(.255,32,24,0,Math.PI*2,0,Math.PI*.72),hair);cap.position.set(0,2.285,0);cap.castShadow=true;root.add(cap);
+    // Give the hairstyle volume from the rear and sides too, so orbiting the
+    // camera never exposes a bare-looking patch behind the head.
+    const rearHair=new T.Mesh(new T.SphereGeometry(.205,24,18),hair);rearHair.scale.set(1.08,.76,.78);rearHair.position.set(0,2.19,.115);rearHair.castShadow=true;root.add(rearHair);
+    const crownLock=new T.Mesh(new T.SphereGeometry(.105,18,14),hair);crownLock.scale.set(.82,.62,1.18);crownLock.position.set(-.055,2.47,-.015);crownLock.rotation.z=-.28;root.add(crownLock);
     const fringe=new T.Mesh(new T.SphereGeometry(.125,18,12),hair);fringe.scale.set(1.2,.48,.58);fringe.position.set(0,2.285,-.185);root.add(fringe);
     const sideHair=new T.Mesh(new T.SphereGeometry(.12,18,14),hair);sideHair.scale.set(.62,1.1,.85);sideHair.position.set(-.19,2.18,0);root.add(sideHair);const sideHair2=sideHair.clone();sideHair2.position.x=.19;root.add(sideHair2);
     const earMat=skin,earInner=mat("#87583f",{roughness:.88});[-1,1].forEach(side=>{const ear=new T.Mesh(new T.SphereGeometry(.055,14,12),earMat);ear.position.set(side*.225,2.19,-.005);root.add(ear);const inner=new T.Mesh(new T.SphereGeometry(.022,10,8),earInner);inner.position.set(side*.24,2.19,-.045);root.add(inner);});
