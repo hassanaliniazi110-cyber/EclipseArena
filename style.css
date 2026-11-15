@@ -2044,3 +2044,66 @@ html[data-device="ipad"] #shootBtn{display:none!important}
     max-height:calc(100dvh - 155px)!important;height:auto!important;
   }
 }
+
+
+/* H2H match-only layout: keep the pitch in the visible viewport, with no page-length scroll. */
+.app-shell:has(#gameScreen:not(.hidden)){
+  height:100dvh;min-height:0;display:flex;flex-direction:column;overflow:hidden;
+}
+.app-shell:has(#gameScreen:not(.hidden))>.topbar{flex:0 0 auto;}
+.app-shell:has(#gameScreen:not(.hidden))>main{flex:1 1 auto;min-height:0;overflow:hidden;}
+.app-shell:has(#gameScreen:not(.hidden))>footer,
+.app-shell:has(#gameScreen:not(.hidden))>#apexPhotoCredits{display:none!important;}
+.game-screen:has(#matchControls:not(.hidden)){
+  height:100%;min-height:0;box-sizing:border-box;overflow:hidden;
+  display:flex;flex-direction:column;padding:6px 0 8px!important;
+}
+.game-screen:has(#matchControls:not(.hidden)) .game-header{flex:0 0 auto;margin:0 0 7px!important;gap:10px;}
+.game-screen:has(#matchControls:not(.hidden)) .game-header .eyebrow{margin-bottom:2px;}
+.game-screen:has(#matchControls:not(.hidden)) .game-header h2{font-size:clamp(20px,3vw,29px);}
+.game-screen:has(#matchControls:not(.hidden)) .game-layout{
+  flex:1 1 auto;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);
+  gap:0;overflow:hidden;
+}
+.game-screen:has(#matchControls:not(.hidden)) .pitch-wrap{
+  min-height:0;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-start;
+  padding:6px;background:#071321;
+}
+.game-screen:has(#matchControls:not(.hidden)) .pitch-topline{flex:0 0 auto;padding:2px 4px 5px;}
+.game-screen:has(#matchControls:not(.hidden)) #pitch{
+  display:block;width:100%!important;height:auto!important;min-height:0!important;
+  max-height:calc(100dvh - 335px)!important;aspect-ratio:1.72!important;
+  flex:0 1 auto;margin:0 auto;background:#071321!important;
+}
+.game-screen:has(#matchControls:not(.hidden)) .controls-panel{display:none!important;}
+.game-screen:has(#matchControls:not(.hidden)) .match-hud{flex:0 0 auto;margin-top:5px;padding:6px 9px;}
+.game-screen:has(#matchControls:not(.hidden)) .match-controls{flex:0 0 auto;margin-top:5px;padding:6px 8px;gap:8px;}
+.game-screen:has(#matchControls:not(.hidden)) .match-action-pad button{
+  min-height:38px;touch-action:none;-webkit-tap-highlight-color:transparent;
+}
+.game-screen:has(#matchControls:not(.hidden)) .match-action-pad button.is-active{
+  background:var(--lime);border-color:var(--lime);color:#10180c;
+  box-shadow:0 0 0 2px rgba(199,255,74,.18),0 0 14px rgba(199,255,74,.25);
+}
+.game-screen:has(#matchControls:not(.hidden)) .match-action-pad button.action-flash{
+  background:#ff8c42;color:#10180c;border-color:#ffb16f;
+}
+.game-screen:has(#matchControls:not(.hidden)) .match-camera-controls{flex:0 0 auto;margin-top:5px;}
+.game-screen:has(#matchControls:not(.hidden)) .match-camera-presets{gap:4px;flex-wrap:wrap;}
+.game-screen:has(#matchControls:not(.hidden)) .match-camera-presets button{padding:6px 8px;font-size:8px;}
+.game-screen:has(#matchControls:not(.hidden)) .match-camera-zoom{margin-top:4px;}
+@media(max-width:700px){
+  .app-shell:has(#gameScreen:not(.hidden)){padding-left:10px;padding-right:10px;}
+  .game-screen:has(#matchControls:not(.hidden)) #pitch{
+    max-height:calc(100dvh - 365px)!important;aspect-ratio:1.58!important;
+  }
+  .game-screen:has(#matchControls:not(.hidden)) .match-move-pad button,
+  .game-screen:has(#matchControls:not(.hidden)) .match-action-pad button{min-height:36px;}
+  .game-screen:has(#matchControls:not(.hidden)) .match-controls{padding:5px;gap:5px;}
+}
+@media(orientation:landscape) and (max-height:600px){
+  .game-screen:has(#matchControls:not(.hidden)) #pitch{
+    max-height:calc(100dvh - 245px)!important;aspect-ratio:1.9!important;
+  }
+  .game-screen:has(#matchControls:not(.hidden)) .match-camera-controls{display:none;}
+}
