@@ -443,8 +443,8 @@
     let camX=0,camY=38,camZ=72,lookX=0,lookY=0,lookAtZ=0;
     if(cameraMode==="sideline"){
       // FC Mobile-inspired sideline broadcast camera, following the ball.
-      camX=FIELD_WIDTH*1.12;camY=FIELD_WIDTH*.78;camZ=focusZ+4;
-      lookX=0;lookY=0;lookAtZ=focusZ-2;
+      camX=FIELD_WIDTH*1.12;camY=FIELD_WIDTH*.78;camZ=h2h?0:focusZ+4;
+      lookX=0;lookY=0;lookAtZ=h2h?0:focusZ-2;
     }else if(cameraMode==="broadcast"){
       camX=FIELD_WIDTH*1.48;camY=FIELD_LENGTH*.95;camZ=FIELD_LENGTH*.98;
       lookX=0;lookY=0;lookAtZ=0;

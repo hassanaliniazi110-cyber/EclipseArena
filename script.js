@@ -173,7 +173,7 @@ const goalkeepers = [
     {x:.22,y:.29,role:"RW"},{x:.39,y:.39,role:"ST"},
     {x:.61,y:.39,role:"CAM"},{x:.78,y:.29,role:"LW"}
   ];
-  const match = {active:false,finished:false,clock:0,lastTick:0,lastTackleAt:0,lastAutoTackleAt:0,player:{x:.5,y:.76},rival:{x:.5,y:.24},ball:{x:.5,y:.76},move:"",moveX:0,moveY:0,sprint:false,hasBall:true,playerGoals:0,rivalGoals:0,rankPoints:0,rank:"ROOKIE III",lastRivalShot:0,rivalHasBall:false,passUntil:0,passFromX:.5,passFromY:.76,passToX:.5,passToY:.5,passReceiverSlot:-1,passStartedAt:0,passDuration:460,shotAnim:null,controlledName:"Muhammad Arham",controlledRating:122,controlledRole:"ST",teammates:[],rivalTeammates:[],lastShot:null};
+  const match = {active:false,finished:false,clock:0,lastTick:0,lastTackleAt:0,lastAutoTackleAt:0,lastRivalTackleAt:0,player:{x:.5,y:.76},rival:{x:.5,y:.24},ball:{x:.5,y:.76},move:"",moveX:0,moveY:0,sprint:false,hasBall:true,playerGoals:0,rivalGoals:0,rankPoints:0,rank:"ROOKIE III",lastRivalShot:0,rivalHasBall:false,passUntil:0,passFromX:.5,passFromY:.76,passToX:.5,passToY:.5,passReceiverSlot:-1,passStartedAt:0,passDuration:460,shotAnim:null,controlledName:"Muhammad Arham",controlledRating:122,controlledRole:"ST",teammates:[],rivalTeammates:[],lastShot:null};
   function getApex3DState(){
     return {
       mode,selectedPlayer:match.active?match.controlledName:selectedPlayer,selectedGoalkeeper,
@@ -956,11 +956,11 @@ const goalkeepers = [
       });
 
       const tackler=pressIndex>=0?teammates[pressIndex]:null;
-      if(tackler&&now-(match.lastAutoTackleAt||0)>1050&&matchDistance(tackler,match.rival)<2.05){
+      if(tackler&&now-(match.lastAutoTackleAt||0)>850&&matchDistance(tackler,match.rival)<2.6){
         match.lastAutoTackleAt=now;
         const rating=Number(tackler.ovr)||90;
         const difficultyAdjustment=difficulty==="Legend"?-.13:difficulty==="Rookie"?.13:0;
-        const tackleChance=Math.max(.36,Math.min(.82,.56+(rating-90)*.0025+difficultyAdjustment));
+        const tackleChance=Math.max(.48,Math.min(.86,.66+(rating-90)*.0025+difficultyAdjustment));
         if(Math.random()<tackleChance){
           switchControlToTeammate(pressIndex);
           match.rankPoints+=20;updateRank();
@@ -1840,10 +1840,17 @@ const goalkeepers = [
     if(onlineCfg.base&&onlineCfg.token)activeRewardSessionPromise=api("/api/games/start",{method:"POST",body:JSON.stringify({mode,eventId:activeRewardEventId})}).then(data=>{activeRewardSessionId=data.sessionId;return data.sessionId;}).catch(error=>{activeRewardSessionId=null;activeRewardSessionPromise=null;toast("Online game session could not start: "+error.message);return null;});
     if(!isRandomRush){recentModes=[nextMode,...recentModes.filter(x=>x!==nextMode)].slice(0,5);try{localStorage.setItem("eclipseRecentModes",JSON.stringify(recentModes));}catch(_){}renderModeTools();}
     if(mode==="headtohead")onlineCfg.onlineMatch=false;
-    match.active=mode==="headtohead";match.finished=false;match.clock=0;match.playerGoals=0;match.rivalGoals=h2hChallenge==="comeback"?2:0;match.rankPoints=0;match.rank="ROOKIE III";match.player={x:.5,y:.76};match.rival={x:.5,y:.24};match.ball={x:.5,y:.76};match.move="";match.moveX=0;match.moveY=0;match.sprint=false;match.hasBall=true;match.rivalHasBall=false;match.lastRivalShot=0;match.lastTackleAt=0;match.lastAutoTackleAt=0;match.passUntil=0;match.passReceiverSlot=-1;match.shotAnim=null;match.lastShot=null;match.teammates=[];match.rivalTeammates=[];match.controlledName=selectedPlayer;
+    match.active=mode==="headtohead";match.finished=false;match.clock=0;match.playerGoals=0;match.rivalGoals=h2hChallenge==="comeback"?2:0;match.rankPoints=0;match.rank="ROOKIE III";match.player={x:.5,y:.76};match.rival={x:.5,y:.24};match.ball={x:.5,y:.76};match.move="";match.moveX=0;match.moveY=0;match.sprint=false;match.hasBall=true;match.rivalHasBall=false;match.lastRivalShot=0;match.lastTackleAt=0;match.lastAutoTackleAt=0;match.lastRivalTackleAt=0;match.passUntil=0;match.passReceiverSlot=-1;match.shotAnim=null;match.lastShot=null;match.teammates=[];match.rivalTeammates=[];match.controlledName=selectedPlayer;
     if(match.active){renderMatchSquadPicker();buildMatchTeams();}
     applyCurrentTeamKits();
-    $("matchHud").classList.toggle("hidden",!match.active);$("matchControls").classList.toggle("hidden",!match.active);$("matchSquadPicker")?.classList.toggle("hidden",!match.active);$("matchCameraControls").classList.remove("hidden");$("matchResult").classList.add("hidden");$("matchResult").textContent="";
+    $("matchHud").classList.toggle("hidden",!match.active);$("matchControls").classList.toggle("hidden",!match.active);$("matchSquadPicker")?.classList.toggle("hidden",!match.active);$("matchCameraControls").classList.remove("hidden");
+    if(match.active){
+      window.ApexMatch3D?.setCameraView?.("sideline");
+      document.querySelectorAll("[data-camera-view]").forEach(button=>button.classList.toggle("selected",button.dataset.cameraView==="sideline"));
+    }else{
+      window.ApexMatch3D?.setCameraView?.("player");
+      document.querySelectorAll("[data-camera-view]").forEach(button=>button.classList.toggle("selected",button.dataset.cameraView==="player"));
+    }$("matchResult").classList.add("hidden");$("matchResult").textContent="";
     $("powerSlider").classList.toggle("hidden",match.active);$("curlStyleBtn")?.classList.toggle("hidden",match.active||mode==="goalkeeping"||mode==="survival");$("powerSlider").disabled=match.active;$("shootBtn").classList.toggle("hidden",match.active||deviceProfile.type==="ipad");$("matchRank").textContent="ROOKIE III · 0 PTS";
     score=0;attempt=1;if(mode==="headtohead"||mode==="vsattack"){opponentScore=0;matchMinute=0;matchAttacks=0;}
     $("homeScreen").classList.add("hidden");$("gameScreen").classList.remove("hidden");
@@ -1902,8 +1909,11 @@ const goalkeepers = [
 
       const axisX=Math.max(-1,Math.min(1,match.moveX)),axisY=Math.max(-1,Math.min(1,match.moveY));
       const inputMagnitude=Math.min(1,Math.hypot(axisX,axisY));
-      if(inputMagnitude>.08){
-        const speed=match.sprint?10.5:8.0,nx=axisX/inputMagnitude,ny=axisY/inputMagnitude;
+      if(inputMagnitude>.08&&match.hasBall&&!match.passUntil){
+        const speed=match.sprint?10.5:8.0,rawX=axisX/inputMagnitude,rawY=axisY/inputMagnitude;
+        const cameraView=window.ApexMatch3D?.getCameraView?.();
+        const nx=cameraView==="sideline"?-rawY:rawX;
+        const ny=cameraView==="sideline"?-rawX:rawY;
         match.player.x+=(nx*speed*dt)/MATCH_FIELD_WIDTH;
         match.player.y+=(ny*speed*dt)/MATCH_FIELD_LENGTH;
       }
@@ -1912,15 +1922,30 @@ const goalkeepers = [
 
       if(!onlineCfg.onlineMatch){
         const aiLevel=difficulty==="Legend"?8.2:difficulty==="Rookie"?5.2:6.6;
-        const targetX=match.rivalHasBall?.5:match.ball.x;
-        const targetY=match.rivalHasBall?.86:match.ball.y;
+        let targetX=match.ball.x,targetY=match.ball.y;
+        if(match.rivalHasBall){
+          const defenders=[match.player,...match.teammates];
+          const nearestDefender=defenders.map(actor=>({actor,distance:matchDistance(match.rival,actor)})).sort((a,b)=>a.distance-b.distance)[0];
+          const dodge=nearestDefender&&nearestDefender.distance<9?(match.rival.x<nearestDefender.actor.x?-.12:.12):0;
+          targetX=Math.max(.18,Math.min(.82,.5+(match.rival.x-.5)*.32+dodge));
+          targetY=.86;
+        }
         moveMatchActor(match.rival,targetX,targetY,aiLevel,dt);
         const toRival=matchDistance(match.player,match.rival);
         const rivalToBall=matchDistance(match.rival,match.ball);
-        if(match.hasBall&&toRival<1.35){
-          match.hasBall=false;match.rivalHasBall=true;
-          match.ball={x:match.rival.x,y:match.rival.y-.018};
-          $("feedback").textContent="AI TACKLE! Win possession back.";
+        if(match.hasBall&&toRival<1.35&&now-(match.lastRivalTackleAt||0)>900){
+          match.lastRivalTackleAt=now;
+          const rivalRating=difficulty==="Legend"?125:difficulty==="Rookie"?92:110;
+          const userRating=Number(match.controlledRating)||90;
+          const difficultyBonus=difficulty==="Legend"?.10:difficulty==="Rookie"?-.08:0;
+          const rivalTackleChance=Math.max(.14,Math.min(.62,.34+(rivalRating-userRating)*.003+difficultyBonus));
+          if(Math.random()<rivalTackleChance){
+            match.hasBall=false;match.rivalHasBall=true;
+            match.ball={x:match.rival.x,y:match.rival.y-.018};
+            $("feedback").textContent="AI TACKLE! Win possession back.";
+          }else{
+            $("feedback").textContent="THE RIVAL IS PRESSING YOU! MOVE INTO SPACE.";
+          }
         }
         if(!match.hasBall&&!match.rivalHasBall&&!match.passUntil&&rivalToBall<2.2){
           match.rivalHasBall=true;match.ball={x:match.rival.x,y:match.rival.y-.018};
@@ -2020,7 +2045,7 @@ const goalkeepers = [
       const targets=[match.rival,...match.rivalTeammates].filter(Boolean);
       const nearest=match.rivalHasBall?match.rival:targets.reduce((best,actor)=>matchDistance(match.ball,actor)<matchDistance(match.ball,best)?actor:best,targets[0]||match.rival);
       const tackleDistance=nearest?matchDistance(match.player,nearest):Infinity;
-      if(!match.hasBall&&match.rivalHasBall&&tackleDistance<7.5){
+      if(!match.hasBall&&match.rivalHasBall&&tackleDistance<3.8){
         match.hasBall=true;match.rivalHasBall=false;match.passUntil=0;match.passReceiverSlot=-1;match.rankPoints+=20;
         match.ball={x:match.player.x,y:match.player.y-.025};updateRank();
         $("feedback").textContent="SUCCESSFUL TACKLE! +20 RANK POINTS";
