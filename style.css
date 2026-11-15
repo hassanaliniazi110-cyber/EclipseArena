@@ -2107,3 +2107,16 @@ html[data-device="ipad"] #shootBtn{display:none!important}
   }
   .game-screen:has(#matchControls:not(.hidden)) .match-camera-controls{display:none;}
 }
+
+/* Full-time matchday presentation */
+.match-result.match-result-celebrating{position:relative;isolation:isolate;overflow:hidden;min-height:190px;text-align:center;background:radial-gradient(ellipse at 50% 0%,rgba(199,255,74,.24),transparent 62%),linear-gradient(135deg,#102b25,#08141d 72%);border:1px solid rgba(199,255,74,.72);box-shadow:0 14px 42px rgba(0,0,0,.35),0 0 28px rgba(199,255,74,.12)}
+.match-result-kicker{position:relative;z-index:2;font-size:10px;letter-spacing:3px;color:#d9e8ef}
+.match-result-title{position:relative;z-index:2;margin:7px 0 2px;font-size:clamp(25px,5vw,42px);font-weight:1000;letter-spacing:1px;color:#c7ff4a;text-shadow:0 0 22px rgba(199,255,74,.35)}
+.match-result-score{position:relative;z-index:2;font-size:clamp(30px,6vw,48px);font-weight:1000;color:#fff;font-variant-numeric:tabular-nums}
+.match-result-score span{color:#c7ff4a;padding:0 9px}
+.match-result-rank,.match-result-reward{position:relative;z-index:2;margin-top:5px;font-size:11px;font-weight:900;letter-spacing:.8px;color:#d6e8ee}
+.match-result-reward{display:inline-block;margin-top:11px;padding:8px 13px;border:1px solid rgba(199,255,74,.5);border-radius:999px;background:rgba(199,255,74,.09);color:#eaffb7}
+.match-confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
+.match-confetti i{position:absolute;top:-18px;left:var(--x);width:7px;height:12px;border-radius:2px;background:hsl(calc(var(--i)*37),88%,62%);opacity:0;transform:rotate(var(--spin));animation:apexConfettiFall 2.6s var(--delay) ease-out forwards}
+@keyframes apexConfettiFall{0%{opacity:0;transform:translate3d(0,-12px,0) rotate(var(--spin))}10%{opacity:1}100%{opacity:0;transform:translate3d(0,220px,0) rotate(calc(var(--spin) + 650deg))}}
+@media(prefers-reduced-motion:reduce){.match-confetti i{animation:none;display:none}.match-result.match-result-celebrating{box-shadow:none}}

@@ -1544,8 +1544,8 @@ const goalkeepers = [
   }
   const saveCareerBeforeLeaderboardSync=saveCareer;saveCareer=function(){saveCareerBeforeLeaderboardSync();if(onlineCfg.base&&onlineCfg.token)api("/api/profile",{method:"PUT",body:JSON.stringify({profile:onlineProfile()})}).catch(()=>{});};
   async function claimGameReward(finalScore){
-    if(rewardClaimedThisGame)return;
-    if(!onlineCfg.base||!onlineCfg.token){toast("Connect online to collect your match gems.");return;}
+    if(rewardClaimedThisGame)return null;
+    if(!onlineCfg.base||!onlineCfg.token){toast("Connect online to collect your match gems.");return null;}
     rewardClaimedThisGame=true;
     try{
       const sessionId=activeRewardSessionId||(activeRewardSessionPromise?await activeRewardSessionPromise:null);
@@ -1564,9 +1564,11 @@ const goalkeepers = [
         renderCareerHub();
         toast("+"+data.reward+" GEMS EARNED · "+data.gems+" TOTAL");
       }
+      return data;
     }catch(error){
       rewardClaimedThisGame=false;
       if(error.message)toast("Gem reward not added: "+error.message);
+      return null;
     }
   }
   // Admin status comes from the authenticated server response, never from a client-set ID.
@@ -1912,8 +1914,11 @@ const goalkeepers = [
       if(inputMagnitude>.08&&match.hasBall&&!match.passUntil){
         const speed=match.sprint?10.5:8.0,rawX=axisX/inputMagnitude,rawY=axisY/inputMagnitude;
         const cameraView=window.ApexMatch3D?.getCameraView?.();
-        const nx=cameraView==="sideline"?-rawY:rawX;
-        const ny=cameraView==="sideline"?-rawX:rawY;
+        // In the sideline camera, screen-up is the opposite of the pitch's
+        // positive field axes. Keep the joystick's screen directions intuitive:
+        // pushing DOWN must move the player down-screen, not up-screen.
+        const nx=cameraView==="sideline"?rawY:rawX;
+        const ny=cameraView==="sideline"?rawX:rawY;
         match.player.x+=(nx*speed*dt)/MATCH_FIELD_WIDTH;
         match.player.y+=(ny*speed*dt)/MATCH_FIELD_LENGTH;
       }
@@ -2089,7 +2094,25 @@ const goalkeepers = [
     updateRank();$("matchScore").textContent=match.playerGoals+" - "+match.rivalGoals;drawPitch();
   }
   function updateRank(){const tiers=[["LEGENDARY",1000],["CHAMPION",600],["PRO I",350],["PRO II",200],["PRO III",100],["ROOKIE I",50],["ROOKIE II",20],["ROOKIE III",0]];match.rank=(tiers.find(t=>match.rankPoints>=t[1])||tiers[tiers.length-1])[0];$("matchRank").textContent=match.rank+" · "+match.rankPoints+" PTS";}
-  function endFullMatch(){claimGameReward(score);match.active=false;match.finished=true;cancelAnimationFrame(animationFrame);updateRank();const outcome=match.playerGoals>match.rivalGoals?"WIN":match.playerGoals===match.rivalGoals?"DRAW":"LOSS";$("matchResult").classList.remove("hidden");$("matchResult").textContent="FULL TIME · "+match.playerGoals+" - "+match.rivalGoals+" · "+outcome+" · RANK "+match.rank;$("feedback").textContent=$("matchResult").textContent;$("roundLabel").textContent="FULL TIME";drawPitch();}
+  async function endFullMatch(){
+    if(match.finished)return;
+    match.active=false;match.finished=true;resetJoystick();match.sprint=false;
+    $("matchControls").classList.add("hidden");$("matchCameraControls").classList.add("hidden");
+    cancelAnimationFrame(animationFrame);updateRank();
+    const outcome=match.playerGoals>match.rivalGoals?"WIN":match.playerGoals===match.rivalGoals?"DRAW":"LOSS";
+    const result=$("matchResult");result.classList.remove("hidden");result.classList.toggle("match-result-celebrating",outcome==="WIN");
+    const confetti=outcome==="WIN"?'<div class="match-confetti" aria-hidden="true">'+Array.from({length:34},(_,i)=>'<i style="--i:'+i+';--x:'+((i*37)%100)+'%;--delay:'+((i%9)*.07)+'s;--spin:'+((i*53)%360)+'deg"></i>').join("")+'</div>':"";
+    result.innerHTML=confetti+'<div class="match-result-kicker">FULL TIME</div><div class="match-result-title">'+(outcome==="WIN"?"YOU WIN!":outcome==="DRAW"?"IT’S A DRAW":"MATCH FINISHED")+'</div><div class="match-result-score">'+match.playerGoals+' <span>−</span> '+match.rivalGoals+'</div><div class="match-result-rank">RANK · '+match.rank+' · '+match.rankPoints+' PTS</div><div class="match-result-reward" role="status">Checking your match gem reward…</div>';
+    $("feedback").textContent="FULL TIME · "+match.playerGoals+" - "+match.rivalGoals+" · "+outcome+" · RANK "+match.rank;
+    $("roundLabel").textContent="FULL TIME";
+    drawPitch();
+    const rewardLine=result.querySelector(".match-result-reward");
+    const reward=await claimGameReward(score);
+    if(rewardLine&&result.isConnected){
+      if(reward&&Number.isFinite(Number(reward.reward)))rewardLine.textContent=(reward.unlimitedGems?"∞ ADMIN GEMS":"◇ +"+Number(reward.reward).toLocaleString()+" GEMS")+" · BALANCE "+(reward.unlimitedGems?"∞":Number(reward.gems).toLocaleString());
+      else rewardLine.textContent=onlineCfg.base&&onlineCfg.token?"Gem reward could not be confirmed. Check your connection and match history.":"Connect online before kickoff to earn server-verified gems.";
+    }
+  }
   function finishAttempt(success,message){
     shotTaken=true;
     
