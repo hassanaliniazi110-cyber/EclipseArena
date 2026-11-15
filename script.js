@@ -2097,6 +2097,7 @@ const goalkeepers = [
   async function endFullMatch(){
     if(match.finished)return;
     match.active=false;match.finished=true;resetJoystick();match.sprint=false;
+    $("matchControls").classList.add("hidden");$("matchCameraControls").classList.add("hidden");
     cancelAnimationFrame(animationFrame);updateRank();
     const outcome=match.playerGoals>match.rivalGoals?"WIN":match.playerGoals===match.rivalGoals?"DRAW":"LOSS";
     const result=$("matchResult");result.classList.remove("hidden");result.classList.toggle("match-result-celebrating",outcome==="WIN");
