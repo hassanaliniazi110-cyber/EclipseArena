@@ -2020,22 +2020,34 @@ const goalkeepers = [
       if(match.passUntil>performance.now()){ $("feedback").textContent="PASS IN PROGRESS.";return; }
       if(!match.hasBall){$("feedback").textContent="Win possession before passing.";return;}
       let bestIndex=-1,bestScore=-Infinity,bestDistance=Infinity;
-      match.teammates.forEach((teammate,i)=>{
+      const availableTeammates=match.teammates.map((teammate,i)=>{
         const dx=(teammate.x-match.player.x)*MATCH_FIELD_WIDTH;
         const dy=(match.player.y-teammate.y)*MATCH_FIELD_LENGTH;
         const distance=Math.hypot(dx,dy);
         const forward=dy/MATCH_FIELD_LENGTH;
         const oppositionSpace=match.rivalTeammates.reduce((space,opponent)=>Math.min(space,matchDistance(teammate,opponent)),30);
-        const score=forward*4+Math.min(1.5,oppositionSpace/12)+Math.min(1,(teammate.ovr||90)/180)-distance/45;
-        if(distance>2.2&&distance<46&&score>bestScore){bestScore=score;bestIndex=i;bestDistance=distance;}
+        // Reward forward options, but never reject a useful pass just because play has
+        // moved into the attacking half or the receiver is farther upfield.
+        const score=forward*2.4+Math.min(1.6,oppositionSpace/11)+Math.min(1,(teammate.ovr||90)/180)-distance/72;
+        return {i,distance,score};
+      }).filter(option=>option.distance>2.2);
+      availableTeammates.forEach(option=>{
+        if(option.score>bestScore){bestScore=option.score;bestIndex=option.i;bestDistance=option.distance;}
       });
-      if(bestIndex<0){$("feedback").textContent="No teammate is in range yet. Move into space.";return;}
+      // A crowded formation can put every teammate close to the ball carrier.
+      // In that case, still offer the nearest valid receiver rather than disabling PASS.
+      if(bestIndex<0&&match.teammates.length){
+        const nearest=match.teammates.map((teammate,i)=>({i,distance:matchDistance(match.player,teammate)}))
+          .filter(option=>option.distance>.8).sort((a,b)=>a.distance-b.distance)[0];
+        if(nearest){bestIndex=nearest.i;bestDistance=nearest.distance;}
+      }
+      if(bestIndex<0){$("feedback").textContent="No teammate available to receive the pass.";return;}
       const target=match.teammates[bestIndex];
       match.passFromX=match.ball.x;match.passFromY=match.ball.y;
       match.passToX=Math.max(.06,Math.min(.94,target.x));
       match.passToY=Math.max(.06,Math.min(.94,target.y-.025));
       match.passReceiverSlot=bestIndex;match.passStartedAt=performance.now();
-      match.passDuration=Math.max(300,Math.min(620,bestDistance*18));match.passUntil=match.passStartedAt+match.passDuration;
+      match.passDuration=Math.max(300,Math.min(780,bestDistance*16));match.passUntil=match.passStartedAt+match.passDuration;
       match.hasBall=false;match.rivalHasBall=false;
       $("feedback").textContent="PASS TO "+target.name.toUpperCase()+" · "+target.ovr+" OVR";
     }else if(action==="tackle"){
@@ -2045,11 +2057,11 @@ const goalkeepers = [
       const targets=[match.rival,...match.rivalTeammates].filter(Boolean);
       const nearest=match.rivalHasBall?match.rival:targets.reduce((best,actor)=>matchDistance(match.ball,actor)<matchDistance(match.ball,best)?actor:best,targets[0]||match.rival);
       const tackleDistance=nearest?matchDistance(match.player,nearest):Infinity;
-      if(!match.hasBall&&match.rivalHasBall&&tackleDistance<3.8){
+      if(!match.hasBall&&match.rivalHasBall&&tackleDistance<5.2){
         match.hasBall=true;match.rivalHasBall=false;match.passUntil=0;match.passReceiverSlot=-1;match.rankPoints+=20;
         match.ball={x:match.player.x,y:match.player.y-.025};updateRank();
         $("feedback").textContent="SUCCESSFUL TACKLE! +20 RANK POINTS";
-      }else if(!match.hasBall&&!match.rivalHasBall&&matchDistance(match.player,match.ball)<2.3){
+      }else if(!match.hasBall&&!match.rivalHasBall&&matchDistance(match.player,match.ball)<3.0){
         match.hasBall=true;match.ball={x:match.player.x,y:match.player.y-.025};
         $("feedback").textContent="BALL RECOVERED! POSSESSION WON.";
       }else if(!match.hasBall)$("feedback").textContent="Get closer to the ball carrier, then tackle.";
@@ -2195,7 +2207,34 @@ const goalkeepers = [
   function resetJoystick(){joystickPointer=null;match.moveX=0;match.moveY=0;if(joystickThumb)joystickThumb.style.transform="translate(0,0)";}
   function moveJoystick(e){if(joystickPointer!==e.pointerId||!joystick)return;const r=joystick.getBoundingClientRect(),radius=Math.max(24,Math.min(r.width,r.height)*.34);let dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);const len=Math.hypot(dx,dy);if(len>radius){dx=dx/len*radius;dy=dy/len*radius;}match.moveX=dx/radius;match.moveY=dy/radius;if(joystickThumb)joystickThumb.style.transform="translate("+dx+"px,"+dy+"px)";}
   if(joystick){joystick.addEventListener("pointerdown",e=>{if(!match.active)return;e.preventDefault();joystickPointer=e.pointerId;joystick.setPointerCapture?.(e.pointerId);moveJoystick(e);});joystick.addEventListener("pointermove",moveJoystick);["pointerup","pointercancel","lostpointercapture"].forEach(type=>joystick.addEventListener(type,resetJoystick));}
-  document.querySelectorAll("[data-action]").forEach(b=>b.addEventListener("click",()=>matchAction(b.dataset.action)));
+  document.querySelectorAll("[data-action]").forEach(button=>{
+    let activePointer=null;
+    button.setAttribute("aria-pressed","false");
+    button.addEventListener("pointerdown",event=>{
+      if(!match.active||match.finished)return;
+      event.preventDefault();
+      activePointer=event.pointerId;
+      button.setPointerCapture?.(event.pointerId);
+    });
+    button.addEventListener("pointerup",event=>{
+      if(activePointer!==event.pointerId)return;
+      event.preventDefault();
+      activePointer=null;
+      matchAction(button.dataset.action);
+      if(button.dataset.action==="sprint"){
+        button.classList.toggle("is-active",match.sprint);
+        button.setAttribute("aria-pressed",String(match.sprint));
+      }else if(button.dataset.action==="tackle"){
+        button.classList.add("action-flash");
+        window.setTimeout(()=>button.classList.remove("action-flash"),180);
+      }
+    });
+    button.addEventListener("pointercancel",()=>{activePointer=null;});
+    // Keep keyboard/assistive activation without double-firing pointer-generated clicks.
+    button.addEventListener("click",event=>{
+      if(event.detail===0)matchAction(button.dataset.action);
+    });
+  });
   document.querySelectorAll("[data-camera-view]").forEach(b=>b.addEventListener("click",()=>{
     const view=b.dataset.cameraView;
     window.ApexMatch3D?.setCameraView?.(view);
