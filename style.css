@@ -2118,5 +2118,5 @@ html[data-device="ipad"] #shootBtn{display:none!important}
 .match-result-reward{display:inline-block;margin-top:11px;padding:8px 13px;border:1px solid rgba(199,255,74,.5);border-radius:999px;background:rgba(199,255,74,.09);color:#eaffb7}
 .match-confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
 .match-confetti i{position:absolute;top:-18px;left:var(--x);width:7px;height:12px;border-radius:2px;background:hsl(calc(var(--i)*37),88%,62%);opacity:0;transform:rotate(var(--spin));animation:apexConfettiFall 2.6s var(--delay) ease-out forwards}
-@keyframes apexConfettiFall{0%{opacity:0;transform:translate3d(0,-12px,0) rotate(var(--spin))}10%{opacity:1}100%{opacity:0;transform:translate3d(calc((var(--i) - 17)*2px),220px,0) rotate(calc(var(--spin) + 650deg))}}
+@keyframes apexConfettiFall{0%{opacity:0;transform:translate3d(0,-12px,0) rotate(var(--spin))}10%{opacity:1}100%{opacity:0;transform:translate3d(0,220px,0) rotate(calc(var(--spin) + 650deg))}}
 @media(prefers-reduced-motion:reduce){.match-confetti i{animation:none;display:none}.match-result.match-result-celebrating{box-shadow:none}}
